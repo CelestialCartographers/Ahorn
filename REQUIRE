@@ -1,4 +1,4 @@
-julia 0.6.2
+julia 0.6
 Cairo 0.5.1
 Gtk 0.13.1
 MbedTLS 0.5.8
