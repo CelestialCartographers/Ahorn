@@ -15,12 +15,20 @@ Hey, thanks for giving Ahorn a try! Ahorn is currently still in a very early sta
 """)
 
 println("This installer is going to install or update Maple and Ahorn via the package manager as well as create two symbolic links in the same directory as this installer file, are you okay with that? [y/N]")
-confirmation = readline()
 
-if !ismatch(r"^[Yy]", confirmation)
+if !ismatch(r"^[Yy]", readline())
     println("Exiting installer.")
     exit()
 end
+
+println("""
+This installer can install the HTTP.jl library to enable integration with the Everest Mod Loader. If Everest is installed in Celeste and running in debug mode, you will be able to Ctrl+Shift+Click on a room in Ahorn while the game is running to teleport there in game.
+However, on older versions of Windows (e.g. Windows 7), installing HTTP might fail unless a certain update is installed.
+If you want to install it later, just run Pkg.add("HTTP") in Julia.
+Would you like to install the HTTP library? [y/N]""")
+
+
+installHTTP = ismatch(r"^[Yy]", readline())
 
 println("""
 The installer will now download and install required dependencies as well as the program itself. This will likely take a few minutes, so grab yourself a glass of juice while you wait.
@@ -28,6 +36,10 @@ The installer will now download and install required dependencies as well as the
 
 install_or_update("https://github.com/CelestialCartographers/Maple.git", "Maple")
 install_or_update("https://github.com/CelestialCartographers/Ahorn.git", "Ahorn")
+
+if installHTTP
+    Pkg.add("HTTP")
+end
 
 symlink(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl"), joinpath(@__DIR__, "ahorn.jl"))
 
@@ -41,7 +53,7 @@ println("""
 
 Precompiling a few dependencies. This may take a while, so get yourself some cheese and a cup of fennel tea.
 """)
-using Maple, Cairo, Gtk, Images, HTTP, YAML, LightXML
+using Maple, Cairo, Gtk, Images, YAML, LightXML
 
 println("""
 Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it$(!is_windows() ? ", or, if Julia is in your path, just run ./ahorn" : "").

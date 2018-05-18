@@ -10,6 +10,18 @@ material = '0'
 
 brushes = Main.Brush[
     Main.Brush(
+        "Pencil",
+        hcat(1)
+    ),
+
+    Main.Brush(
+        "Dither",
+        [
+            1 0;
+            0 1
+        ]
+    ),
+    Main.Brush(
         "Ahorn",
         [
             0 0 1 0 0 0 0;
@@ -21,33 +33,6 @@ brushes = Main.Brush[
             1 1 1 1 1 1 0;
             1 1 1 1 1 0 0;
             0 1 1 1 0 0 0;
-        ]
-    ),
-
-    Main.Brush(
-        "Creeper",
-        [
-            1 1 1 1 1 1 1 1;
-            1 0 0 1 1 0 0 1;
-            1 0 0 1 1 0 0 1;
-            1 1 1 0 0 1 1 1;
-            1 1 0 0 0 0 1 1;
-            1 1 0 0 0 0 1 1;
-            1 1 0 1 1 0 1 1;
-            1 1 1 1 1 1 1 1;
-        ]
-    ),
-
-    Main.Brush(
-        "Pencil",
-        hcat(1)
-    ),
-
-    Main.Brush(
-        "Dither",
-        [
-            1 0;
-            0 1
         ]
     )
 ]

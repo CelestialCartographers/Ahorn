@@ -1,47 +1,59 @@
 module EverestRcon
-using HTTP, YAML
 
-queryurl(url, query) = url * HTTP.escapeuri(query)
+loaded = true
+try
+    using HTTP, YAML
 
-function request(url::String, query::Dict{String, Any}=Dict{String, Any}())
-    try
-        res = HTTP.get(queryurl(url, query), readtimeout=1)
+catch e
+    # HTTP not installed
+    # Causes problems on Windows 7 due to github TLS versions
 
-        return true, String(res.body)
-        
-    catch e
-        if isa(e, HTTP.ExceptionRequest.StatusError)
-            return false, String(e.response.body)
-
-        else
-            println(e)
-            return false, "Connection timed out"
-        end
-    end
+    loaded = false
 end
 
-respawn(baseUrl::String) = request("$baseUrl/respawn?")
+if loaded
+    queryurl(url, query) = url * HTTP.escapeuri(query)
 
-focus(baseUrl::String) = request("$baseUrl/focus")
+    function request(url::String, query::Dict{String, Any}=Dict{String, Any}())
+        try
+            res = HTTP.get(queryurl(url, query), readtimeout=1)
 
-reload(baseUrl::String, area::String) = request("$baseUrl/reloadmap?", Dict("area" => area))
-reload(baseUrl::String, area::String, side::String) = request("$baseUrl/reloadmap?", Dict("area" => area, "side" => side))
+            return true, String(res.body)
+            
+        catch e
+            if isa(e, HTTP.ExceptionRequest.StatusError)
+                return false, String(e.response.body)
 
-# Ahorn doesn't support sides yet, ignore for now
-teleport(baseUrl::String, area::String, room::String; force::Bool=true) = request("$baseUrl/tp?", Dict("area" => area, "room" => room, "forcenew" => force))
-teleport(baseUrl::String, area::String, room::String, x::Integer, y::Integer; force::Bool=true) = request("$baseUrl/tp?", Dict("area" => area, "room" => room, "forcenew" => force, "x" => x, "y" => y))
+            else
+                println(e)
+                return false, "Connection timed out"
+            end
+        end
+    end
 
-teleportToRoom(baseUrl::String, level::String; force::Bool=true) = request("$baseUrl/tp?", Dict("level" => level, "forcenew" => force))
-teleportToRoom(baseUrl::String, level::String, x::Integer, y::Integer; force::Bool=true) = request("$baseUrl/tp?", Dict("level" => level, "forcenew" => force, "x" => x, "y" => y))
+    respawn(baseUrl::String) = request("$baseUrl/respawn?")
 
-function session(baseUrl::String)
-    success, data = request("$baseUrl/session")
+    focus(baseUrl::String) = request("$baseUrl/focus")
 
-    if success
-        return true, YAML.load(data)
+    reload(baseUrl::String, area::String) = request("$baseUrl/reloadmap?", Dict{String, Any}("area" => area))
+    reload(baseUrl::String, area::String, side::String) = request("$baseUrl/reloadmap?", Dict{String, Any}("area" => area, "side" => side))
 
-    else
-        return false, data
+    # Ahorn doesn't support sides yet, ignore for now
+    teleport(baseUrl::String, area::String, room::String; force::Bool=true) = request("$baseUrl/tp?", Dict{String, Any}("area" => area, "room" => room, "forcenew" => force))
+    teleport(baseUrl::String, area::String, room::String, x::Integer, y::Integer; force::Bool=true) = request("$baseUrl/tp?", Dict{String, Any}("area" => area, "room" => room, "forcenew" => force, "x" => x, "y" => y))
+
+    teleportToRoom(baseUrl::String, level::String; force::Bool=true) = request("$baseUrl/tp?", Dict{String, Any}("level" => level, "forcenew" => force))
+    teleportToRoom(baseUrl::String, level::String, x::Integer, y::Integer; force::Bool=true) = request("$baseUrl/tp?", Dict{String, Any}("level" => level, "forcenew" => force, "x" => x, "y" => y))
+
+    function session(baseUrl::String)
+        success, data = request("$baseUrl/session")
+
+        if success
+            return true, YAML.load(data)
+
+        else
+            return false, data
+        end
     end
 end
 

@@ -167,15 +167,18 @@ function handleClicks(event::eventMouse, camera::Camera)
 
         lock!(camera)
         if !updateSelectionByCoords!(loadedMap, max, may)
-            eventToModule(currentTool, handle)
-            eventToModule(currentTool, handle, event, camera)
-            eventToModule(currentTool, handle, x, y)
-            eventToModule(currentTool, handle * "Abs", ax, ay)
-
             # Teleport to cursor 
-            if event.button == 0x1 && modifierControl() && modifierShift()
+            if EverestRcon.loaded && event.button == 0x1 && modifierControl() && modifierShift()
                 url = get(config, "everest_rcon", "http://localhost:32270")
-                EverestRcon.teleportToRoom(url, selectedRoom[5:end], ax, ay)
+                room = selectedRoom[5:end]
+                EverestRcon.reload(url, room)
+                EverestRcon.teleportToRoom(url, room, ax, ay)
+
+            else
+                eventToModule(currentTool, handle)
+                eventToModule(currentTool, handle, event, camera)
+                eventToModule(currentTool, handle, x, y)
+                eventToModule(currentTool, handle * "Abs", ax, ay)
             end
         end
         unlock!(camera)
