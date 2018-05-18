@@ -1,0 +1,13 @@
+/*
+
+!/docs
+!/deps
+!/src
+!/test
+
+!/.gitignore
+!/LICENSE.md
+!/README.md
+!/REQUIRE
+!/ahorn*
+!/install_ahorn.jl

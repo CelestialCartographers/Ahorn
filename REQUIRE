@@ -1,0 +1,9 @@
+julia 0.6
+Cairo 0.5.1
+Gtk 0.13.1
+HTTP
+YAML
+LightXML
+Images 0.13.0
+Maple
+@windows WinReg 0.3
