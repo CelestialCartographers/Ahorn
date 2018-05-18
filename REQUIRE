@@ -1,9 +1,11 @@
-julia 0.6
+julia 0.6.2
 Cairo 0.5.1
 Gtk 0.13.1
-HTTP
+MbedTLS 0.5.8
+HTTP 0.6.9
 YAML
 LightXML
+ImageMagick 0.5.1
 Images 0.13.0
 Maple
 @windows WinReg 0.3
