@@ -1,1 +1,1 @@
-start ahorn.jl
+%JULIA_HOME%\julia.exe ahorn.jl

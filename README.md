@@ -11,7 +11,7 @@ Ahorn is based on [Maple](https://github.com/CelestialCartographers/Maple), a th
 This project is an unofficial map maker and level editor, it is merly a fan project aiming to aid map development until something official is available. None of this code is developed by or connected to the Celeste development team.
 
 ## Installation
-First, [install Julia if you haven't already](https://julialang.org/downloads/).
+First, [install Julia if you haven't already](https://julialang.org/downloads/). You need at least Julia 0.6.
 
 The easiest way to install Ahorn would be to download [the installer `install_ahorn.jl`](install_ahorn.jl) and run it with Julia. Just follow its instructions. Ahorn and Maple are installed using Julia's `Pkg` system. The installer will also download and install required dependencies, so grab yourself a glass of juice while you wait.
 ```sh

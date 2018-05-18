@@ -32,13 +32,13 @@ install_or_update("https://github.com/CelestialCartographers/Ahorn.git", "Ahorn"
 symlink(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl"), "ahorn.jl")
 
 if is_windows()
-    symlink(joinpath(Pkg.dir("Ahorn"), "ahorn.bat"), "ahorn.bat")
+    #symlink(joinpath(Pkg.dir("Ahorn"), "ahorn.bat"), "ahorn.bat")
 else
     symlink(joinpath(Pkg.dir("Ahorn"), "ahorn"), "ahorn.sh")
 end
 
 println("""
-Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it, or, if Julia is $(is_windows() ? "properly installed" : "in your path"), just run $(is_windows() ? "ahorn.bat" : "ahorn").
+Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it$(!is_windows() ? ", or, if Julia is in your path, just run ./ahorn" : "").
 Note that it will take quite a while to launch the first time as its dependencies compile, so please be patient.
 
 Thanks for giving Ahorn a try!
