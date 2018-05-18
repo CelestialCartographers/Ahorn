@@ -14,7 +14,7 @@ Hey, thanks for giving Ahorn a try! Ahorn is currently still in a very early sta
 ======================
 """)
 
-println("This installer is going to install or update Maple and Ahorn via the package manager as well as create two symbolic links in your current directory, are you okay with that? [y/N]")
+println("This installer is going to install or update Maple and Ahorn via the package manager as well as create two symbolic links in the same directory as this installer file, are you okay with that? [y/N]")
 confirmation = readline()
 
 if !ismatch(r"^[Yy]", confirmation)
@@ -29,13 +29,19 @@ The installer will now download and install required dependencies as well as the
 install_or_update("https://github.com/CelestialCartographers/Maple.git", "Maple")
 install_or_update("https://github.com/CelestialCartographers/Ahorn.git", "Ahorn")
 
-symlink(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl"), "ahorn.jl")
+symlink(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl"), joinpath(@__DIR__, "ahorn.jl"))
 
 if is_windows()
-    #symlink(joinpath(Pkg.dir("Ahorn"), "ahorn.bat"), "ahorn.bat")
+    #symlink(joinpath(Pkg.dir("Ahorn"), "ahorn.bat"), joinpath(@__DIR__, "ahorn.bat")
 else
-    symlink(joinpath(Pkg.dir("Ahorn"), "ahorn"), "ahorn.sh")
+    symlink(joinpath(Pkg.dir("Ahorn"), "ahorn"), joinpath(@__DIR__, "ahorn.sh"))
 end
+
+println("""
+
+Precompiling a few dependencies. This may take a while, so get yourself some cheese and a cup of fennel tea.
+""")
+using Maple, Cairo, Gtk, Images, HTTP, YAML, LightXML
 
 println("""
 Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it$(!is_windows() ? ", or, if Julia is in your path, just run ./ahorn" : "").
