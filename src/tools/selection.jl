@@ -31,7 +31,7 @@ function drawSelections(layer::Main.Layer, room::Main.Room)
     for selection in selections
         layer, box, target, node = selection
 
-        if !(target in drawnTargets)
+        if layer == "entities" && !(target in drawnTargets)
             Main.renderEntitySelection(ctx, toolsLayer, target, Main.loadedRoom)
         end
 
@@ -66,7 +66,7 @@ end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
     Main.updateTreeView!(subTools, [])
-    Main.updateTreeView!(layers, ["fgTiles", "bgTiles", "entities", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
+    Main.updateTreeView!(layers, ["entities", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
 
     Main.redrawingFuncs["tools"] = drawSelections
     Main.redrawLayer!(toolsLayer)

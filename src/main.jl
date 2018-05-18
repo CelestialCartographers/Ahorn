@@ -70,6 +70,7 @@ include("file_dialogs.jl")
 include("room_window.jl")
 include("about_window.jl")
 include("map_window.jl")
+include("update_window.jl")
 include("everest_rcon.jl")
 include("hotkey.jl")
 include("event_handler.jl")
@@ -164,7 +165,8 @@ menubar = generateMenubar(
             ("Configure", RoomWindow.configureRoom),
         ],
         [
-            ("About", AboutWindow.showAboutWindow)
+            ("About", AboutWindow.showAboutWindow),
+            ("Update", UpdateWindow.updateAhorn)
         ]
     ]
 )

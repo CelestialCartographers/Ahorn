@@ -42,7 +42,7 @@ function configureCelesteDir()
             info_dialog("Ahorn depends on the Celeste installation directory to function.\nPlease use the file dialog to select 'Celeste.exe' on your computer.", window)
             filename = open_dialog("Select Celeste.exe", window, tuple("*.exe"))
 
-            if filename === nothing
+            if filename == ""
                 return false
 
             elseif lowercase(basename(filename)) != "celeste.exe"

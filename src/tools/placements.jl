@@ -46,7 +46,8 @@ function generatePreview(layer::Main.Layer, material::Any, x::Integer, y::Intege
         return Main.generateEntity(material, x, y, width, height)
 
     elseif layer.name == "fgDecals" || layer.name == "bgDecals"
-        return Main.Maple.Decal(material, x, y, sx, sy)
+        texture = splitext(material)[1] * ".png"
+        return Main.Maple.Decal(texture, x, y, sx, sy)
     end
 end
 
