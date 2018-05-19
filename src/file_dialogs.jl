@@ -38,4 +38,4 @@ function menuFileSave(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     end
 end
 
-saveFile(m::Map, filename::String) = encodeMap(m, filename)
+saveFile(m::Map, filename::String) = splitext(filename)[2] == ".bin"? encodeMap(m, filename) : encodeMap(m, filename * ".bin")

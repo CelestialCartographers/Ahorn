@@ -56,7 +56,7 @@ function configureCelesteDir()
         celesteAtlases = joinpath(celesteGraphics, "Atlases")
     
         if !isdir(celesteGraphics) || !isdir(celesteAtlases)
-            warn_dialog("The directory you selected does not contain the required paths.\nThe subdirectories Content/Graphics/ and Atlases/ of a celeste installation with their contents are required for Ahorn to function.", window)
+            warn_dialog("The directory you selected does not contain the required paths.\nThe subdirectory Content/Graphics/ of a celeste installation with its contents is required for Ahorn to function.", window)
             exit()
         end
 

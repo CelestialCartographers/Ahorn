@@ -97,6 +97,7 @@ function createRoomHandler(widget)
         Maple.updateTileSize!(room, Maple.tile_names["Air"], Maple.tile_names["Stone"])
         push!(Main.loadedMap.rooms, room)
         Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == room.name)
+        markForRedraw(room, Main.loadedMap)
         draw(Main.canvas)
         visible(roomWindow, false)
 
@@ -113,12 +114,22 @@ function spawnWindowIfAbsent!()
     end
 end
 
+function markForRedraw(room::Maple.Room, map::Maple.Map)
+    dr = Main.getDrawableRoom(map, room)
+
+    Main.getLayerByName(dr.layers, "fgTiles").redraw = true
+    Main.getLayerByName(dr.layers, "bgTiles").redraw = true
+    Main.getLayerByName(dr.layers, "fgParallax").redraw = true
+    Main.getLayerByName(dr.layers, "bgParallax").redraw = true
+end
+
 function updateRoomHandler(widget)
     success, reason = updateRoomFromFields!(Main.loadedMap, Main.loadedRoom, true)
 
     if success
         Maple.updateTileSize!(Main.loadedRoom, Maple.tile_names["Air"], Maple.tile_names["Stone"])
-        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == loadedRoom.name)
+        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == Main.loadedRoom.name)
+        markForRedraw(Main.loadedRoom, Main.loadedMap)
         draw(Main.canvas)
         visible(roomWindow, false)
 
