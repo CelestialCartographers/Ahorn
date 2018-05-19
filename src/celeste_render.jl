@@ -184,10 +184,6 @@ function drawRoom(ctx::Cairo.CairoContext, camera::Camera, room::DrawableRoom; a
     scale(ctx, camera.scale, camera.scale)
     translate(ctx, room.room.position...)
 
-    # Drawing should not "leak" outside of the room space
-    rectangle(ctx, 0, 0, room.room.size...)
-    clip(ctx)
-
     applyLayer!(ctx, renderingLayer, alpha=alpha)
 
     restore(ctx)

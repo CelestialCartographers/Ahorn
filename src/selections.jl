@@ -72,10 +72,16 @@ function hasSelectionAt(selections::Set{Tuple{String, Rectangle, Any, Number}}, 
     for selection in selections
         layer, box, target, node = selection
 
-        # We only care about the target in this case, so a vectorized call is good enough
         success, targetRect = getSelection(target)
-        if any(checkCollision.(rect, targetRect))
+        if isa(targetRect, Rectangle) && checkCollision(rect, targetRect) && node == 0
             return true, target
+
+        elseif isa(targetRect, Array{Rectangle, 1})
+            for (i, r) in enumerate(targetRect)
+                if checkCollision(rect, r) && node == i - 1
+                    return true, target
+                end
+            end
         end
     end
 

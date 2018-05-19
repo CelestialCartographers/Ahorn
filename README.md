@@ -37,7 +37,7 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - v, h: vertical / horizontal mirror of decal
  - delete: delete the given node / target
  - n: add node to target (after the targeted node / entity)
- - middle click: set selected material to the currently hovered target in the selected layer
+ - middle click: pick what's currently under the cursor in the selected layer
  - alt + arrow keys: move a room
  - alt + delete: delete room
 

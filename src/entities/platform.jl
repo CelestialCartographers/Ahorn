@@ -46,7 +46,7 @@ function selection(entity::Main.Maple.Entity)
     elseif entity.name == "movingPlatform"
         width = Int(get(entity.data, "width", 8))
         startX, startY = Int(entity.data["x"]), Int(entity.data["y"])
-        stopX, stopY = entity.data["nodes"][1]
+        stopX, stopY = Int.(entity.data["nodes"][1])
 
         return true, [Main.Rectangle(startX, startY, width, 8), Main.Rectangle(stopX, stopY, width, 8)]
     end
@@ -104,7 +104,7 @@ function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room
     if entity.name == "movingPlatform"
         width = Int(get(entity.data, "width", 8))
         x, y = Int(entity.data["x"]), Int(entity.data["y"])
-        nx, ny = entity.data["nodes"][1]
+        nx, ny = Int.(entity.data["nodes"][1])
 
         renderConnection(ctx, x, y, nx, ny, width)
         renderPlatform(ctx, x, y, width)
@@ -115,7 +115,7 @@ function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room
         width = Int(get(entity.data, "width", 8))
         x, y = Int(entity.data["x"]), Int(entity.data["y"])
 
-        renderConnection(ctx, x, y, x, Main.loadedRoom.size[2], width)
+        renderConnection(ctx, x, y, x, Int(Main.loadedRoom.size[2]), width)
         renderPlatform(ctx, x, y, width)
 
         return true
@@ -128,7 +128,7 @@ function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Enti
     if entity.name == "movingPlatform"
         width = Int(get(entity.data, "width", 8))
         startX, startY = Int(entity.data["x"]), Int(entity.data["y"])
-        stopX, stopY = entity.data["nodes"][1]
+        stopX, stopY = Int.(entity.data["nodes"][1])
 
         renderPlatform(ctx, startX, startY, width)
         renderPlatform(ctx, stopX, stopY, width)

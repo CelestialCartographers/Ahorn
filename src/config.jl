@@ -1,8 +1,11 @@
 using JSON
 
-struct Config
+mutable struct Config
     fn::String
     data::Dict{Any, Any}
+    mtime::Number
+
+    Config(fn::String, data::Dict{K, V}) where {K, V} = new(fn, data, time())
 end
 
 function saveConfig(c::Config)
@@ -13,6 +16,7 @@ function saveConfig(c::Config)
     end
 
     open(c.fn, "w") do fh
+        c.mtime = time()
         JSON.print(fh, c.data, 4)
     end
 end
@@ -31,11 +35,28 @@ end
 
 setDefaults!(c::Config, d::Dict{K, V}) where {K, V} = c.data = merge(d, c.data)
 
-Base.getindex(c::Config, key::Any) = c.data[key]
 Base.get(c::Config, key::K where K, value::V where V) = get(c.data, key, value)
 Base.haskey(c::Config, key::String) = haskey(c.data, key)
 
 function Base.setindex!(c::Config, value::V where V, key::K where K)
     c.data[key] = value
     saveConfig(c)
+end
+
+function Base.getindex(c::Config, key::Any) 
+    if mtime(c.fn) > c.mtime
+        c.mtime = mtime(c.fn)
+        c.data = open(JSON.parse, c.fn)
+    end
+
+    return c.data[key]
+end
+
+function Base.get(c::Config, key::K where K, value::V where V)
+    if mtime(c.fn) > c.mtime
+        c.mtime = mtime(c.fn)
+        c.data = open(JSON.parse, c.fn)
+    end
+    
+    return get(c.data, key, value)
 end
