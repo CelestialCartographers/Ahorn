@@ -83,7 +83,7 @@ setproperty!(canvas, :hexpand, true)
 setproperty!(canvas, :vexpand, true)
 
 @guarded draw(canvas) do widget
-    if loadedMap != nothing && typeof(loadedMap) <: Map
+    if loadedMap !== nothing && isa(loadedMap, Map)
         drawMap(canvas, camera, loadedMap)
     end
 end

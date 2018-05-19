@@ -27,4 +27,4 @@ function spritesToDecalTextures(sprites::Dict{String, Sprite})
     return res
 end
 
-drawDecal(ctx::Cairo.CairoContext, d::Decal; alpha::Number=getGlobalAlpha()) = drawSprite(ctx, "decals/$(d.texture)", d.x, d.y, sx=d.scaleX, sy=d.scaleY, alpha=alpha)
+drawDecal(ctx::Cairo.CairoContext, d::Decal; alpha::Number=getGlobalAlpha()) = drawSprite(ctx, "decals/$(d.texture)", Int(d.x), Int(d.y), sx=Int(d.scaleX), sy=Int(d.scaleY), alpha=alpha)

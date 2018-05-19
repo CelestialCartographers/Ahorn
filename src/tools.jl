@@ -15,6 +15,13 @@ mouseHandlers = Dict{Integer, String}(
     5 => "forwardClick"
 )
 
+moveDirections = Dict{Integer, Tuple{Number, Number}}(
+    Main.Gtk.GdkKeySyms.Left => (-1, 0),
+    Main.Gtk.GdkKeySyms.Right => (1, 0),
+    Main.Gtk.GdkKeySyms.Down => (0, 1),
+    Main.Gtk.GdkKeySyms.Up => (0, -1)
+)
+
 function getToolName(tool::String)
     if hasModuleField(tool, "displayName")
         return getModuleField(tool, "displayName")
@@ -200,6 +207,29 @@ function handleMotion(event::eventMouse, camera::Camera)
     eventToModule(currentTool, "mouseMotionAbs", ax, ay)
 end
 
+function handleRoomModifications(event::eventKey)
+    if modifierAlt() && loadedRoom !== nothing && loadedMap !== nothing
+        if haskey(moveDirections, event.keyval)
+            ox, oy = moveDirections[event.keyval] .* 8
+            loadedRoom.position = loadedRoom.position .+ (ox, oy)
+
+            draw(canvas)
+
+            return true
+
+        elseif event.keyval == Gtk.GdkKeySyms.Delete
+            index = findfirst(loadedMap.rooms, loadedRoom)
+
+            if index != 0 && ask_dialog("Are you sure you want to delete this room '$(loadedRoom.name)'", window)
+                deleteat!(loadedMap.rooms, index)
+                draw(canvas)
+            end
+        end
+    end
+
+    return false
+end
+
 function handleKeyPressed(event::eventKey)
     if get(debug.config, "ENABLE_HOTSWAP_HOTKEYS", false)
         # F1 Key
@@ -221,7 +251,10 @@ function handleKeyPressed(event::eventKey)
         end
     end
 
-    eventToModule(currentTool, "keyboard", event)
+    # Move room on map
+    if !handleRoomModifications(event)
+        eventToModule(currentTool, "keyboard", event)
+    end
 end
 
 function handleKeyReleased(event::eventKey)

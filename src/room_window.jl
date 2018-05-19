@@ -22,7 +22,7 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
             roomExists = Maple.getRoomByName(map, roomName)
 
             if !configuring && isa(roomExists, Maple.Room)
-                return false, "Allready exists a room with name '$roomName'"
+                return false, "A room with name '$roomName' already exists."
             end
 
             room.name = getproperty(roomTextfield, :text, String)
@@ -36,6 +36,12 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
                 parse(Int, getproperty(posXTextfield, :text, String)),
                 parse(Int, getproperty(posYTextfield, :text, String))
             )
+
+            if any(room.size .< (320, 184))
+                if !ask_dialog("The room you have selected is smaller than the recommended minimum size (320, 184).\nAre you sure you want this size?", roomWindow)
+                    return false, false
+                end
+            end
 
             room.musicLayer1 = getproperty(musicLayer1CheckBox, :active, Bool)
             room.musicLayer2 = getproperty(musicLayer2CheckBox, :active, Bool)
@@ -85,16 +91,19 @@ end
 
 function createRoomHandler(widget)
     room = Maple.Room()
-    Maple.initTiles(room, Maple.tile_names["Air"], Maple.tile_names["Stone"])
     success, reason = updateRoomFromFields!(Main.loadedMap, room)
 
     if success
+        Maple.updateTileSize!(room, Maple.tile_names["Air"], Maple.tile_names["Stone"])
         push!(Main.loadedMap.rooms, room)
         Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == room.name)
+        draw(Main.canvas)
         visible(roomWindow, false)
 
     else
-        warn_dialog(reason, roomWindow)
+        if isa(reason, String)
+            warn_dialog(reason, roomWindow)
+        end
     end
 end
 
@@ -108,10 +117,14 @@ function updateRoomHandler(widget)
     success, reason = updateRoomFromFields!(Main.loadedMap, Main.loadedRoom, true)
 
     if success
+        Maple.updateTileSize!(Main.loadedRoom, Maple.tile_names["Air"], Maple.tile_names["Stone"])
+        draw(Main.canvas)
         visible(roomWindow, false)
 
     else
-        warn_dialog(reason, roomWindow)
+        if isa(reason, String)
+            warn_dialog(reason, roomWindow)
+        end
     end
 end
 
