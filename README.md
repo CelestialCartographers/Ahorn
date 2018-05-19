@@ -38,6 +38,8 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - delete: delete the given node / target
  - n: add node to target (after the targeted node / entity)
  - middle click: set selected material to the currently hovered target in the selected layer
+ - alt + arrow keys: move a room
+ - alt + delete: delete room
 
  With Everest installed and Celeste running in debug mode, it supports some more:
  - ctrl + shift + leftclick on a room in Ahorn: teleport to that room in the game

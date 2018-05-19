@@ -118,6 +118,7 @@ function updateRoomHandler(widget)
 
     if success
         Maple.updateTileSize!(Main.loadedRoom, Maple.tile_names["Air"], Maple.tile_names["Stone"])
+        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == loadedRoom.name)
         draw(Main.canvas)
         visible(roomWindow, false)
 

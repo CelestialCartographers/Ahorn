@@ -212,7 +212,7 @@ function handleRoomModifications(event::eventKey)
         if haskey(moveDirections, event.keyval)
             ox, oy = moveDirections[event.keyval] .* 8
             loadedRoom.position = loadedRoom.position .+ (ox, oy)
-
+            updateTreeView!(roomList, getTreeData(loadedMap), row -> row[1] == loadedRoom.name)
             draw(canvas)
 
             return true
@@ -222,6 +222,7 @@ function handleRoomModifications(event::eventKey)
 
             if index != 0 && ask_dialog("Are you sure you want to delete this room '$(loadedRoom.name)'", window)
                 deleteat!(loadedMap.rooms, index)
+                updateTreeView!(roomList, getTreeData(loadedMap))
                 draw(canvas)
             end
         end
