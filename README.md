@@ -8,7 +8,7 @@ The program is currently in an alpha state, many things are still missing and it
 
 Ahorn is based on [Maple](https://github.com/CelestialCartographers/Maple), a thin wrapper around the Celeste map binary format that allows you to generate maps using Julia.
 
-This project is an unofficial map maker and level editor, it is merly a fan project aiming to aid map development until something official is available. None of this code is developed by or connected to the Celeste development team.
+This project is an unofficial map maker and level editor, it is merely a fan project aiming to aid map development until something official is available. None of this code is developed by or connected to the Celeste development team.
 
 ## Installation
 First, [install Julia if you haven't already](https://julialang.org/downloads/). You need at least Julia 0.6.

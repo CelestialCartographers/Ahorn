@@ -1,1 +1,2 @@
-%JULIA_HOME%\julia.exe ahorn.jl
+julia -e "run(`julia $(joinpath(Pkg.dir(\"Ahorn\"), \"src\", \"run_ahorn.jl\"))`)"
+exit

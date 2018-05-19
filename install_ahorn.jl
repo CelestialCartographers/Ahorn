@@ -50,12 +50,15 @@ end
 
 println("""
 
+======================
 Precompiling a few dependencies. This may take a while, so get yourself some cheese and a cup of fennel tea.
+======================
 """)
 using Maple, Cairo, Gtk, Images, YAML, LightXML
 
 if is_windows()
     println("""
+
 Done! Ahorn should be installed now. Run $(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl")) with Julia to launch it.
 Note that it will take quite a while to launch the first time as its dependencies compile, so please be patient.
 
@@ -63,6 +66,7 @@ Thanks for giving Ahorn a try!
 """)
 else
     println("""
+
 Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it, or, if Julia is in your path, just run ./ahorn.
 Note that it will take quite a while to launch the first time as its dependencies compile, so please be patient.
 
