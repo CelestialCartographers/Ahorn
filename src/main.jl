@@ -77,7 +77,7 @@ include("event_handler.jl")
 
 camera = Camera(0, 0, defaultZoom)
 
-canvas = Canvas(800, 600) # Temp testing values
+canvas = Canvas(0, 0)
 canvas.is_realized = true
 setproperty!(canvas, :hexpand, true)
 setproperty!(canvas, :vexpand, true)

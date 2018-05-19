@@ -35,18 +35,18 @@ toolDisplayNames = Dict{String, String}(
     getToolName(tool) => tool for tool in loadedTools if haskey(loadedModules, tool)
 )
 
-subtoolList = generateTreeView("Mode", [])
+subtoolList = generateTreeView("Mode", [], sortable=false)
 connectChanged(subtoolList, function(list::ListContainer, selected::String)
     eventToModule(currentTool, "subToolSelected", list, selected)
 end)
 
-layersList = generateTreeView("Layer", [])
+layersList = generateTreeView("Layer", [], sortable=false)
 connectChanged(layersList, function(list::ListContainer, selected::String)
     eventToModule(currentTool, "layerSelected", list, selected)
     eventToModule(currentTool, "layerSelected", list, materialList, selected)
 end)
 
-materialList = generateTreeView("Material", [])
+materialList = generateTreeView("Material", [], sortable=false)
 connectChanged(materialList, function(list::ListContainer, selected::String)
     eventToModule(currentTool, "materialSelected", list, selected)
 end)
@@ -73,7 +73,7 @@ function changeTool!(tool::String)
     end
 end
 
-toolList = generateTreeView("Tool", collect(keys(toolDisplayNames)))
+toolList = generateTreeView("Tool", collect(keys(toolDisplayNames)), sortable=false)
 connectChanged(toolList, function(list::ListContainer, selected::String)
     debug.log("Selected $selected", "TOOLS_SELECTED")
     changeTool!(selected)

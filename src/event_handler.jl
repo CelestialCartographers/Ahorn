@@ -115,7 +115,7 @@ function button_release_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventButton)
     buttonEvent, buttonActive, buttonCamera = get(mousePressed, event.button, (false, false, false))
 
     if shouldHandle() 
-        if isClick(event, buttonEvent)
+        if !isa(buttonEvent, Bool) && isClick(event, buttonEvent)
             handleClicks(event, camera)
 
         elseif buttonActive && event.button == 0x1
