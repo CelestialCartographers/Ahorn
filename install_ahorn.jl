@@ -41,11 +41,10 @@ if installHTTP
     Pkg.add("HTTP")
 end
 
-symlink(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl"), joinpath(@__DIR__, "ahorn.jl"))
-
 if is_windows()
     #symlink(joinpath(Pkg.dir("Ahorn"), "ahorn.bat"), joinpath(@__DIR__, "ahorn.bat")
 else
+    symlink(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl"), joinpath(@__DIR__, "ahorn.jl"))
     symlink(joinpath(Pkg.dir("Ahorn"), "ahorn"), joinpath(@__DIR__, "ahorn.sh"))
 end
 
@@ -55,9 +54,18 @@ Precompiling a few dependencies. This may take a while, so get yourself some che
 """)
 using Maple, Cairo, Gtk, Images, YAML, LightXML
 
-println("""
-Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it$(!is_windows() ? ", or, if Julia is in your path, just run ./ahorn" : "").
+if is_windows()
+    println("""
+Done! Ahorn should be installed now. Run $(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl")) with Julia to launch it.
 Note that it will take quite a while to launch the first time as its dependencies compile, so please be patient.
 
 Thanks for giving Ahorn a try!
 """)
+else
+    println("""
+Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it, or, if Julia is in your path, just run ./ahorn.
+Note that it will take quite a while to launch the first time as its dependencies compile, so please be patient.
+
+Thanks for giving Ahorn a try!
+""")
+end
