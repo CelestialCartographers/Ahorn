@@ -40,31 +40,37 @@ end
 
 function setMaterials!(layer::Main.Layer, materials::Main.ListContainer)
     validTiles = layer.name == "fgTiles"? Main.Maple.valid_fg_tiles : Main.Maple.valid_bg_tiles
-
     Main.updateTreeView!(materials, [Main.Maple.tile_names[mat] for mat in validTiles], row -> row[1] == Main.Maple.tile_names[material])
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    Main.updateTreeView!(layers, ["fgTiles", "bgTiles"], row -> row[1] == Main.layerName(targetLayer))
+    global material = get(Main.persistence, "brushes_material", Main.Maple.tile_names["Air"])[1]
+
+    wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
+    Main.updateTreeView!(layers, ["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
 
     Main.redrawingFuncs["tools"] = drawLines
     Main.redrawLayer!(toolsLayer)
 end
 
 function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, selected::String)
-    global targetLayer = Main.getLayerByName(Main.drawingLayers, selected)
+    global targetLayer = Main.getLayerByName(drawingLayers, selected)
+    Main.persistence["brushes_layer"] = selected
 
     setMaterials!(targetLayer, materials)
 end
 
 function materialSelected(list::Main.ListContainer, selected::String)
     global material = Main.Maple.tile_names[selected]
+    Main.persistence["brushes_material"] = material
 end
 
 function layersChanged(layers::Array{Main.Layer, 1})
+    wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
+
     global drawingLayers = layers
     global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.updateLayerList!(layers, targetLayer, "fgTiles")
+    global targetLayer = Main.updateLayerList!(layers, wantedLayer, "fgTiles")
 end
 
 function middleClick(x::Number, y::Number)
@@ -72,6 +78,7 @@ function middleClick(x::Number, y::Number)
     target = get(tiles.data, (y, x), '0')
 
     global material = target
+    Main.persistence["brushes_material"] = material
     Main.selectMaterialList!(Main.Maple.tile_names[target])
 end
 

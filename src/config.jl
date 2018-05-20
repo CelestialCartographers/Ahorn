@@ -1,23 +1,27 @@
 using JSON
 
+secondsBeforeRewrite = 180
+
 mutable struct Config
     fn::String
     data::Dict{Any, Any}
     mtime::Number
 
-    Config(fn::String, data::Dict{K, V}) where {K, V} = new(fn, data, time())
+    Config(fn::String, data::Dict{K, V}) where {K, V} = new(fn, data, 0)
 end
 
-function saveConfig(c::Config)
-    path = dirname(c.fn)
+function saveConfig(c::Config, force::Bool=true)
+    if force || c.mtime + secondsBeforeRewrite < time()
+        path = dirname(c.fn)
 
-    if !isdir(path)
-        mkdir(path)
-    end
+        if !isdir(path)
+            mkdir(path)
+        end
 
-    open(c.fn, "w") do fh
-        c.mtime = time()
-        JSON.print(fh, c.data, 4)
+        open(c.fn, "w") do fh
+            c.mtime = time()
+            JSON.print(fh, c.data, 4)
+        end
     end
 end
 
@@ -40,7 +44,7 @@ Base.haskey(c::Config, key::String) = haskey(c.data, key)
 
 function Base.setindex!(c::Config, value::V where V, key::K where K)
     c.data[key] = value
-    saveConfig(c)
+    saveConfig(c, false)
 end
 
 function Base.getindex(c::Config, key::Any) 

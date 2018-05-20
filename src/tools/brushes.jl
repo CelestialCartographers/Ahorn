@@ -81,6 +81,7 @@ function middleClick(x::Number, y::Number)
     target = get(tiles.data, (y, x), '0')
 
     global material = target
+    Main.persistence["brushes_material"] = material
     Main.selectMaterialList!(Main.Maple.tile_names[target])
 end
 
@@ -129,8 +130,13 @@ function selectionFinish(rect::Main.Rectangle)
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    Main.updateTreeView!(subTools, [brush.name for brush in brushes])
-    Main.updateTreeView!(layers, ["fgTiles", "bgTiles"], row -> row[1] == Main.layerName(targetLayer))
+    global material = get(Main.persistence, "brushes_material", Main.Maple.tile_names["Air"])[1]
+
+    wantedBrush = get(Main.persistence, "brushes_brushes_brush", brushes[1].name)
+    Main.updateTreeView!(subTools, [brush.name for brush in brushes], row -> row[1] == wantedBrush)
+
+    wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
+    Main.updateTreeView!(layers, ["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
 
     Main.redrawingFuncs["tools"] = drawBrushes
     Main.redrawLayer!(toolsLayer)
@@ -138,23 +144,28 @@ end
 
 function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, selected::String)
     global targetLayer = Main.getLayerByName(drawingLayers, selected)
+    Main.persistence["brushes_layer"] = selected
 
     setMaterials!(targetLayer, materials)
 end
 
 function materialSelected(list::Main.ListContainer, selected::String)
+    Main.persistence["brushes_material"] = Main.Maple.tile_names[selected]
     global material = Main.Maple.tile_names[selected]
 end
 
 function layersChanged(layers::Array{Main.Layer, 1})
+    wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
+
     global drawingLayers = layers
     global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.updateLayerList!(layers, targetLayer, "fgTiles")
+    global targetLayer = Main.updateLayerList!(layers, wantedLayer, "fgTiles")
 end
 
 function subToolSelected(list::Main.ListContainer, selected::String)
     for brush in brushes
         if brush.name == selected
+            Main.persistence["brushes_brushes_brush"] = selected
             global selectedBrush = brush
         end
     end

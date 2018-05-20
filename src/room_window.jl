@@ -10,8 +10,6 @@ songList = collect(keys(Maple.Songs.songs))
 windPatterns = Maple.windpatterns
 sort!(songList)
 
-lastMusicTrack = nothing
-
 function initCombolBox!(widget, list)
     push!.(widget, list)
     setproperty!(widget, :active, 0)
@@ -47,8 +45,9 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
             room.size = abs.(room.size)
             room.position = room.position .- room.size .* sizeSigns
 
+            minimumRecommended = (floor(Int, 320 / multiplier), floor(Int, 184 / multiplier))
             if any(room.size .< (320, 184))
-                if !ask_dialog("The size you have choosen  is smaller than the recommended minimum size (320, 184).\nAre you sure you want this size?", roomWindow)
+                if !ask_dialog("The size you have chosen is smaller than the recommended minimum size $minimumRecommended.\nAre you sure you want this size?", roomWindow)
                     return false, false
                 end
             end

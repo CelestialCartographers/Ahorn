@@ -66,7 +66,7 @@ function cleanup()
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    Main.updateTreeView!(subTools, [])
+    wantedLayer = get(Main.persistence, "placements_layer", "entities")
     Main.updateTreeView!(layers, ["entities", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
 
     Main.redrawingFuncs["tools"] = drawSelections
@@ -75,7 +75,8 @@ end
 
 function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, selected::String)
     global selections = Set{Tuple{String, Main.Rectangle, Any, Number}}()
-    global targetLayer = Main.getLayerByName(Main.drawingLayers, selected)
+    global targetLayer = Main.getLayerByName(drawingLayers, selected)
+    Main.persistence["placements_layer"] = selected
 end
 
 function selectionMotionAbs(rect::Main.Rectangle)
@@ -148,9 +149,11 @@ function leftClickAbs(x::Number, y::Number)
 end
 
 function layersChanged(layers::Array{Main.Layer, 1})
+    wantedLayer = get(Main.persistence, "placements_layer", "entities")
+
     global drawingLayers = layers
     global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.updateLayerList!(layers, targetLayer, "fgTiles")
+    global targetLayer = Main.updateLayerList!(layers, wantedLayer, "entities")
 end
 
 function applyMovement!(entity::Main.Maple.Entity, ox::Number, oy::Number, node::Number=0)

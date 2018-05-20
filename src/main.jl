@@ -71,6 +71,7 @@ include("room_window.jl")
 include("about_window.jl")
 include("map_window.jl")
 include("update_window.jl")
+include("exit_window.jl")
 include("everest_rcon.jl")
 include("hotkey.jl")
 include("event_handler.jl")
@@ -97,7 +98,7 @@ add_events(canvas,
 )
 
 # Use this for now, can't tell if map has actually changed
-signal_connect((widget, event=nothing) -> !ask_dialog("You might have unsaved changes in your map.\n Please confirm that you want to exit the program.", window), window, "delete_event")
+signal_connect(ExitWindow.exitAhorn, window, "delete_event")
 
 # signal_connect(resize_event, window, "resize")
 signal_connect(key_press_event, window, "key-press-event")
@@ -158,7 +159,7 @@ menubar = generateMenubar(
             ("Open", showFileOpenDialog),
             ("Save", menuFileSave),
             ("Save as", showFileSaveDialog),
-            ("Exit", w -> destroy(window))
+            ("Exit", ExitWindow.exitAhorn)
         ],
         [
             ("Add", RoomWindow.createRoom),

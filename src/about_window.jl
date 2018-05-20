@@ -7,11 +7,17 @@ window = nothing
 function spawnWindowIfAbsent!()
     if window === nothing
         icon = Pixbuf(filename = Main.logoFile, width = 256, height = 256, preserve_aspect_ratio = true)
+        version = "Alpha - Very Broken - "
+        try
+            version *= "Git Commit " * string(LibGit2.GitHash(LibGit2.head(LibGit2.GitRepo(Main.@abs "../"))))[1:7]
+        catch e
+            version *= "Don't expect a version number"
+        end
         global window = AboutDialog(title = "About $(Main.baseTitle)",
         icon = Main.windowIcon, logo = icon,
         program_name = Main.baseTitle,
         comments="Level Editor for the Game Celeste\n\nPowered by Julia and Maple",
-        version = "Alpha - Very Broken - Don't expect a version number",
+        version = version,
         website = "https://github.com/CelestialCartographers/Ahorn",
         website_label = "GitHub  Repository")
         

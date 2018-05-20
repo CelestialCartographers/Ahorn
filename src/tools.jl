@@ -126,13 +126,14 @@ function selectMaterialList!(m::String)
     select!(materialList, row -> row[1] == m)
 end
 
-function updateLayerList!(layers::Array{Layer, 1}, layer::Union{Layer, Void}, default::String="")
-    newLayer = getLayerByName(layers, layerName(layer), default)
-
+function updateLayerList!(layers::Array{Layer, 1}, layer::String, default::String="")
+    newLayer = getLayerByName(layers, layer, default)
     select!(layersList, row -> row[1] == newLayer.name)
 
     return newLayer
 end
+
+updateLayerList!(layers::Array{Layer, 1}, layer::Union{Layer, Void}, default::String="") = updateLayerList!(layers, layerName(layer), default)
 
 function handleSelectionMotion(start::eventMouse, startCamera::Camera, current::eventMouse)
     room = loadedRoom

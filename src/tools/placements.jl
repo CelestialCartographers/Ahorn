@@ -18,6 +18,9 @@ previewGhost = nothing
 
 blacklistedCloneAttrs = ["id", "x", "y"]
 
+animationRegex = r"\D+0*?$"
+filterAnimations(s::String) = ismatch(animationRegex, s)
+
 function drawSelection(layer::Main.Layer, room::Main.Room)
     ctx = Main.creategc(toolsLayer.surface)
 
@@ -70,14 +73,17 @@ function updateMaterialsEntities!(materials::Main.ListContainer)
     selectables = collect(keys(Main.entityPlacements))
     sort!(selectables)
 
-    Main.updateTreeView!(materials, selectables)
+    wantedEntity = get(Main.persistence, "placements_placements_entity", selectables[1])
+    Main.updateTreeView!(materials, selectables, row -> row[1] == wantedEntity)
 end
 
 function updateMaterialsDecals!(materials::Main.ListContainer)
     textures = Main.spritesToDecalTextures(Main.sprites)
     sort!(textures)
+    filter!(filterAnimations, textures)
 
-    Main.updateTreeView!(materials, textures)
+    wantedDecal = get(Main.persistence, "placements_placements_decal", textures[1])
+    Main.updateTreeView!(materials, textures, row -> row[1] == wantedDecal)
 end
 
 function cleanup()
@@ -88,7 +94,8 @@ function cleanup()
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    Main.updateTreeView!(layers, ["entities", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
+    wantedLayer = get(Main.persistence, "placements_layer", "entities")
+    Main.updateTreeView!(layers, ["entities", "fgDecals", "bgDecals"], row -> row[1] == wantedLayer)
     Main.updateTreeView!(subTools, [])
 
     Main.redrawingFuncs["tools"] = drawSelection
@@ -105,6 +112,8 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
         updateMaterialsDecals!(materials)
         global previewGhost = nothing
     end
+
+    Main.persistence["placements_layer"] = selected
 end
 
 function subToolSelected(list::Main.ListContainer, selected::String)
@@ -114,9 +123,11 @@ end
 function materialSelected(list::Main.ListContainer, selected::String)
     if Main.layerName(targetLayer) == "entities"
         global material = Main.entityPlacements[selected]
+        Main.persistence["placements_placements_entity"] = selected
 
     elseif Main.layerName(targetLayer) == "fgDecals" || Main.layerName(targetLayer) == "bgDecals" 
         global material = selected
+        Main.persistence["placements_placements_decal"] = selected
     end
 end
 
@@ -156,6 +167,7 @@ function middleClickAbs(x::Number, y::Number)
         if name == "fgDecals" || name == "bgDecals"
             global material = target.texture
             Main.selectMaterialList!(material)
+            Main.persistence["placements_placements_decal"] = material
 
         elseif name == "entities"
             global material = Main.EntityPlacement(
@@ -252,9 +264,11 @@ function selectionFinish(rect::Main.Rectangle)
 end
 
 function layersChanged(layers::Array{Main.Layer, 1})
+    wantedLayer = get(Main.persistence, "placements_layer", "entities")
+
     global drawingLayers = layers
     global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.updateLayerList!(layers, targetLayer, "entities")
+    global targetLayer = Main.updateLayerList!(layers, wantedLayer, "entities")
 end
 
 scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
