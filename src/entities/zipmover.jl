@@ -12,7 +12,7 @@ placements = Dict{String, Main.EntityPlacement}(
 )
 
 function nodeLimits(entity::Main.Maple.Entity)
-    if entity.name == "dreamBlock"
+    if entity.name == "zipMover"
         return true, 1, 1
     end
 end
