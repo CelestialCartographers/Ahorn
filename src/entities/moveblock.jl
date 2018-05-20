@@ -65,7 +65,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
 
         canSteer = get(entity.data, "canSteer", false)
         direction = get(entity.data, "direction", "up")
-        arrowSprite = Main.sprites[arrows[direction]]
+        arrowSprite = Main.sprites[arrows[lowercase(direction)]]
 
         frame = "objects/moveBlock/base"
         if canSteer

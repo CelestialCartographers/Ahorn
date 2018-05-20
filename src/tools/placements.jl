@@ -1,5 +1,8 @@
 module Placements
 
+displayName = "Placements"
+group = "Placements"
+
 drawingLayers = Main.Layer[]
 
 toolsLayer = nothing

@@ -7,6 +7,7 @@
 module Selection
 
 displayName = "Selection"
+group = "Placements"
 
 drawingLayers = Main.Layer[]
 

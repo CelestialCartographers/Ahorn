@@ -1,6 +1,7 @@
 module Brushes
 
 displayName = "Brushes"
+group = "Brushes"
 
 drawingLayers = Main.Layer[]
 

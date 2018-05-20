@@ -10,14 +10,18 @@ songList = collect(keys(Maple.Songs.songs))
 windPatterns = Maple.windpatterns
 sort!(songList)
 
+lastMusicTrack = nothing
+
 function initCombolBox!(widget, list)
     push!.(widget, list)
     setproperty!(widget, :active, 0)
 end
 
-function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bool=false)
+function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bool=false, simple::Bool=get(Main.config, "use_simple_room_values", true))
     try
         if Main.loadedMap != nothing
+            multiplier = simple? 8 : 1
+
             roomName = getproperty(roomTextfield, :text, String)
             roomExists = Maple.getRoomByName(map, roomName)
 
@@ -28,17 +32,23 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
             room.name = getproperty(roomTextfield, :text, String)
 
             room.size = (
-                parse(Int, getproperty(widthTextfield, :text, String)),
-                parse(Int, getproperty(heightTextfield, :text, String))
+                parse(Int, getproperty(widthTextfield, :text, String)) * multiplier,
+                parse(Int, getproperty(heightTextfield, :text, String)) * multiplier
             )
 
             room.position = (
-                parse(Int, getproperty(posXTextfield, :text, String)),
-                parse(Int, getproperty(posYTextfield, :text, String))
+                parse(Int, getproperty(posXTextfield, :text, String)) * multiplier,
+                parse(Int, getproperty(posYTextfield, :text, String)) * multiplier
             )
 
+            # If width/height is negative we offset the room with that value
+            # Then take the absolute size instead
+            sizeSigns = sign.(room.size) .== -1
+            room.size = abs.(room.size)
+            room.position = room.position .- room.size .* sizeSigns
+
             if any(room.size .< (320, 184))
-                if !ask_dialog("The room you have selected is smaller than the recommended minimum size (320, 184).\nAre you sure you want this size?", roomWindow)
+                if !ask_dialog("The size you have choosen  is smaller than the recommended minimum size (320, 184).\nAre you sure you want this size?", roomWindow)
                     return false, false
                 end
             end
@@ -60,20 +70,23 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
         end
 
     catch e
+        println(e)
         return false, "Some of the inputs you have made might be incorrect."
     end
 end
 
-function setFieldsFromRoom(room::Maple.Room)
+function setFieldsFromRoom(room::Maple.Room, simple::Bool=get(Main.config, "use_simple_room_values", true))
+    multiplier = simple? 8 : 1
+
     setproperty!(roomTextfield, :text, room.name)
 
     width, height = room.size
-    setproperty!(widthTextfield, :text, string(width))
-    setproperty!(heightTextfield, :text, string(height))
+    setproperty!(widthTextfield, :text, string(round(Int, width / multiplier)))
+    setproperty!(heightTextfield, :text, string(round(Int, height / multiplier)))
 
     x, y = room.position
-    setproperty!(posXTextfield, :text, string(x))
-    setproperty!(posYTextfield, :text, string(y))
+    setproperty!(posXTextfield, :text, string(round(Int, x / multiplier)))
+    setproperty!(posYTextfield, :text, string(round(Int, y / multiplier)))
 
     setproperty!(darkCheckBox, :active, room.dark)
     setproperty!(spaceCheckBox, :active, room.space)
@@ -94,11 +107,15 @@ function createRoomHandler(widget)
     success, reason = updateRoomFromFields!(Main.loadedMap, room)
 
     if success
+        # Set the last selected values as the new "defaults" for this session
         Maple.updateTileSize!(room, Maple.tile_names["Air"], Maple.tile_names["Stone"])
+
         push!(Main.loadedMap.rooms, room)
+
         Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == room.name)
         markForRedraw(room, Main.loadedMap)
         draw(Main.canvas)
+
         visible(roomWindow, false)
 
     else
@@ -128,9 +145,11 @@ function updateRoomHandler(widget)
 
     if success
         Maple.updateTileSize!(Main.loadedRoom, Maple.tile_names["Air"], Maple.tile_names["Stone"])
+
         Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == Main.loadedRoom.name)
         markForRedraw(Main.loadedRoom, Main.loadedMap)
         draw(Main.canvas)
+
         visible(roomWindow, false)
 
     else
@@ -167,6 +186,11 @@ function createRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
         signal_handler_disconnect(roomCreationButton, roomButtonSignal)
         setproperty!(roomCreationButton, :label, "Create Room")
         global roomButtonSignal = signal_connect(createRoomHandler, roomCreationButton, "clicked")
+
+        # Copy all fields from the selected room
+        if Main.loadedMap !== nothing && Main.loadedRoom !== nothing
+            global templateRoom = deepcopy(Main.loadedRoom)
+        end
 
         Gtk.GLib.@sigatom setFieldsFromRoom(templateRoom)
 

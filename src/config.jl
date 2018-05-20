@@ -57,6 +57,11 @@ function Base.get(c::Config, key::K where K, value::V where V)
         c.mtime = mtime(c.fn)
         c.data = open(JSON.parse, c.fn)
     end
-    
-    return get(c.data, key, value)
+
+    # Force a rewrite of the config
+    if !haskey(c.data, key)
+        c[key] = value
+    end
+
+    return c.data[key]
 end

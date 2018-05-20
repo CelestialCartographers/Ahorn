@@ -1,6 +1,7 @@
 module Rectangles
 
 displayName = "Rectangles"
+group = "Brushes"
 
 drawingLayers = Main.Layer[]
 

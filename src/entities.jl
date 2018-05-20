@@ -14,8 +14,8 @@ end
 # Make sure it returns in Int32/64
 function entityTranslation(entity::Maple.Entity)
     return (
-        Int(get(entity.data, "x", 0)),# - get(entity.data, "originX", 0)),
-        Int(get(entity.data, "y", 0))# - get(entity.data, "originY", 0))
+        floor(Int, get(entity.data, "x", 0)),
+        floor(Int, get(entity.data, "y", 0))
     )
 end
 

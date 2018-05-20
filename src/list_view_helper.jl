@@ -131,12 +131,17 @@ function connectChanged(container::ListContainer, f::Function)
     end
 end
 
-function getTreeData(m::Union{Maple.Map, Void})
+function getTreeData(m::Union{Maple.Map, Void}, simple::Bool=get(config, "use_simple_room_values", true))
     data = Tuple{String, Int, Int, Int, Int}[]
 
     if isa(m, Maple.Map)
         for room in m.rooms
-            push!(data, (room.name, room.position..., room.size...))
+            if simple
+                push!(data, (room.name, round.(Int, room.position ./ 8)..., round.(Int, room.size ./ 8)...))
+
+            else
+                push!(data, (room.name, room.position..., room.size...))
+            end
         end
     end
 

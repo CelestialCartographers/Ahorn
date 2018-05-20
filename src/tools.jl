@@ -31,6 +31,15 @@ function getToolName(tool::String)
     end
 end
 
+function getToolGroup(tool::String)
+    if hasModuleField(tool, "group")
+        return getModuleField(tool, "group")
+
+    elseif haskey(loadedModules, tool)
+        return "Unknown"
+    end
+end
+
 toolDisplayNames = Dict{String, String}(
     getToolName(tool) => tool for tool in loadedTools if haskey(loadedModules, tool)
 )
@@ -73,7 +82,19 @@ function changeTool!(tool::String)
     end
 end
 
-toolList = generateTreeView("Tool", collect(keys(toolDisplayNames)), sortable=false)
+function getSortedToolNames(tools::Array{String, 1})
+    res = Tuple{String, String}[]
+    for tool in tools
+        push!(res, (getToolGroup(tool), getToolName(tool)))
+    end
+    
+    sort!(res)
+
+    return String[r[2] for r in res]
+end
+
+sortedToolNames = getSortedToolNames(loadedTools)
+toolList = generateTreeView("Tool", sortedToolNames, sortable=false)
 connectChanged(toolList, function(list::ListContainer, selected::String)
     debug.log("Selected $selected", "TOOLS_SELECTED")
     changeTool!(selected)
@@ -231,7 +252,7 @@ function handleRoomModifications(event::eventKey)
     return false
 end
 
-function handleKeyPressed(event::eventKey)
+function handleDebugKeys(event::eventKey)
     if get(debug.config, "ENABLE_HOTSWAP_HOTKEYS", false)
         # F1 Key
         # Reload tools
@@ -239,6 +260,8 @@ function handleKeyPressed(event::eventKey)
             loadModule.(loadedTools)
             changeTool!(loadedTools[1])
             select!(roomList, row -> row[1] == selectedRoom)
+
+            return true
         end
 
         # F2
@@ -249,13 +272,39 @@ function handleKeyPressed(event::eventKey)
             registerPlacements!(entityPlacements, loadedEntities)
             getLayerByName(dr.layers, "entities").redraw = true
             select!(roomList, row -> row[1] == selectedRoom)
+
+            return true
         end
     end
 
-    # Move room on map
-    if !handleRoomModifications(event)
-        eventToModule(currentTool, "keyboard", event)
+    return false
+end
+
+function handleHotkeyToolChange(event::eventKey)
+    if modifierControl() 
+        if Int('0') <= event.keyval <= Int('9')
+            index = event.keyval == Int('0')? 10 : event.keyval - Int('0')
+
+            if length(sortedToolNames) >= index
+                changeTool!(sortedToolNames[index])
+                select!(toolList, index)
+
+                return true
+            end
+        end
+
+        return false
     end
+
+    return false
+end
+
+function handleKeyPressed(event::eventKey)
+    # Handle in this order, until one of them consumes the event
+    return handleDebugKeys(event) ||
+        handleRoomModifications(event) ||
+        handleHotkeyToolChange(event) ||
+        eventToModule(currentTool, "keyboard", event)
 end
 
 function handleKeyReleased(event::eventKey)

@@ -61,7 +61,7 @@ function configureCelesteDir()
         end
 
         config["celeste_dir"] = celeste_dir
-        info_dialog("Ahorn will now extract all files needed.\nPlease close this window to continue.", window)
+        info_dialog("Ahorn will now extract all files needed. This might take a while!\nPlease close this window to continue.", window)
     end
 
     return true

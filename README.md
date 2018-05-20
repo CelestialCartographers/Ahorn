@@ -38,6 +38,7 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - delete: delete the given node / target
  - n: add node to target (after the targeted node / entity)
  - middle click: pick what's currently under the cursor in the selected layer
+ - Ctrl + number key row 0-9: shortcuts to select tools
  - alt + arrow keys: move a room
  - alt + delete: delete room
 

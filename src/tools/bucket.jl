@@ -1,6 +1,7 @@
 module Bucket
 
 displayName = "Bucket"
+group = "Brushes"
 
 drawingLayers = Main.Layer[]
 
@@ -67,6 +68,7 @@ end
 
 function cleanup()
     global bucketPosition = nothing
+    global bucketBrush = nothing
 
     Main.redrawLayer!(toolsLayer)
 end

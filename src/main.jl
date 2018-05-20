@@ -154,7 +154,7 @@ menubar = generateMenubar(
     ("File", "Room", "Help"),
     [
         [
-            ("New", createNewMap),
+            ("New", MapWindow.createNewMap),
             ("Open", showFileOpenDialog),
             ("Save", menuFileSave),
             ("Save as", showFileSaveDialog),
