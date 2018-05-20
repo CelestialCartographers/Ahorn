@@ -155,7 +155,7 @@ menubar = generateMenubar(
     ("File", "Room", "Help"),
     [
         [
-            ("New", MapWindow.createNewMap),
+            ("New", createNewMap),
             ("Open", showFileOpenDialog),
             ("Save", menuFileSave),
             ("Save as", showFileSaveDialog),
@@ -166,8 +166,8 @@ menubar = generateMenubar(
             ("Configure", RoomWindow.configureRoom),
         ],
         [
+            ("Check for Updates", UpdateWindow.updateAhorn),
             ("About", AboutWindow.showAboutWindow),
-            ("Update", UpdateWindow.updateAhorn)
         ]
     ]
 )
