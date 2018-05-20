@@ -70,9 +70,11 @@ Whenever we add it. Celeste has a lot of things which support for has to be indi
 Most of these are the names internally used by the game, so blame the devs. Most of them do not have any official names, but we might make the names in Ahorn a bit more descriptive later on.
 
 **Is it safe to resave maps from the base Celeste game?**
+
 No. If something is not visible in Ahorn, it is still there in data and will be saved along with it. However, Maple is currently still unable to save 100% of the original maps back, only about 99%. As always, make backups.
 
 **So, I made a map. What now? How do I load it?**
+
 While you can load maps without, it is _highly_ recommended to install [Everest](https://github.com/EverestAPI/Everest). Once Everest is installed, place your map binary in `ModContent/Maps/` in your Celeste installtion directory. It should now be accessible from inside the game.
 
 **Something is broken!**
