@@ -13,8 +13,12 @@ selection_selection_bc = (0.0, 1.0, 0.0, 0.4)
 selection_selected_fc = (1.0, 0.0, 1.0, 0.6)
 selection_selected_bc = (1.0, 0.0, 1.0, 0.4)
 
+# Trigger rendering colors
+trigger_fc = (0.6, 0.2, 0.2, 0.6)
+trigger_bc = (0.6, 0.2, 0.2, 0.4)
+
 # Entity/decal placement movement preview
-entity_preplacement_alpha = 0.5
+ghost_preplacement_alpha = 0.5
 adjacent_room_alpha = 0.5
 
 # Default background fills

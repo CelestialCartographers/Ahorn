@@ -27,6 +27,8 @@ Ahorn and Maple can be updated like any Julia package using `Pkg.update()`. To u
 The possible actions in Ahorn are listed on the right, just select one to use it.
 Hold right click to move around the map. Left click is your main way to place an object or select something. Tools like rectangle or line require holding left click while moving across the screen. Scroll to zoom.
 
+**Ahorn currently does not have any undo/redo functionality yet, so make sure to have backups and save often!**
+
 Ahorn supports a couple of keybinds and special mouse functionality, with more to come. The following list might not be comprehensive.
  - q, w: shrink / grow width on selected
  - a, s: shrink / grow height on selected
@@ -59,13 +61,19 @@ Close-up of a room, with a row of Crystal Spinners selected
 
 ## Frequently Asked Questions
 
-**When will I be able to place [entity/decal/other thing in celeste]?**
+**When will I be able to place [entity/decal/trigger/other thing in celeste]?**
 
 Whenever we add it. Celeste has a lot of things which support for has to be individually added. This takes time, so please be patient. However, if more people complain about the lack of a particular thing, we might add it sooner.
 
 **Why do so many things in the program have weird names?**
 
 Most of these are the names internally used by the game, so blame the devs. Most of them do not have any official names, but we might make the names in Ahorn a bit more descriptive later on.
+
+**Is it safe to resave maps from the base Celeste game?**
+No. If something is not visible in Ahorn, it is still there in data and will be saved along with it. However, Maple is currently still unable to save 100% of the original maps back, only about 99%. As always, make backups.
+
+**So, I made a map. What now? How do I load it?**
+While you can load maps without, it is _highly_ recommended to install [Everest](https://github.com/EverestAPI/Everest). Once Everest is installed, place your map binary in `ModContent/Maps/` in your Celeste installtion directory. It should now be accessible from inside the game.
 
 **Something is broken!**
 

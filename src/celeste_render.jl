@@ -3,6 +3,7 @@ include("layers.jl")
 include("auto_tiler.jl")
 include("decals.jl")
 include("entities.jl")
+include("triggers.jl")
 
 function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates)
     tileValue = tiles.data[y, x]
@@ -100,6 +101,17 @@ function drawEntities(layer::Layer, dr::DrawableRoom)
     return true
 end
 
+function drawTriggers(layer::Layer, dr::DrawableRoom)
+    ctx = creategc(layer.surface)
+    triggers = dr.room.triggers
+    
+    for trigger in triggers
+        renderTrigger(ctx, layer, trigger, dr.room)
+    end
+
+    return true
+end
+
 function resetDrawingSettings()
     reset!(camera)
 end
@@ -117,6 +129,7 @@ redrawingFuncs["fgParallax"] = (layer, room, camera) -> drawBackground(layer, ro
 redrawingFuncs["bgParallax"] = (layer, room, camera) -> drawBackground(layer, room, camera, false)
 
 redrawingFuncs["entities"] = drawEntities
+redrawingFuncs["triggers"] = drawTriggers
 
 function getDrawableRooms(map::Map)
     if !haskey(drawableRooms, map)

@@ -67,7 +67,7 @@ end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
     wantedLayer = get(Main.persistence, "placements_layer", "entities")
-    Main.updateTreeView!(layers, ["entities", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
+    Main.updateTreeView!(layers, ["entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
 
     Main.redrawingFuncs["tools"] = drawSelections
     Main.redrawLayer!(toolsLayer)
@@ -156,13 +156,13 @@ function layersChanged(layers::Array{Main.Layer, 1})
     global targetLayer = Main.updateLayerList!(layers, wantedLayer, "entities")
 end
 
-function applyMovement!(entity::Main.Maple.Entity, ox::Number, oy::Number, node::Number=0)
+function applyMovement!(target::Union{Main.Maple.Entity, Main.Maple.Trigger}, ox::Number, oy::Number, node::Number=0)
     if node == 0
-        entity.data["x"] += ox
-        entity.data["y"] += oy
+        target.data["x"] += ox
+        target.data["y"] += oy
 
     else
-        nodes = get(entity.data, "nodes", ())
+        nodes = get(target.data, "nodes", ())
 
         if length(nodes) >= node
             nodes[node] = nodes[node] .+ (ox, oy)
@@ -234,7 +234,7 @@ function handleResize(event::Main.eventKey)
         extraW, extraH = resizeModifiers[event.keyval] .* step
         horizontal, vertical = Main.canResize(target)
 
-        if name == "entities" && node == 0
+        if (name == "entities" || name == "triggers") && node == 0
             minWidth, minHeight = Main.minimumSize(target)
 
             baseWidth = get(target.data, "width", minWidth)

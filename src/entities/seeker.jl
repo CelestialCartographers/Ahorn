@@ -2,13 +2,18 @@ module Seeker
 
 placements = Dict{String, Main.EntityPlacement}(
     "Seeker" => Main.EntityPlacement(
-        Main.Maple.Seeker
+        Main.Maple.Seeker,
+        "point",
+        Dict{String, Any}(),
+        function(entity)
+            entity.data["nodes"] = [(Int(entity.data["x"]) + 32, Int(entity.data["y"]))]
+        end
     )
 )
 
 function nodeLimits(entity::Main.Maple.Entity)
-    if entity.name == "dreamBlock"
-        return true, 0, -1
+    if entity.name == "seeker"
+        return true, 1, -1
     end
 end
 

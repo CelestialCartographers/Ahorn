@@ -42,6 +42,7 @@ function getDrawingLayers()
         Layer("fgTiles"),
         Layer("fgParallax"),
         Layer("fgDecals"),
+        Layer("triggers"),
 
         Layer("tools", selectable=false)
     ]

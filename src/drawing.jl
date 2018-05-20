@@ -198,11 +198,12 @@ function drawCircle(ctx::Cairo.CairoContext, x::T, y::T, r::Number, c::colorTupl
     drawArc(ctx, x, y, r, 0, 2 * pi, c)
 end
 
-function centeredText(ctx::Cairo.CairoContext, s::String, x::T, y::T; fontsize::Number=52, fontface::String="Sans", c::colorTupleType=(0.0, 0.0, 0.0)) where T <: Integer
+# Make this prettier
+function centeredText(ctx::Cairo.CairoContext, s::String, x::T, y::T; fontsize::Number=8, fontface::String="Sans", c::colorTupleType=(0.0, 0.0, 0.0)) where T <: Integer
     Cairo.save(ctx);
 
     setSourceColor(ctx, c)
-    select_font_face(cr, fontface, Cairo.FONT_SLANT_NORMAL, Cairo.FONT_WEIGHT_NORMAL)
+    select_font_face(ctx, fontface, Cairo.FONT_SLANT_NORMAL, Cairo.FONT_WEIGHT_NORMAL)
     set_font_size(ctx, fontsize)
     extents = text_extents(ctx, s)
     

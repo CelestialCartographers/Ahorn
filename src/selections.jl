@@ -1,8 +1,16 @@
 selectionTargets = Dict{String, Function}(
     "entities" => room -> room.entities,
+    "triggers" => room -> room.triggers,
     "bgDecals" => room -> room.bgDecals,
     "fgDecals" => room -> room.fgDecals
 )
+
+function getSelection(trigger::Maple.Trigger, node::Number=0)
+    x, y = Int(trigger.data["x"]), Int(trigger.data["y"])
+    width, height = Int(trigger.data["width"]), Int(trigger.data["height"])
+
+    return true, Rectangle(x, y, width, height)
+end
 
 function getSelection(decal::Maple.Decal, node::Number=0)
     return true, decalSelection(decal)

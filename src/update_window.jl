@@ -23,7 +23,6 @@ function updateAhorn(widget::Gtk.GtkMenuItemLeaf=MenuItem())
             info_dialog("Ahorn is up-to-date at commit $lc.", Main.window)
         end
     catch e
-        println(e)
         do_ask_dialog("Do you wish to update Ahorn?\nThis will close the program afterwards and you will have to rerun it.")
     end
 end

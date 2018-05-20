@@ -271,7 +271,10 @@ function handleDebugKeys(event::eventKey)
             dr = getDrawableRoom(loadedMap, loadedRoom)
             loadModule.(loadedEntities)
             registerPlacements!(entityPlacements, loadedEntities)
+            loadModule.(loadedTriggers)
+            registerPlacements!(triggerPlacements, loadedTriggers)
             getLayerByName(dr.layers, "entities").redraw = true
+            getLayerByName(dr.layers, "triggers").redraw = true
             select!(roomList, row -> row[1] == selectedRoom)
 
             return true
