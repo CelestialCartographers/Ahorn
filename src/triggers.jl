@@ -14,6 +14,10 @@ function renderTrigger(ctx::Cairo.CairoContext, layer::Layer, trigger::Maple.Tri
 end
 
 function minimumSize(trigger::Main.Maple.Trigger)
+    if get(debug.config, "IGNORE_MINIMUM_SIZE", false)
+        return 0, 0
+    end
+    
     return 8, 8
 end
 

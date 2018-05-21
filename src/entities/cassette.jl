@@ -6,7 +6,7 @@ placements = Dict{String, Main.EntityPlacement}(
         "point",
         Dict{String, Any}(),
         function(entity)
-            entity.data["nodes"] = [(Int(entity.data["x"]) + 28, Int(entity.data["y"]))]
+            entity.data["nodes"] = [(Int(entity.data["x"]) + 32, Int(entity.data["y"]))]
         end
     ),
 )

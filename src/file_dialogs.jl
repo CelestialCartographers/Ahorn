@@ -1,5 +1,20 @@
+# cd() is a workaround to set the default directory 
 function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
-    filename = open_dialog("Select map binary", window, tuple("*.bin"))
+    celesteDir = config["celeste_dir"]
+    mapsDir = joinpath(celesteDir, "ModContent", "Maps")
+
+    if isdir(celesteDir)
+        if !isdir(mapsDir)
+            mkpath(mapsDir)
+        end
+
+        cd(mapsDir)
+    end
+
+    filename = ""
+    cd(mapsDir) do
+        filename = open_dialog("Select map binary", window, tuple("*.bin"))
+    end
 
     # Did we actually select a file?
     if filename != ""
@@ -20,7 +35,20 @@ end
 
 # save_dialog only warns on overwrite, but will ONLY return the filename
 function showFileSaveDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
-    filename = save_dialog("Save as", window)
+    celesteDir = config["celeste_dir"]
+    mapsDir = joinpath(celesteDir, "ModContent", "Maps")
+
+    if isdir(celesteDir)
+        if !isdir(mapsDir)
+            mkpath(mapsDir)
+        end
+
+    end
+
+    filename = ""
+    cd(mapsDir) do
+        filename = save_dialog("Save as", window)
+    end
 
     if filename != ""
         global loadedFilename = filename

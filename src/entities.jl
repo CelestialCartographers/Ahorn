@@ -68,6 +68,10 @@ function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Ma
 end
 
 function minimumSize(entity::Main.Maple.Entity)
+    if get(debug.config, "IGNORE_MINIMUM_SIZE", false)
+        return 0, 0
+    end
+
     selectionRes = Main.eventToModules(Main.loadedEntities, "minimumSize", entity)
     
     if isa(selectionRes, Tuple)
@@ -82,6 +86,10 @@ function minimumSize(entity::Main.Maple.Entity)
 end
 
 function canResize(entity::Main.Maple.Entity)
+    if get(debug.config, "IGNORE_CAN_RESIZE", false)
+        return true, true
+    end
+
     selectionRes = Main.eventToModules(Main.loadedEntities, "resizable", entity)
     
     if isa(selectionRes, Tuple)

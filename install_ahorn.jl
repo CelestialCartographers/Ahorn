@@ -71,5 +71,8 @@ Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it, or, i
 Note that it will take quite a while to launch the first time as its dependencies compile, so please be patient.
 
 Thanks for giving Ahorn a try!
+
+Press Enter to quit the installer.
 """)
 end
+readline()

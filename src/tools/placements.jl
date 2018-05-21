@@ -129,6 +129,10 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
     Main.persistence["placements_layer"] = selected
 end
 
+function fixDecalMaterial(s::String)
+    return splitext(replace(s, "\\", "/"))[1]
+end
+
 function subToolSelected(list::Main.ListContainer, selected::String)
     
 end
@@ -182,7 +186,7 @@ function middleClickAbs(x::Number, y::Number)
         name, rect, target = best
 
         if name == "fgDecals" || name == "bgDecals"
-            global material = target.texture
+            global material = fixDecalMaterial(target.texture)
             Main.selectMaterialList!(material)
             Main.persistence["placements_placements_decal"] = material
 
