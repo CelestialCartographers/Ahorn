@@ -51,6 +51,15 @@ end
 println("""
 
 ======================
+Building dependencies, just in case. This may take a while, so it might be the right time to get yourself a slice of bread and some refreshing elderflower tea.
+======================
+""")
+
+Pkg.build("Ahorn")
+
+println("""
+
+======================
 Precompiling a few dependencies. This may take a while, so get yourself some cheese and a cup of fennel tea.
 ======================
 """)
