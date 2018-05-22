@@ -1,5 +1,3 @@
-include("extract_sprites_images.jl")
-
 @static if is_windows()
     using WinReg
 end
@@ -77,7 +75,8 @@ function extractGamedata(storage::String, force::Bool=false)
     backgroundTilesXML = joinpath(storage, "BackgroundTiles.xml")
 
     if !isfile(gameplaySprites) || force
-        dumpSprites(celesteAtlases, storage)
+        include("extract_sprites_images.jl")
+        Base.invokelatest(dumpSprites, celesteAtlases, storage) # Making sure the method just loaded is used.
     end
 
     if !isfile(gameplayMeta) || force

@@ -31,7 +31,11 @@ Would you like to install the HTTP library? [y/N]""")
 installHTTP = ismatch(r"^[Yy]", readline())
 
 println("""
+
+======================
 The installer will now download and install required dependencies as well as the program itself. This will likely take a few minutes, so grab yourself a glass of juice while you wait.
+We will tell you when the installation process is done, any warnings (not errors) in the console are fine and can be ignored.
+======================
 """)
 
 install_or_update("https://github.com/CelestialCartographers/Maple.git", "Maple")
