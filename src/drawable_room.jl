@@ -13,7 +13,7 @@ mutable struct DrawableRoom
     fgTileStates::TileStates
     bgTileStates::TileStates
 
-    rendering::Layer
+    rendering::Union{Layer, Void}
     layers::Array{Layer, 1}
 end
 

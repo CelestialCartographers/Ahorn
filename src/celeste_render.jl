@@ -5,7 +5,7 @@ include("decals.jl")
 include("entities.jl")
 include("triggers.jl")
 
-function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates)
+function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates; alpha::Number=getGlobalAlpha())
     tileValue = tiles.data[y, x]
 
     if tileValue != '0'
@@ -16,19 +16,22 @@ function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles,
         drawX, drawY = (x - 1) * 8, (y - 1) * 8
 
         if tileValue != states.chars[y, x] || state.quads[y, x] != (quadX, quadY)
-            drawImage(ctx, imagePath, drawX, drawY, quadX * 8, quadY * 8, 8, 8)
+            drawImage(ctx, imagePath, drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
 
             states.quads[y, x] = (quadX, quadY)
         end
     end
 end
 
-function drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true)
-    ctx = creategc(layer.surface)
+function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, meta::TilerMeta, states::TileStates, width::Integer, height::Integer; alpha::Number=getGlobalAlpha())
+    for y in 1:height, x in 1:width
+        drawTile(ctx, x, y, tiles, meta, states, alpha=alpha)
+    end
+end
+
+function drawTiles(ctx::Cairo.CairoContext, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha())
     tiles = fg? dr.room.fgTiles : dr.room.bgTiles
     height, width = size(tiles.data)
-
-    paintSurface(ctx, (1.0, 1.0, 1.0, 0.0))
 
     states = fg? dr.fgTileStates : dr.bgTileStates
     meta = fg? fgTilerMeta : bgTilerMeta
@@ -37,12 +40,12 @@ function drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true)
         updateTileStates!(dr.room, dr.map.package, states, width, height)
     end
 
-    for y in 1:height, x in 1:width
-        drawTile(ctx, x, y, tiles, meta, states)
-    end
+    drawTiles(ctx, tiles, meta, states, width, height, alpha=alpha)
 
     return true
 end
+
+drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha()) = drawTiles(creategc(layer.surface), dr, fg, alpha=alpha)
 
 function drawParallax(ctx::Cairo.CairoContext, parallax::Maple.Parallax, camera::Camera, fg::Bool=true)
 

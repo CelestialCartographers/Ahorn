@@ -1,21 +1,21 @@
-module BadelineBoost
+module FireBall
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Badeline Boost" => Main.EntityPlacement(
-        Main.Maple.BadelineBoost
+    "Fireball" => Main.EntityPlacement(
+        Main.Maple.FireBall
     ),
 )
 
 function nodeLimits(entity::Main.Maple.Entity)
-    if entity.name == "badelineBoost"
+    if entity.name == "fireBall"
         return true, 0, -1
     end
 end
 
-sprite = "objects/badelineboost/idle00.png"
+sprite = "objects/fireball/fireball01.png"
 
 function selection(entity::Main.Maple.Entity)
-    if entity.name == "badelineBoost"
+    if entity.name == "fireBall"
         nodes = get(entity.data, "nodes", ())
         x, y = Main.entityTranslation(entity)
 
@@ -24,7 +24,7 @@ function selection(entity::Main.Maple.Entity)
         for node in nodes
             nx, ny = Int.(node)
 
-            push!(res, Main.Rectangle(nx - 6, ny - 6, 12, 12))
+            push!(res, Main.Rectangle(nx - 8, ny - 8, 16, 16))
         end
 
         return true, res
@@ -32,7 +32,7 @@ function selection(entity::Main.Maple.Entity)
 end
 
 function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
-    if entity.name == "badelineBoost"
+    if entity.name == "fireBall"
         px, py = Main.entityTranslation(entity)
 
         for node in get(entity.data, "nodes", ())
@@ -48,7 +48,7 @@ function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Enti
 end
 
 function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
-    if entity.name == "badelineBoost"
+    if entity.name == "fireBall"
         x, y = Main.entityTranslation(entity)
         Main.drawSprite(ctx, sprite, x, y)
 

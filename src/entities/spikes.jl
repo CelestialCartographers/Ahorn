@@ -94,6 +94,21 @@ triggerRotationOffsets = Dict{String, Tuple{Number, Number}}(
     "left" => (-1, 4),
 )
 
+function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
+    if haskey(directions, entity.name)
+        direction = get(directions, entity.name, "up")
+        theta = rotations[direction] - pi / 2
+
+        width = Int(get(entity.data, "width", 0))
+        height = Int(get(entity.data, "height", 0))
+
+        x, y = Main.entityTranslation(entity)
+        cx, cy = x + floor(Int, width / 2) - 8 * (direction == "left"), y + floor(Int, height / 2) - 8 * (direction == "up")
+
+        Main.drawArrow(ctx, cx, cy, cx + cos(theta) * 24, cy + sin(theta) * 24, Main.colors.selection_selected_fc, headLength=6)
+    end
+end
+
 function selection(entity::Main.Maple.Entity)
     if haskey(directions, entity.name)
         x, y = Main.entityTranslation(entity)

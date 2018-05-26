@@ -49,8 +49,8 @@ function renderZipMover(ctx::Main.Cairo.CairoContext, x::Number, y::Number, widt
     tilesWidth = div(width, 8)
     tilesHeight = div(height, 8)
 
-    cx, cy = x + floor(Int, width / 2), y + floor(Int, height / 2)
-    cnx, cny = nx + floor(Int, width / 2), ny + floor(Int, height / 2)
+    cx, cy = x + width / 2, y + height / 2
+    cnx, cny = nx + width / 2, ny + height / 2
 
     length = sqrt((x - nx)^2 + (y - ny)^2)
     theta = atan2(cny - cy, cnx - cx)
@@ -64,11 +64,12 @@ function renderZipMover(ctx::Main.Cairo.CairoContext, x::Number, y::Number, widt
     Main.set_antialias(ctx, 1)
     Main.set_line_width(ctx, 1);
 
-    Main.move_to(ctx, 0, 5)
-    Main.line_to(ctx, length, 5)
+    # Offset for rounding errors
+    Main.move_to(ctx, 0, 4 + (theta <= 0))
+    Main.line_to(ctx, length, 4 + (theta <= 0))
 
-    Main.move_to(ctx, 0, -4)
-    Main.line_to(ctx, length, -4)
+    Main.move_to(ctx, 0, -4 - (theta > 0))
+    Main.line_to(ctx, length, -4 - (theta > 0))
 
     Main.stroke(ctx)
 

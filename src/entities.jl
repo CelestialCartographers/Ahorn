@@ -1,6 +1,7 @@
+include("tile_entity.jl")
+
 # Use the Maple function
 # Then set the data from the placements (such as setting fields IE winged for strawberries)
-# Might need to rework how Maple entity constructors work
 struct EntityPlacement
     func::Function
     placement::String
@@ -41,7 +42,7 @@ function renderEntity(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entit
     restore(ctx)
 
     if !res
-        debug.log("Couldn't render entity '$(entity.name)'", "DRAWING_ENTITY_MISSING")
+        debug.log("Couldn't render entity '$(entity.name)' in room '$(room.name)'", "DRAWING_ENTITY_MISSING")
     end
 end
 

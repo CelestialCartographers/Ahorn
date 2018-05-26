@@ -2,7 +2,8 @@ module EventTrigger
 
 placements = Dict{String, Main.EntityPlacement}()
 
-events = String["end_city", "end_oldsite_awake"]
+#events = String["end_city", "end_oldsite_awake"]
+events = String["end_city"]
 for event in events
     key = "Event ($event)"
     placements[key] = Main.EntityPlacement(
