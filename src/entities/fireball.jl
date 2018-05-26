@@ -1,14 +1,44 @@
 module FireBall
 
+function fireballFinalizer(entity::Main.Maple.Entity)
+    x, y = Main.entityTranslation(entity)
+
+
+    entity.data["nodes"] = [(x + 16, y)]
+end
+
 placements = Dict{String, Main.EntityPlacement}(
-    "Fireball" => Main.EntityPlacement(
-        Main.Maple.FireBall
+    "Fireball (1)" => Main.EntityPlacement(
+        Main.Maple.FireBall,
+        "point",
+        Dict{String, Any}(
+            "amount" => 1
+        ),
+        fireballFinalizer
     ),
+
+    "Fireball (3)" => Main.EntityPlacement(
+        Main.Maple.FireBall,
+        "point",
+        Dict{String, Any}(
+            "amount" => 3
+        ),
+        fireballFinalizer
+    ),
+
+    "Fireball (5)" => Main.EntityPlacement(
+        Main.Maple.FireBall,
+        "point",
+        Dict{String, Any}(
+            "amount" => 5
+        ),
+        fireballFinalizer
+    )
 )
 
 function nodeLimits(entity::Main.Maple.Entity)
     if entity.name == "fireBall"
-        return true, 0, -1
+        return true, 1, -1
     end
 end
 

@@ -30,7 +30,7 @@ function getSelection(entity::Maple.Entity, node::Number=0)
     return false, false
 end
 
-function smallestSelection(set::Set{Tuple{String, Rectangle, Any, Number}})
+function bestSelection(set::Set{Tuple{String, Rectangle, Any, Number}})
     best = nothing
     bestVal = typemax(Int)
 
@@ -96,14 +96,25 @@ function hasSelectionAt(selections::Set{Tuple{String, Rectangle, Any, Number}}, 
     return false, false
 end
 
-function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}}, room::Room, name::String, rect::Rectangle; retain::Bool=false)
+function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}}, room::Room, name::String, rect::Rectangle; retain::Bool=false, best::Bool=false)
     # Holding shift keeps the last selection as well
     if !retain
         empty!(selections)
     end
 
     # Make sure the new selections are unique
-    union!(selections, getSelected(room, name, rect))
+    validSelections = getSelected(room, name, rect)
+    if best
+        target = bestSelection(validSelections)
+        if target !== nothing
+            set = Set{Tuple{String, Rectangle, Any, Number}}()
+            push!(set, target)
+            union!(selections, set)
+        end
+
+    else
+        union!(selections, validSelections)
+    end
 end
 
 updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}}, room::Room, layer::Layer, rect::Rectangle) = updateSelections!(selections, room, layerName(layer), rect)

@@ -180,7 +180,7 @@ end
 function middleClickAbs(x::Number, y::Number)
     layerName = Main.layerName(targetLayer)
     selections = Main.getSelected(Main.loadedRoom, layerName, Main.Rectangle(x, y, 1, 1))
-    best = Main.smallestSelection(selections)
+    best = Main.bestSelection(selections)
 
     if best !== nothing
         name, rect, target = best

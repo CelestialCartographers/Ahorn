@@ -142,7 +142,7 @@ function selectionFinishAbs(rect::Main.Rectangle)
 end
 
 function leftClickAbs(x::Number, y::Number)
-    Main.updateSelections!(selections, Main.loadedRoom, Main.layerName(targetLayer), Main.Rectangle(x, y, 1, 1), retain=Main.modifierShift())
+    Main.updateSelections!(selections, Main.loadedRoom, Main.layerName(targetLayer), Main.Rectangle(x, y, 1, 1), retain=Main.modifierShift(), best=true)
     clearDragging!()
     
     Main.redrawLayer!(toolsLayer)
