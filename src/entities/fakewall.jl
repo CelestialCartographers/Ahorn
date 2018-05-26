@@ -6,7 +6,7 @@ placements = Dict{String, Main.EntityPlacement}(
         "rectangle",
         Dict{String, Any}(),
         function(entity)
-            entity.data["tiletype"] = get(Main.persistence, "brushes_material", Main.Maple.tile_names["Snow"])
+            entity.data["tiletype"] = string(get(Main.persistence, "brushes_material", Main.Maple.tile_names["Snow"]))
         end
     ),
 )
