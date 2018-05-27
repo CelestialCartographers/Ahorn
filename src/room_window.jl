@@ -107,7 +107,7 @@ function createRoomHandler(widget)
 
     if success
         # Set the last selected values as the new "defaults" for this session
-        Maple.updateTileSize!(room, Maple.tile_names["Air"], Maple.tile_names["Stone"])
+        Maple.updateTileSize!(room, Maple.tile_fg_names["Air"], Maple.tile_fg_names["Stone"])
 
         push!(Main.loadedState.map.rooms, room)
 
