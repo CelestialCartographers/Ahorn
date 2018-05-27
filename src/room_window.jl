@@ -143,7 +143,7 @@ function updateRoomHandler(widget)
     success, reason = updateRoomFromFields!(Main.loadedState.map, Main.loadedState.room, true)
 
     if success
-        Maple.updateTileSize!(Main.loadedState.room, Maple.tile_names["Air"], Maple.tile_names["Stone"])
+        Maple.updateTileSize!(Main.loadedState.room, Maple.tile_fg_names["Air"], Maple.tile_fg_names["Stone"])
 
         Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedState.map), row -> row[1] == Main.loadedState.room.name)
         markForRedraw(Main.loadedState.room, Main.loadedState.map)
