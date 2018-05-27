@@ -65,9 +65,10 @@ function cleanup()
 end
 
 function setMaterials!(layer::Main.Layer, materials::Main.ListContainer)
-    validTiles = layer.name == "fgTiles"? Main.Maple.valid_fg_tiles : Main.Maple.valid_bg_tiles
+    validTiles = Main.validTiles(layer)
+    tileNames = Main.tileNames(layer)
 
-    Main.updateTreeView!(materials, [Main.Maple.tile_names[mat] for mat in validTiles], row -> row[1] == Main.Maple.tile_names[material])
+    Main.updateTreeView!(materials, [tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
 end
 
 function mouseMotion(x::Number, y::Number)
@@ -77,16 +78,18 @@ function mouseMotion(x::Number, y::Number)
 end
 
 function middleClick(x::Number, y::Number)
-    tiles = Main.layerName(targetLayer) == "fgTiles"? Main.loadedRoom.fgTiles : Main.loadedRoom.bgTiles
+    tiles = Main.roomTiles(targetLayer, Main.loadedState.room)
+    tileNames = Main.tileNames(targetLayer)
     target = get(tiles.data, (y, x), '0')
 
     global material = target
-    Main.persistence["brushes_material"] = material
-    Main.selectMaterialList!(Main.Maple.tile_names[target])
+    layerName = Main.layerName(targetLayer)
+    Main.persistence["brushes_material_$(layerName)"] = material
+    Main.selectMaterialList!(tileNames[target])
 end
 
 function leftClick(x::Number, y::Number)
-    roomTiles = Main.layerName(targetLayer) == "fgTiles"? Main.loadedRoom.fgTiles : Main.loadedRoom.bgTiles
+    roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
     Main.applyBrush!(selectedBrush, roomTiles, material, x, y)
 
     Main.redrawLayer!(targetLayer)
@@ -116,7 +119,7 @@ function selectionFinish(rect::Main.Rectangle)
     for (pos, brush) in phantomBrushes
         x, y = pos
 
-        roomTiles = Main.layerName(targetLayer) == "fgTiles"? Main.loadedRoom.fgTiles : Main.loadedRoom.bgTiles
+        roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
         Main.applyBrush!(brush, roomTiles, material, x, y)
     end
 
@@ -130,7 +133,9 @@ function selectionFinish(rect::Main.Rectangle)
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    global material = get(Main.persistence, "brushes_material", Main.Maple.tile_names["Air"])[1]
+    layerName = Main.layerName(targetLayer)
+    tileNames = Main.tileNames(targetLayer)
+    global material = get(Main.persistence, "brushes_material_$(layerName)", tileNames["Air"])[1]
 
     wantedBrush = get(Main.persistence, "brushes_brushes_brush", brushes[1].name)
     Main.updateTreeView!(subTools, [brush.name for brush in brushes], row -> row[1] == wantedBrush)
@@ -146,12 +151,16 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
     global targetLayer = Main.getLayerByName(drawingLayers, selected)
     Main.persistence["brushes_layer"] = selected
 
+    tileNames = Main.tileNames(targetLayer)
+    global material = get(Main.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
     setMaterials!(targetLayer, materials)
 end
 
 function materialSelected(list::Main.ListContainer, selected::String)
-    Main.persistence["brushes_material"] = Main.Maple.tile_names[selected]
-    global material = Main.Maple.tile_names[selected]
+    tileNames = Main.tileNames(targetLayer)
+    layerName = Main.layerName(targetLayer)
+    Main.persistence["brushes_material_$(layerName)"] = tileNames[selected]
+    global material = tileNames[selected]
 end
 
 function layersChanged(layers::Array{Main.Layer, 1})
@@ -171,13 +180,8 @@ function subToolSelected(list::Main.ListContainer, selected::String)
     end
 end
 
-# Test brush rotation
 function keyboard(event::Main.eventKey)
-    # Numbers 0:9
-    if event.keyval in 48:57
-        global selectedBrush = get(brushes, event.keyval - 47, brushes[1])
-
-    elseif event.keyval == Main.keyval("l")
+    if event.keyval == Main.keyval("l")
         selectedBrush.rotation = mod(selectedBrush.rotation + 1, 4)
 
     elseif event.keyval == Main.keyval("r")

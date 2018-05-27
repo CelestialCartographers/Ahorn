@@ -30,6 +30,8 @@ function getSelection(entity::Maple.Entity, node::Number=0)
     return false, false
 end
 
+# TODO - Use mouse position and check if its closer to the center as well
+# Area is "good enough" for now
 function bestSelection(set::Set{Tuple{String, Rectangle, Any, Number}})
     best = nothing
     bestVal = typemax(Int)
@@ -107,9 +109,7 @@ function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}
     if best
         target = bestSelection(validSelections)
         if target !== nothing
-            set = Set{Tuple{String, Rectangle, Any, Number}}()
-            push!(set, target)
-            union!(selections, set)
+            push!(selections, target)
         end
 
     else

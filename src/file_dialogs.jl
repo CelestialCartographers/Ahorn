@@ -1,4 +1,3 @@
-# cd() is a workaround to set the default directory 
 function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     celesteDir = config["celeste_dir"]
     mapsDir = joinpath(celesteDir, "ModContent", "Maps")
@@ -18,14 +17,17 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
 
     # Did we actually select a file?
     if filename != ""
-        global loadedFilename = filename
-        global loadedMap = loadMap(filename)
-        global selectedRoom = nothing
-        global loadedRoom = nothing
-        
-        packageName = loadedMap.package
+        loadedState.filename = filename
+        loadedState.map = loadMap(filename)
+        loadedState.roomName = ""
+        loadedState.room = nothing
 
-        updateTreeView!(roomList, getTreeData(loadedMap))
+        persistence["files_lastroom"] = loadedState.roomName
+        persistence["files_lastfile"] = loadedState.filename
+        
+        packageName = loadedState.map.package
+
+        updateTreeView!(roomList, getTreeData(loadedState.map))
 
         setproperty!(window, :title, "$baseTitle - $packageName")
 
@@ -51,18 +53,18 @@ function showFileSaveDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     end
 
     if filename != ""
-        global loadedFilename = filename
+        loadedState.filename = filename
         
-        saveFile(loadedMap, filename)
+        saveFile(loadedState.map, filename)
     end
 end
 
 function menuFileSave(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
-    if loadedFilename === nothing || loadedFilename == ""
+    if loadedState.filename === nothing || loadedState.filename == ""
         showFileSaveDialog(leaf)
 
     else
-        saveFile(loadedMap, loadedFilename)
+        saveFile(loadedState.map, loadedState.filename)
     end
 end
 

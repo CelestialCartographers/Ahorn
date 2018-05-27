@@ -16,22 +16,33 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
     tile = get(entity.data, key, "3")
     tile = isa(tile, Number)? string(tile) : tile
     
-    fakeTiles = fill('0', (fth, ftw))
-    fakeTiles[max(ty, 1):min(ty + th - 1, fth), max(tx, 1):min(tx + tw - 1, ftw)] = tile[1]
+    # Don't draw air versions (if they even exist)
+    if tile != "0"
+        fakeTiles = fill('0', (fth, ftw))
+        fakeTiles[max(ty, 1):min(ty + th - 1, fth), max(tx, 1):min(tx + tw - 1, ftw)] = tile[1]
 
-    dr = DrawableRoom(
-        loadedMap,
-        Maple.Room(
-            name=room.name,
-            fgTiles=Maple.Tiles(fakeTiles)
-        ),
+        dr = DrawableRoom(
+            loadedState.map,
+            Maple.Room(
+                name=room.name,
+                fgTiles=Maple.Tiles(fakeTiles)
+            ),
 
-        TileStates(),
-        TileStates(),
+            TileStates(),
+            TileStates(),
 
-        nothing,
-        Layer[]
-    )
+            nothing,
+            Layer[]
+        )
+    end
 
     drawTiles(ctx, dr, alpha=alpha)
+end
+
+function tileEntityFinalizer(entity::Maple.Entity)
+    key = entity.name == "exitBlock"? "tileType" : "tiletype"
+    defaultTile = Main.Maple.tile_fg_names["Snow"]
+    tile = string(get(Main.persistence, "brushes_material_fgTiles", defaultTile))
+    tile = tile == "0"? defaultTile : tile
+    entity.data[key] = tile
 end

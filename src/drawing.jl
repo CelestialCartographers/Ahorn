@@ -28,11 +28,13 @@ function getSprite(name::String)
     return sprites[name]
 end
 
-function getTextureSprite(texture::String)
-    # remove .png and convert to unix paths
-    texture = replace(Base.splitext(texture)[1], "\\", "/")
+# remove .png and convert to unix paths
+function fixTexturePath(texture::String)
+    return replace(Base.splitext(texture)[1], "\\", "/")
+end
 
-    return getSprite(texture)
+function getTextureSprite(texture::String)
+    return getSprite(fixTexturePath(texture))
 end
 
 function setGlobalAlpha!(alpha::Number=1)

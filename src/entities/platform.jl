@@ -115,7 +115,7 @@ function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room
         width = Int(get(entity.data, "width", 8))
         x, y = Int(entity.data["x"]), Int(entity.data["y"])
 
-        renderConnection(ctx, x, y, x, Int(Main.loadedRoom.size[2]), width)
+        renderConnection(ctx, x, y, x, Int(Main.loadedState.room.size[2]), width)
         renderPlatform(ctx, x, y, width)
 
         return true

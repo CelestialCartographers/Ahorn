@@ -30,7 +30,7 @@ function isClick(event::eventMouse, prevEvent::eventMouse, threshold::Number=cli
 end
 
 function shouldHandle()
-    return loadedMap !== nothing && loadedRoom !== nothing
+    return loadedState.map !== nothing && loadedState.room !== nothing
 end
 
 function scroll_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventScroll)

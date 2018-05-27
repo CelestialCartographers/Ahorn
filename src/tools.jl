@@ -61,8 +61,8 @@ connectChanged(materialList, function(list::ListContainer, selected::String)
 end)
 
 function changeTool!(tool::String)
-    if loadedMap !== nothing && loadedRoom !== nothing
-        dr = getDrawableRoom(loadedMap, loadedRoom)
+    if loadedState.map !== nothing && loadedState.room !== nothing
+        dr = getDrawableRoom(loadedState.map, loadedState.room)
 
         if tool in loadedTools
             global currentTool = tool
@@ -113,7 +113,7 @@ end
 function updateSelectionByCoords!(map::Map, ax::Number, ay::Number)
     room = Maple.getRoomByCoords(map, ax, ay)
 
-    if room != false && room.name != selectedRoom
+    if room != false && room.name != loadedState.roomName
         select!(roomList, row -> row[1] == room.name)
     
         return true
@@ -136,7 +136,7 @@ end
 updateLayerList!(layers::Array{Layer, 1}, layer::Union{Layer, Void}, default::String="") = updateLayerList!(layers, layerName(layer), default)
 
 function handleSelectionMotion(start::eventMouse, startCamera::Camera, current::eventMouse)
-    room = loadedRoom
+    room = loadedState.room
     
     mx1, my1 = getMapCoordinates(startCamera, start.x, start.y)
     mx2, my2 = getMapCoordinates(camera, current.x, current.y)
@@ -160,7 +160,7 @@ function handleSelectionMotion(start::eventMouse, startCamera::Camera, current::
 end
 
 function handleSelectionFinish(start::eventMouse, startCamera::Camera, current::eventMouse)
-    room = loadedRoom
+    room = loadedState.room
     
     mx1, my1 = getMapCoordinates(startCamera, start.x, start.y)
     mx2, my2 = getMapCoordinates(camera, current.x, current.y)
@@ -186,7 +186,7 @@ end
 function handleClicks(event::eventMouse, camera::Camera)
     if haskey(mouseHandlers, event.button)
         handle = mouseHandlers[event.button]
-        room = loadedRoom
+        room = loadedState.room
 
         mx, my = getMapCoordinates(camera, event.x, event.y)
         max, may = getMapCoordinatesAbs(camera, event.x, event.y)
@@ -195,11 +195,11 @@ function handleClicks(event::eventMouse, camera::Camera)
         ax, ay = mapToRoomCoordinatesAbs(max, may, room)
 
         lock!(camera)
-        if !updateSelectionByCoords!(loadedMap, max, may)
+        if !updateSelectionByCoords!(loadedState.map, max, may)
             # Teleport to cursor 
             if EverestRcon.loaded && event.button == 0x1 && modifierControl() && modifierShift()
                 url = get(config, "everest_rcon", "http://localhost:32270")
-                room = selectedRoom[5:end]
+                room = loadedState.roomName[5:end]
                 EverestRcon.reload(url, room)
                 EverestRcon.teleportToRoom(url, room, ax, ay)
 
@@ -215,7 +215,7 @@ function handleClicks(event::eventMouse, camera::Camera)
 end
 
 function handleMotion(event::eventMouse, camera::Camera)
-    room = loadedRoom
+    room = loadedState.room
 
     mx, my = getMapCoordinates(camera, event.x, event.y)
     max, may = getMapCoordinatesAbs(camera, event.x, event.y)
@@ -230,21 +230,21 @@ function handleMotion(event::eventMouse, camera::Camera)
 end
 
 function handleRoomModifications(event::eventKey)
-    if modifierAlt() && loadedRoom !== nothing && loadedMap !== nothing
+    if modifierAlt() && loadedState.room !== nothing && loadedState.map !== nothing
         if haskey(moveDirections, event.keyval)
             ox, oy = moveDirections[event.keyval] .* 8
-            loadedRoom.position = loadedRoom.position .+ (ox, oy)
-            updateTreeView!(roomList, getTreeData(loadedMap), row -> row[1] == loadedRoom.name)
+            loadedState.room.position = loadedState.room.position .+ (ox, oy)
+            updateTreeView!(roomList, getTreeData(loadedState.map), row -> row[1] == loadedState.room.name)
             draw(canvas)
 
             return true
 
         elseif event.keyval == Gtk.GdkKeySyms.Delete
-            index = findfirst(loadedMap.rooms, loadedRoom)
+            index = findfirst(loadedState.map.rooms, loadedState.room)
 
-            if index != 0 && ask_dialog("Are you sure you want to delete this room '$(loadedRoom.name)'", window)
-                deleteat!(loadedMap.rooms, index)
-                updateTreeView!(roomList, getTreeData(loadedMap))
+            if index != 0 && ask_dialog("Are you sure you want to delete this room '$(loadedState.room.name)'", window)
+                deleteat!(loadedState.map.rooms, index)
+                updateTreeView!(roomList, getTreeData(loadedState.map))
                 draw(canvas)
             end
         end
@@ -260,7 +260,7 @@ function handleDebugKeys(event::eventKey)
         if event.keyval == Gtk.GdkKeySyms.F1
             loadModule.(loadedTools)
             changeTool!(loadedTools[1])
-            select!(roomList, row -> row[1] == selectedRoom)
+            select!(roomList, row -> row[1] == loadedState.roomName)
 
             return true
         end
@@ -268,14 +268,17 @@ function handleDebugKeys(event::eventKey)
         # F2
         # Reload entity drawing
         if event.keyval == Gtk.GdkKeySyms.F2
-            dr = getDrawableRoom(loadedMap, loadedRoom)
+            dr = getDrawableRoom(loadedState.map, loadedState.room)
+
             loadModule.(loadedEntities)
             registerPlacements!(entityPlacements, loadedEntities)
+
             loadModule.(loadedTriggers)
             registerPlacements!(triggerPlacements, loadedTriggers)
+
             getLayerByName(dr.layers, "entities").redraw = true
             getLayerByName(dr.layers, "triggers").redraw = true
-            select!(roomList, row -> row[1] == selectedRoom)
+            select!(roomList, row -> row[1] == loadedState.roomName)
 
             return true
         end

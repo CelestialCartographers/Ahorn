@@ -17,7 +17,7 @@ end
 
 function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bool=false, simple::Bool=get(Main.config, "use_simple_room_values", true))
     try
-        if Main.loadedMap != nothing
+        if Main.loadedState.map != nothing
             multiplier = simple? 8 : 1
 
             roomName = getproperty(roomTextfield, :text, String)
@@ -103,16 +103,16 @@ end
 
 function createRoomHandler(widget)
     room = Maple.Room()
-    success, reason = updateRoomFromFields!(Main.loadedMap, room)
+    success, reason = updateRoomFromFields!(Main.loadedState.map, room)
 
     if success
         # Set the last selected values as the new "defaults" for this session
         Maple.updateTileSize!(room, Maple.tile_names["Air"], Maple.tile_names["Stone"])
 
-        push!(Main.loadedMap.rooms, room)
+        push!(Main.loadedState.map.rooms, room)
 
-        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == room.name)
-        markForRedraw(room, Main.loadedMap)
+        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedState.map), row -> row[1] == room.name)
+        markForRedraw(room, Main.loadedState.map)
         draw(Main.canvas)
 
         visible(roomWindow, false)
@@ -140,13 +140,13 @@ function markForRedraw(room::Maple.Room, map::Maple.Map)
 end
 
 function updateRoomHandler(widget)
-    success, reason = updateRoomFromFields!(Main.loadedMap, Main.loadedRoom, true)
+    success, reason = updateRoomFromFields!(Main.loadedState.map, Main.loadedState.room, true)
 
     if success
-        Maple.updateTileSize!(Main.loadedRoom, Maple.tile_names["Air"], Maple.tile_names["Stone"])
+        Maple.updateTileSize!(Main.loadedState.room, Maple.tile_names["Air"], Maple.tile_names["Stone"])
 
-        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedMap), row -> row[1] == Main.loadedRoom.name)
-        markForRedraw(Main.loadedRoom, Main.loadedMap)
+        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedState.map), row -> row[1] == Main.loadedState.room.name)
+        markForRedraw(Main.loadedState.room, Main.loadedState.map)
         draw(Main.canvas)
 
         visible(roomWindow, false)
@@ -174,7 +174,7 @@ function hideRoomWindow(widget=nothing, event=nothing)
 end
 
 function createRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
-    if Main.loadedMap === nothing
+    if Main.loadedState.map === nothing
         info_dialog("No map is currently loaded.", Main.window)
 
     else
@@ -187,8 +187,8 @@ function createRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
         global roomButtonSignal = signal_connect(createRoomHandler, roomCreationButton, "clicked")
 
         # Copy all fields from the selected room
-        if Main.loadedMap !== nothing && Main.loadedRoom !== nothing
-            global templateRoom = deepcopy(Main.loadedRoom)
+        if Main.loadedState.map !== nothing && Main.loadedState.room !== nothing
+            global templateRoom = deepcopy(Main.loadedState.room)
         end
 
         Gtk.GLib.@sigatom setFieldsFromRoom(templateRoom)
@@ -198,16 +198,16 @@ function createRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
 end
 
 function configureRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
-    if Main.loadedMap != nothing && Main.loadedRoom != nothing
+    if Main.loadedState.map != nothing && Main.loadedState.room != nothing
         spawnWindowIfAbsent!()
 
-        setproperty!(roomWindow, :title, "$(Main.baseTitle) - $(Main.loadedRoom.name)")
+        setproperty!(roomWindow, :title, "$(Main.baseTitle) - $(Main.loadedState.room.name)")
 
         signal_handler_disconnect(roomCreationButton, roomButtonSignal)
         setproperty!(roomCreationButton, :label, "Update Room")
         global roomButtonSignal = signal_connect(updateRoomHandler, roomCreationButton, "clicked")
 
-        Gtk.GLib.@sigatom setFieldsFromRoom(Main.loadedRoom)
+        Gtk.GLib.@sigatom setFieldsFromRoom(Main.loadedState.room)
 
         visible(roomWindow, true)
     end

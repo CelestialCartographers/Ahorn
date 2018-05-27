@@ -1,3 +1,7 @@
+roomTiles(layer::Layer, room::Maple.Room) = layerName(layer) == "fgTiles"? room.fgTiles : room.bgTiles
+validTiles(layer::Layer) = layerName(layer) == "fgTiles"? Maple.valid_fg_tiles : Maple.valid_bg_tiles
+tileNames(layer::Layer) = layerName(layer) == "fgTiles"? Maple.tile_fg_names : Maple.tile_bg_names
+
 nodeType = Tuple{Number, Number}
 edgeType = Tuple{nodeType, nodeType}
 

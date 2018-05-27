@@ -170,7 +170,7 @@ function drawMap(canvas::Gtk.GtkCanvas, camera::Camera, map::Map)
     for room in map.rooms
         dr = getDrawableRoom(map, room)
         if roomVisible(camera, width, height, room)
-            alpha = selectedRoom == room.name? 1.0 : colors.adjacent_room_alpha
+            alpha = loadedState.roomName == room.name? 1.0 : colors.adjacent_room_alpha
             drawRoom(ctx, camera, dr, alpha=alpha)
         end
     end

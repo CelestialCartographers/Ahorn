@@ -129,10 +129,6 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
     Main.persistence["placements_layer"] = selected
 end
 
-function fixDecalMaterial(s::String)
-    return splitext(replace(s, "\\", "/"))[1]
-end
-
 function subToolSelected(list::Main.ListContainer, selected::String)
     
 end
@@ -179,14 +175,14 @@ end
 
 function middleClickAbs(x::Number, y::Number)
     layerName = Main.layerName(targetLayer)
-    selections = Main.getSelected(Main.loadedRoom, layerName, Main.Rectangle(x, y, 1, 1))
+    selections = Main.getSelected(Main.loadedState.room, layerName, Main.Rectangle(x, y, 1, 1))
     best = Main.bestSelection(selections)
 
     if best !== nothing
         name, rect, target = best
 
         if name == "fgDecals" || name == "bgDecals"
-            global material = fixDecalMaterial(target.texture)
+            global material = Main.fixTexturePath(target.texture)
             Main.selectMaterialList!(material)
             Main.persistence["placements_placements_decal"] = material
 
@@ -224,7 +220,7 @@ end
 
 function leftClick(x::Number, y::Number)
     if previewGhost !== nothing
-        pushPreview!(targetLayer, Main.loadedRoom, previewGhost)
+        pushPreview!(targetLayer, Main.loadedState.room, previewGhost)
 
         Main.redrawLayer!(toolsLayer)
         Main.redrawLayer!(targetLayer)
@@ -276,7 +272,7 @@ end
 # Doesn't matter if this is grid/abs, we only need to know the selection is done
 function selectionFinish(rect::Main.Rectangle)
     if previewGhost !== nothing
-        pushPreview!(targetLayer, Main.loadedRoom, previewGhost)
+        pushPreview!(targetLayer, Main.loadedState.room, previewGhost)
         global previewGhost = nothing
         global selectionRect = nothing
 

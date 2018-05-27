@@ -1,8 +1,10 @@
 function decalSelection(decal::Maple.Decal)
     sprite = getTextureSprite("decals/$(decal.texture)")
 
+    offsetY = sprite.realHeight / 2 * (decal.scaleY < 0)
+
     x = floor(Int, decal.x - sprite.realWidth / 2 - sprite.offsetX)
-    y = floor(Int, decal.y - sprite.realHeight / 2 - sprite.offsetY)
+    y = floor(Int, decal.y - sprite.realHeight / 2 - sprite.offsetY - offsetY)
     
     width = abs(sprite.width * decal.scaleX)
     height = abs(sprite.height * decal.scaleY)

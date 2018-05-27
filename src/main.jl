@@ -49,16 +49,16 @@ end
 
 extractGamedata(storageDirectory, get(debug.config, "ALWAYS_FORCE_GAME_EXTRACTION", false))
 
-loadedMap = nothing
-selectedRoom = ""
-loadedRoom = nothing
-loadedFilename = ""
+include("loaded_state.jl")
+include("camera.jl")
+
+camera = Camera(0, 0, defaultZoom)
+loadedState = LoadedState(get(Main.persistence, "files_lastroom", ""), get(Main.persistence, "files_lastfile", ""))
 
 include("color_constants.jl")
 include("module_loader.jl")
 include("rectangle.jl")
 include("line.jl")
-include("camera.jl")
 include("list_view_helper.jl")
 include("menubar.jl")
 include("celeste_render.jl")
@@ -76,7 +76,7 @@ include("everest_rcon.jl")
 include("hotkey.jl")
 include("event_handler.jl")
 
-camera = Camera(0, 0, defaultZoom)
+sleep(0)
 
 canvas = Canvas(0, 0)
 canvas.is_realized = true
@@ -84,8 +84,8 @@ setproperty!(canvas, :hexpand, true)
 setproperty!(canvas, :vexpand, true)
 
 @guarded draw(canvas) do widget
-    if loadedMap !== nothing && isa(loadedMap, Map)
-        drawMap(canvas, camera, loadedMap)
+    if loadedState.map !== nothing && isa(loadedState.map, Map)
+        drawMap(canvas, camera, loadedState.map)
     end
 end
 
@@ -193,7 +193,13 @@ push!(box, grid)
 showall(window)
 maximize(window)
 
-# Select first room
-select!(roomList)
+# Select the specified room or the first one
+if loadedState.room !== nothing
+    select!(roomList, r -> r[1] == loadedState.roomName)
+    setCamera!(camera, loadedState.room.position...)
+
+else
+    select!(roomList)
+end
 
 include("interactive_workaround.jl")

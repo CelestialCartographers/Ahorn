@@ -55,13 +55,13 @@ function drawBucket(layer::Main.Layer, room::Main.Room)
     if bucketPosition != nothing
         x, y = bucketPosition
 
-        tiles = Main.layerName(targetLayer) == "fgTiles"? Main.loadedRoom.fgTiles : Main.loadedRoom.bgTiles
+        tiles = Main.roomTiles(layer, room)
         drawFill(x, y, tiles, layer)
     end
 end
 
 function applyFill!(x::Number, y::Number, layer::Main.Layer, material::Char)
-    tiles = layer.name == "fgTiles"? Main.loadedRoom.fgTiles : Main.loadedRoom.bgTiles
+    tiles = layer.name == "fgTiles"? Main.loadedState.room.fgTiles : Main.loadedState.room.bgTiles
 
     Main.applyBrush!(bucketBrush, tiles, material, 1, 1)
 end
@@ -74,13 +74,16 @@ function cleanup()
 end
 
 function setMaterials!(layer::Main.Layer, materials::Main.ListContainer)
-    validTiles = layer.name == "fgTiles"? Main.Maple.valid_fg_tiles : Main.Maple.valid_bg_tiles
+    validTiles = Main.validTiles(layer)
+    tileNames = Main.tileNames(layer)
 
-    Main.updateTreeView!(materials, [Main.Maple.tile_names[mat] for mat in validTiles], row -> row[1] == Main.Maple.tile_names[material])
+    Main.updateTreeView!(materials, [tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    global material = get(Main.persistence, "brushes_material", Main.Maple.tile_names["Air"])[1]
+    layerName = Main.layerName(targetLayer)
+    tileNames = Main.tileNames(targetLayer)
+    global material = get(Main.persistence, "brushes_$(layerName)_material", tileNames["Air"])[1]
 
     wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
     Main.updateTreeView!(layers, ["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
@@ -93,12 +96,16 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
     global targetLayer = Main.getLayerByName(drawingLayers, selected)
     Main.persistence["brushes_layer"] = selected
 
+    tileNames = Main.tileNames(targetLayer)
+    global material = get(Main.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
     setMaterials!(targetLayer, materials)
 end
 
 function materialSelected(list::Main.ListContainer, selected::String)
-    Main.persistence["brushes_material"] = Main.Maple.tile_names[selected]
-    global material = Main.Maple.tile_names[selected]
+    tileNames = Main.tileNames(targetLayer)
+    layerName = Main.layerName(targetLayer)
+    Main.persistence["brushes_material_$(layerName)"] = tileNames[selected]
+    global material = tileNames[selected]
 end
 
 function layersChanged(layers::Array{Main.Layer, 1})
@@ -118,12 +125,14 @@ function mouseMotion(x::Number, y::Number)
 end
 
 function middleClick(x::Number, y::Number)
-    tiles = Main.layerName(targetLayer) == "fgTiles"? Main.loadedRoom.fgTiles : Main.loadedRoom.bgTiles
+    tiles = Main.roomTiles(targetLayer, Main.loadedState.room)
+    tileNames = Main.tileNames(targetLayer)
     target = get(tiles.data, (y, x), '0')
 
     global material = target
-    Main.persistence["brushes_material"] = material
-    Main.selectMaterialList!(Main.Maple.tile_names[target])
+    layerName = Main.layerName(targetLayer)
+    Main.persistence["brushes_material_$(layerName)"] = material
+    Main.selectMaterialList!(tileNames[target])
 end
 
 function leftClick(x::Number, y::Number)

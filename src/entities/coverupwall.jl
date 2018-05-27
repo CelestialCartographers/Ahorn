@@ -5,9 +5,7 @@ placements = Dict{String, Main.EntityPlacement}(
         Main.Maple.CoverupWall,
         "rectangle",
         Dict{String, Any}(),
-        function(entity)
-            entity.data["tiletype"] = string(get(Main.persistence, "brushes_material", Main.Maple.tile_names["Snow"]))
-        end
+        Main.tileEntityFinalizer
     ),
 )
 

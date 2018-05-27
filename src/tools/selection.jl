@@ -21,6 +21,8 @@ selections = Set{Tuple{String, Main.Rectangle, Any, Number}}[]
 lastX, lastY = -1, -1
 shouldDrag = true
 
+decalValues = (1.0, 2.0^4)
+
 function drawSelections(layer::Main.Layer, room::Main.Room)
     drawnTargets = Set()
     ctx = Main.creategc(toolsLayer.surface)
@@ -33,7 +35,7 @@ function drawSelections(layer::Main.Layer, room::Main.Room)
         layer, box, target, node = selection
 
         if layer == "entities" && !(target in drawnTargets)
-            Main.renderEntitySelection(ctx, toolsLayer, target, Main.loadedRoom)
+            Main.renderEntitySelection(ctx, toolsLayer, target, Main.loadedState.room)
         end
 
         push!(drawnTargets, target)
@@ -131,7 +133,7 @@ end
 function selectionFinishAbs(rect::Main.Rectangle)
     # If we are draging we are techically not making a new selection
     if !shouldDrag
-        Main.updateSelections!(selections, Main.loadedRoom, Main.layerName(targetLayer), rect, retain=Main.modifierShift())
+        Main.updateSelections!(selections, Main.loadedState.room, Main.layerName(targetLayer), rect, retain=Main.modifierShift())
     end
 
     clearDragging!()
@@ -142,7 +144,7 @@ function selectionFinishAbs(rect::Main.Rectangle)
 end
 
 function leftClickAbs(x::Number, y::Number)
-    Main.updateSelections!(selections, Main.loadedRoom, Main.layerName(targetLayer), Main.Rectangle(x, y, 1, 1), retain=Main.modifierShift(), best=true)
+    Main.updateSelections!(selections, Main.loadedState.room, Main.layerName(targetLayer), Main.Rectangle(x, y, 1, 1), retain=Main.modifierShift(), best=true)
     clearDragging!()
     
     Main.redrawLayer!(toolsLayer)
@@ -232,9 +234,9 @@ function handleResize(event::Main.eventKey)
     for selection in selections
         name, box, target, node = selection
         extraW, extraH = resizeModifiers[event.keyval] .* step
-        horizontal, vertical = Main.canResize(target)
 
         if (name == "entities" || name == "triggers") && node == 0
+            horizontal, vertical = Main.canResize(target)
             minWidth, minHeight = Main.minimumSize(target)
 
             baseWidth = get(target.data, "width", minWidth)
@@ -245,6 +247,16 @@ function handleResize(event::Main.eventKey)
 
             target.data["width"] = width
             target.data["height"] = height
+
+            redraw = true
+
+        elseif name == "fgDecals" || name == "bgDecals"
+            extraW, extraH = resizeModifiers[event.keyval]
+            minVal, maxVal = decalValues
+            
+            # Ready for when decals render correctly
+            #target.scaleX = sign(target.scaleX) * clamp(abs(target.scaleX) * 2.0^extraW, minVal, maxVal)
+            #target.scaleY = sign(target.scaleY) * clamp(abs(target.scaleY) * 2.0^extraH, minVal, maxVal)
 
             redraw = true
         end
@@ -300,7 +312,7 @@ function handleAddNodes(event::Main.eventKey)
 end
 
 function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
-    targetList = Main.selectionTargets[Main.layerName(targetLayer)](Main.loadedRoom)
+    targetList = Main.selectionTargets[Main.layerName(targetLayer)](Main.loadedState.room)
     res = !isempty(selections)
 
     # Sort entities, otherwise deletion will break
