@@ -17,7 +17,7 @@ The easiest way to install Ahorn would be to download [the installer `install_ah
 ```sh
 ~$ julia install_ahorn.jl
 ```
-Upon launching the game for the first time, Ahorn will ask you to select the directory of your celeste installation. It needs Celeste to be installed to be able to extract textures from it, since we are not including them in the program.
+Upon launching the program for the first time, Ahorn will ask you to select the directory of your celeste installation. It needs Celeste to be installed to be able to extract textures from it, since we are not including them in the program.
 
 The config file can be found in `~/.ahorn`.
 

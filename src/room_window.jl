@@ -133,10 +133,9 @@ end
 function markForRedraw(room::Maple.Room, map::Maple.Map)
     dr = Main.getDrawableRoom(map, room)
 
-    Main.getLayerByName(dr.layers, "fgTiles").redraw = true
-    Main.getLayerByName(dr.layers, "bgTiles").redraw = true
-    Main.getLayerByName(dr.layers, "fgParallax").redraw = true
-    Main.getLayerByName(dr.layers, "bgParallax").redraw = true
+    for layer in dr.layers
+        layer.redraw = true
+    end
 end
 
 function updateRoomHandler(widget)

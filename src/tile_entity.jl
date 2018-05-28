@@ -41,7 +41,7 @@ end
 
 function tileEntityFinalizer(entity::Maple.Entity)
     key = entity.name == "exitBlock"? "tileType" : "tiletype"
-    defaultTile = Main.Maple.tile_fg_names["Snow"]
+    defaultTile = string(Main.Maple.tile_fg_names["Snow"])
     tile = string(get(Main.persistence, "brushes_material_fgTiles", defaultTile))
     tile = tile == "0"? defaultTile : tile
     entity.data[key] = tile
