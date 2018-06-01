@@ -131,19 +131,17 @@ function setEffectFromFields!(effect::Maple.Effect, simple::Bool=get(Main.config
     end
 end
 
-function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=true, simple::Bool=get(Main.config, "use_simple_room_values", true))
-    multiplier = simple? 8 : 1
+function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=trues)
+    setproperty!(posXEntry, :text, string(round(Int, get(parallax.data, "x", 0))))
+    setproperty!(posYEntry, :text, string(round(Int, get(parallax.data, "y", 0))))
 
-    setproperty!(posXEntry, :text, string(round(Int, get(parallax.data, "x", 0) / multiplier)))
-    setproperty!(posYEntry, :text, string(round(Int, get(parallax.data, "y", 0) / multiplier)))
-
-    setproperty!(scrollXEntry, :text, string(get(parallax.data, "scrollx", 0)))
-    setproperty!(scrollYEntry, :text, string(get(parallax.data, "scrolly", 0)))
+    setproperty!(scrollXEntry, :text, string(get(parallax.data, "scrollx", 1)))
+    setproperty!(scrollYEntry, :text, string(get(parallax.data, "scrolly", 1)))
     setproperty!(speedXEntry, :text, string(get(parallax.data, "speedx", 0)))
     setproperty!(speedYEntry, :text, string(get(parallax.data, "speedy", 0)))
 
     setproperty!(alphaEntry, :text, string(get(parallax.data, "alpha", 0)))
-    setproperty!(colorEntry, :text, string(get(parallax.data, "color", "000000")))
+    setproperty!(colorEntry, :text, string(get(parallax.data, "color", "ffffff")))
 
     setproperty!(onlyEntry, :text, string(get(parallax.data, "only", "*")))
     setproperty!(excludeEntry, :text, string(get(parallax.data, "exclude", "")))
@@ -152,18 +150,19 @@ function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=true, simple:
 
     setproperty!(flipXCheckbox, :active, get(parallax.data, "flipx", false))
     setproperty!(flipYCheckbox, :active, get(parallax.data, "flipy", false))
-    setproperty!(loopXCheckbox, :active, get(parallax.data, "loopx", false))
-    setproperty!(loopXCheckbox, :active, get(parallax.data, "loopy", false))
+    setproperty!(loopXCheckbox, :active, get(parallax.data, "loopx", true))
+    setproperty!(loopYCheckbox, :active, get(parallax.data, "loopy", true))
+
+    setproperty!(blendingCheckbox, :active, get(parallax.data, "blendmode", "alphablend") == "addative")
+    setproperty!(instantInCheckbox, :active, get(parallax.data, "instantIn", true))
 
     setproperty!(foregroundCheckbox, :active, fg)
 end
 
-function setParallaxFromFields!(parallax::Maple.Parallax, simple::Bool=get(Main.config, "use_simple_room_values", true))
+function setParallaxFromFields!(parallax::Maple.Parallax)
     try
-        multiplier = simple? 8 : 1
-
-        parallax.data["x"] = parseNumber(getproperty(posXEntry, :text, String)) * multiplier
-        parallax.data["y"] = parseNumber(getproperty(posYEntry, :text, String)) * multiplier
+        parallax.data["x"] = parseNumber(getproperty(posXEntry, :text, String))
+        parallax.data["y"] = parseNumber(getproperty(posYEntry, :text, String))
         
         parallax.data["scrollx"] = parseNumber(getproperty(scrollXEntry, :text, String))
         parallax.data["scrolly"] = parseNumber(getproperty(scrollYEntry, :text, String))
@@ -182,6 +181,9 @@ function setParallaxFromFields!(parallax::Maple.Parallax, simple::Bool=get(Main.
         parallax.data["flipy"] = getproperty(flipYCheckbox, :active, Bool)
         parallax.data["loopx"] = getproperty(loopXCheckbox, :active, Bool)
         parallax.data["loopy"] = getproperty(loopYCheckbox, :active, Bool)
+
+        parallax.data["blendmode"] = getproperty(blendingCheckbox, :active, Bool)? "addative" : "alphablend"
+        parallax.data["instantIn"] = getproperty(instantInCheckbox, :active, Bool)
 
         fg = getproperty(foregroundCheckbox, :active, Bool)
 
@@ -203,7 +205,25 @@ dataTuples = Dict{Type, Type}(
     Maple.Effect => effectDataType
 )
 
-function updateLists!(container::Main.ListContainer, typ::Type)
+function selectParallax(row::parallaxDataType, fg::Bool, parallax::Union{Void, Maple.Parallax})
+    parallax != nothing &&
+    row[1] == get(parallax.data, "texture", "") &&
+    row[2] == fg &&
+    row[3] == get(parallax.data, "x", 0) &&
+    row[4] == get(parallax.data, "y", 0) &&
+    row[5] == get(parallax.data, "only", "*") &&
+    row[6] == get(parallax.data, "exclude", "")
+end
+
+function selectEffect(row::effectDataType, fg::Bool, effect::Union{Void, Maple.Effect})
+    effect != nothing &&
+    row[1] == effect.typ &&
+    row[2] == fg &&
+    row[3] == get(effect.data, "only", "*") &&
+    row[4] == get(effect.data, "exclude", "")
+end
+
+function updateLists!(container::Main.ListContainer, typ::Type, f::Union{Void, Function}=nothing)
     fgStyles = Main.loadedState.map.style.foregrounds
     bgStyles = Main.loadedState.map.style.backgrounds
 
@@ -220,7 +240,10 @@ function updateLists!(container::Main.ListContainer, typ::Type)
         end
     end
 
-    Main.updateTreeView!(container, data)
+    sort!(data, by=row -> (row[2], row[1]))
+
+    selectAfter = isa(f, Function)? f : 1
+    Main.updateTreeView!(container, data, selectAfter)
 end
 
 function removeFromStyles(style::Union{Maple.Parallax, Maple.Effect})
@@ -249,11 +272,10 @@ function removeSelectedParallax(widget)
         texture, fg, x, y, only, exclude = parallaxList.store[selected(parallaxList.selection)]
         styles = fg? fgStyles.children : bgStyles.children
 
-        index = findfirst(p -> isa(p, Maple.Parallax) && p.data == targetParallax.data, styles)
+        index = findfirst(p -> p == targetParallax, styles)
         if index != 0
             deleteat!(styles, index)
-            updateLists!(parallaxList, Maple.Parallax)
-            Main.select!(parallaxList, 1)
+            updateLists!(parallaxList, Maple.Parallax, row -> selectParallax(row, fg, targetParallax))
         end
     end
 end
@@ -269,7 +291,8 @@ function addParallax(widget)
         styles = fg? fgStyles.children : bgStyles.children
         push!(styles, parallax)
 
-        updateLists!(parallaxList, Maple.Parallax)
+        global targetParallax = parallax
+        updateLists!(parallaxList, Maple.Parallax, row -> selectParallax(row, fg, targetParallax))
 
     else
         if isa(fg, String)
@@ -291,7 +314,7 @@ function editParallax(widget)
             styles = fg? fgStyles.children : bgStyles.children
             push!(styles, targetParallax)
 
-            updateLists!(parallaxList, Maple.Parallax)
+            updateLists!(parallaxList, Maple.Parallax, row -> selectParallax(row, fg, targetParallax))
 
         else
             if isa(fg, String)
@@ -309,11 +332,10 @@ function removeSelectedEffect(widget)
         typ, fg, only, exclude = effectList.store[selected(effectList.selection)]
         styles = fg? fgStyles.children : bgStyles.children
 
-        index = findfirst(e -> isa(e, Maple.Effect) && e.typ == targetEffect.typ && e.data == targetEffect.data, styles)
+        index = findfirst(e -> e == targetEffect, styles)
         if index != 0
             deleteat!(styles, index)
-            updateLists!(effectList, Maple.Effect)
-            Main.select!(effectList, 1)
+            updateLists!(effectList, Maple.Effect, row -> selectEffect(row, fg, targetEffect))
         end
     end
 end
@@ -329,8 +351,8 @@ function addEffect(widget)
         styles = fg? fgStyles.children : bgStyles.children
         push!(styles, effect)
 
-        updateLists!(effectList, Maple.Effect)
-
+        global targetEffect = effect
+        updateLists!(effectList, Maple.Effect, row -> selectEffect(row, fg, targetEffect))
     else
         if isa(fg, String)
             warn_dialog(res, StylegroundWindow)
@@ -351,7 +373,7 @@ function editEffect(widget)
             styles = fg? fgStyles.children : bgStyles.children
             push!(styles, targetEffect)
 
-            updateLists!(effectList, Maple.Effect)
+            updateLists!(effectList, Maple.Effect, row -> selectEffect(row, fg, targetEffect))
 
         else
             if isa(fg, String)
@@ -388,10 +410,10 @@ sort!(backdropChoices)
 # Gtk Widgets
 stylegroundGrid = Grid()
 
-headsUpLabel = Label("Ahorn will not render the stylegrounds for you.\nYou will need to test these ingame!")
+headsUpLabel = Label("All values here are in pixels and not tiles, as non multiples of 8 are commons for stylegrounds.\nAhorn will not render the stylegrounds for you.\nYou will need to test these ingame!")
 GAccessor.justify(headsUpLabel, GConstants.GtkJustification.CENTER)
 
-parallaxList = Main.generateTreeView(("Backdrop", "Foreground", "X", "Y", "Only", "Exclude"), parallaxDataType[], sortable=false)
+parallaxList = Main.generateTreeView(("Backdrop", "Foreground", "X", "Y", "Rooms", "Exclude"), parallaxDataType[], sortable=false)
 Main.connectChanged(parallaxList, function(list::Main.ListContainer, row)
     fgStyles = Main.loadedState.map.style.foregrounds
     bgStyles = Main.loadedState.map.style.backgrounds
@@ -400,6 +422,7 @@ Main.connectChanged(parallaxList, function(list::Main.ListContainer, row)
     styles = fg? fgStyles.children : bgStyles.children
     index = findfirst(e -> (
         isa(e, Maple.Parallax) &&
+        get(e.data, "texture", "") == texture &&
         get(e.data, "x", 0) == x &&
         get(e.data, "y", 0) == y &&
         get(e.data, "only", "*") == only &&
@@ -411,7 +434,7 @@ Main.connectChanged(parallaxList, function(list::Main.ListContainer, row)
     end
 end)
 
-effectList = Main.generateTreeView(("Effect", "Foreground", "Only", "Exclude"), effectDataType[], sortable=false)
+effectList = Main.generateTreeView(("Effect", "Foreground", "Rooms", "Exclude"), effectDataType[], sortable=false)
 Main.connectChanged(effectList, function(list::Main.ListContainer, row)
     fgStyles = Main.loadedState.map.style.foregrounds
     bgStyles = Main.loadedState.map.style.backgrounds
@@ -439,26 +462,28 @@ push!(scrollableEffectList, effectList.tree)
 backdropCombo = ComboBoxText(true)
 initCombolBox!(backdropCombo, backdropChoices)
 
-posXEntry = Entry()
-posYEntry = Entry()
+posXEntry = Entry(text="0")
+posYEntry = Entry(text="0")
 
-scrollXEntry = Entry()
-scrollYEntry = Entry()
-speedXEntry = Entry()
-speedYEntry = Entry()
+scrollXEntry = Entry(text="1")
+scrollYEntry = Entry(text="1")
+speedXEntry = Entry(text="0")
+speedYEntry = Entry(text="0")
 
-alphaEntry = Entry()
-colorEntry = Entry()
+alphaEntry = Entry(text="1")
+colorEntry = Entry(text="ffffff")
 
-onlyEntry = Entry()
-excludeEntry = Entry()
+onlyEntry = Entry(text="*")
+excludeEntry = Entry(text="")
 
 flipXCheckbox = CheckButton("Flip X")
 flipYCheckbox = CheckButton("Flip Y")
-loopXCheckbox = CheckButton("Loop X")
-loopYCheckbox = CheckButton("Loop Y")
+loopXCheckbox = CheckButton("Loop X", active=true)
+loopYCheckbox = CheckButton("Loop Y", active=true)
 
 foregroundCheckbox = CheckButton("Foreground")
+blendingCheckbox = CheckButton("Addative Blending")
+instantInCheckbox = CheckButton("Instant In", active=true)
 
 backdropLabel = Label("Backdrop")
 
@@ -498,8 +523,8 @@ signal_connect(editParallax, parallaxUpdate, "clicked")
 effectCombo = ComboBoxText(true)
 initCombolBox!(effectCombo, effectChoices)
 
-onlyEffectEntry = Entry()
-excludeEffectEntry = Entry()
+onlyEffectEntry = Entry(text="*")
+excludeEffectEntry = Entry(text="")
 
 effectLabel = Label("Effect")
 onlyEffectLabel = Label("Only")
@@ -551,6 +576,8 @@ stylegroundGrid[1, 5] = flipXCheckbox
 stylegroundGrid[2, 5] = flipYCheckbox
 stylegroundGrid[3, 5] = loopXCheckbox
 stylegroundGrid[4, 5] = loopYCheckbox
+stylegroundGrid[5, 5] = instantInCheckbox
+stylegroundGrid[6, 5] = blendingCheckbox
 
 stylegroundGrid[1:2, 9] = parallaxAdd
 stylegroundGrid[3:4, 9] = parallaxRemove

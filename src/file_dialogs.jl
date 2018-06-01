@@ -73,7 +73,7 @@ function saveFile(map::Map, filename::String)
 
     if sortRoomNames
         sort!(map.rooms, by=r -> r.name)
-        updateTreeView!(roomList, getTreeData(map))
+        updateTreeView!(roomList, getTreeData(map), row -> row[1] == loadedState.roomName)
     end
 
     fn = splitext(filename)[2] == ".bin"? filename : filename * ".bin"

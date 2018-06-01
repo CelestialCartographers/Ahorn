@@ -75,7 +75,7 @@ function extractGamedata(storage::String, force::Bool=false)
     foregroundTilesXML = joinpath(storage, "ForegroundTiles.xml")
     backgroundTilesXML = joinpath(storage, "BackgroundTiles.xml")
 
-    if !isfile(gameplaySprites) || force
+    if !isfile(gameplaySprites) || force || filesize(gameplaySprites) == 0
         include("extract_sprites_images.jl")
         Base.invokelatest(dumpSprites, celesteAtlases, storage) # Making sure the method just loaded is used.
     end
