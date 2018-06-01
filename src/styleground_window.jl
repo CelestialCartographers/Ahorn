@@ -153,7 +153,7 @@ function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=trues)
     setproperty!(loopXCheckbox, :active, get(parallax.data, "loopx", true))
     setproperty!(loopYCheckbox, :active, get(parallax.data, "loopy", true))
 
-    setproperty!(blendingCheckbox, :active, get(parallax.data, "blendmode", "alphablend") == "addative")
+    setproperty!(blendingCheckbox, :active, get(parallax.data, "blendmode", "alphablend") == "additive")
     setproperty!(instantInCheckbox, :active, get(parallax.data, "instantIn", true))
 
     setproperty!(foregroundCheckbox, :active, fg)
@@ -182,7 +182,7 @@ function setParallaxFromFields!(parallax::Maple.Parallax)
         parallax.data["loopx"] = getproperty(loopXCheckbox, :active, Bool)
         parallax.data["loopy"] = getproperty(loopYCheckbox, :active, Bool)
 
-        parallax.data["blendmode"] = getproperty(blendingCheckbox, :active, Bool)? "addative" : "alphablend"
+        parallax.data["blendmode"] = getproperty(blendingCheckbox, :active, Bool)? "additive" : "alphablend"
         parallax.data["instantIn"] = getproperty(instantInCheckbox, :active, Bool)
 
         fg = getproperty(foregroundCheckbox, :active, Bool)
@@ -482,7 +482,7 @@ loopXCheckbox = CheckButton("Loop X", active=true)
 loopYCheckbox = CheckButton("Loop Y", active=true)
 
 foregroundCheckbox = CheckButton("Foreground")
-blendingCheckbox = CheckButton("Addative Blending")
+blendingCheckbox = CheckButton("Additive Blending")
 instantInCheckbox = CheckButton("Instant In", active=true)
 
 backdropLabel = Label("Backdrop")
@@ -496,7 +496,7 @@ speedXLabel = Label("Speed X")
 speedYLabel = Label("Speed Y")
 
 alphaLabel = Label("Alpha")
-colorLabel = Label("Color (Hex)")
+colorLabel = Label("Tinting (Hex color)")
 
 onlyLabel = Label("Only")
 excludeLabel = Label("Exclude")
