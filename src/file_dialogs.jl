@@ -68,4 +68,14 @@ function menuFileSave(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     end
 end
 
-saveFile(m::Map, filename::String) = splitext(filename)[2] == ".bin"? encodeMap(m, filename) : encodeMap(m, filename * ".bin")
+function saveFile(map::Map, filename::String) 
+    sortRoomNames = get(config, "sort_rooms_on_save", true)
+
+    if sortRoomNames
+        sort!(map.rooms, by=r -> r.name)
+        updateTreeView!(roomList, getTreeData(map))
+    end
+
+    fn = splitext(filename)[2] == ".bin"? filename : filename * ".bin"
+    encodeMap(map, fn)
+end

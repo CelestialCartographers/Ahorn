@@ -65,8 +65,10 @@ function updateTreeViewUnsafe!(container::ListContainer, data::Array{T, 1}, sele
 
     container.selection = GAccessor.mode(container.selection, Gtk.GConstants.GtkSelectionMode.SINGLE)
 
-    # Select an item based on value or function
-    Gtk.GLib.@sigatom select!(container, select)
+    if !isempty(data)
+        # Select an item based on value or function
+        Gtk.GLib.@sigatom select!(container, select)
+    end
 end
 
 updateTreeView!(container::ListContainer, data::Array{T, 1}, select::Union{Integer, Function}=1) where T <: Any = Gtk.GLib.@sigatom updateTreeViewUnsafe!(container, data, select)

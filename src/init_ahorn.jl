@@ -59,6 +59,7 @@ function configureCelesteDir()
         end
 
         config["celeste_dir"] = celeste_dir
+        saveConfig(config, true) # Manually save because it likely hasn't saved this to file
         info_dialog("Ahorn will now extract all files needed. This might take a while!\nPlease close this window to continue.", window)
     end
 

@@ -103,7 +103,7 @@ function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)
 end
 
 function selectionFinish(x1::Number, y1::Number, x2::Number, y2::Number)
-    roomTiles = Main.layerName(targetLayer) == "fgTiles"? Main.loadedState.room.fgTiles : Main.loadedState.room.bgTiles
+    roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
     applyLine!(line, roomTiles, material)
 
     global line = nothing

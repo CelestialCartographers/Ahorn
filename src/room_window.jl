@@ -62,8 +62,24 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
             room.underwater = getproperty(underwaterCheckBox, :active, Bool)
             room.whisper = getproperty(whisperCheckBox, :active, Bool)
 
-            room.music = get(songList, getproperty(musicCombo, :active, Int) + 1, "music_oldsite")
+            room.disableDownTransition = getproperty(disableDownTransitionCheckBox, :active, Bool)
+
+            # Remove all instances of checkpoints
+            # Add new one if the room should have one
+            checkpoint = getproperty(checkpointCheckBox, :active, Bool)
+            filter!(e -> e.name != "checkpoint", room.entities)
+            if checkpoint
+                push!(room.entities, Maple.ChapterCheckpoint(0, 0))
+            end
+
+            room.music = Gtk.bytestring(Gtk.GAccessor.active_text(musicCombo))
             room.windPattern = get(windPatterns, getproperty(windPatternCombo, :active, Int) + 1, "None")
+
+            if !(room.music in songList) && !startswith(room.music, "event:/")
+                info_dialog("You have entered an invalid song name.\nIf you're using a custom song, make sure to copy the event path from FMOD Studio, which starts with 'event:/'")
+
+                return false, false
+            end
 
             return true, "OK"
         end
@@ -96,6 +112,10 @@ function setFieldsFromRoom(room::Maple.Room, simple::Bool=get(Main.config, "use_
     setproperty!(musicLayer2CheckBox, :active, room.musicLayer2)
     setproperty!(musicLayer3CheckBox, :active, room.musicLayer3)
     setproperty!(musicLayer4CheckBox, :active, room.musicLayer4)
+
+    hasCheckpoint = findfirst(e -> e.name == "checkpoint", room.entities)
+    setproperty!(disableDownTransitionCheckBox, :active, room.disableDownTransition)
+    setproperty!(checkpointCheckBox, :active, hasCheckpoint != 0)
 
     setproperty!(windPatternCombo, :active, findfirst(windPatterns, room.windPattern) - 1)
     setproperty!(musicCombo, :active, findfirst(songList, room.music) - 1)
@@ -230,7 +250,10 @@ musicLayer2CheckBox = CheckButton("Music Layer 2")
 musicLayer3CheckBox = CheckButton("Music Layer 3")
 musicLayer4CheckBox = CheckButton("Music Layer 4")
 
-musicCombo = ComboBoxText()
+disableDownTransitionCheckBox = CheckButton("Disable Down Transition")
+checkpointCheckBox = CheckButton("Checkpoint")
+
+musicCombo = ComboBoxText(true)
 windPatternCombo = ComboBoxText()
 
 initCombolBox!(musicCombo, songList)
@@ -280,15 +303,18 @@ roomGrid[2, 5] = musicLayer2CheckBox
 roomGrid[3, 5] = musicLayer3CheckBox
 roomGrid[4, 5] = musicLayer4CheckBox
 
-roomGrid[1, 6] = musicLabel
-roomGrid[2, 6] = musicCombo
-roomGrid[3, 6] = windPatternLabel
-roomGrid[4, 6] = windPatternCombo
+roomGrid[1, 6] = disableDownTransitionCheckBox
+roomGrid[2, 6] = checkpointCheckBox
 
-roomGrid[1:4, 7] = roomCreationButton
+roomGrid[1, 7] = musicLabel
+roomGrid[2, 7] = musicCombo
+roomGrid[3, 7] = windPatternLabel
+roomGrid[4, 7] = windPatternCombo
+
+roomGrid[1:4, 8] = roomCreationButton
 
 function createWindow()
-    roomWindow = Window("$(Main.baseTitle) - New Room", -1, -1, false, icon = Main.windowIcon
+    roomWindow = Window("$(Main.baseTitle) - New Room", -1, -1, false, icon = Main.windowIcon, gravity = GdkGravity.GDK_GRAVITY_CENTER
     ) |> (Frame() |> (roomBox = Box(:v)))
 
     # Hide window instead of destroying it

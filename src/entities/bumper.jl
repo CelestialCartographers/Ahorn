@@ -4,13 +4,48 @@ placements = Dict{String, Main.EntityPlacement}(
     "Bumper" => Main.EntityPlacement(
         Main.Maple.Bumper
     ),
+    "Bumper (Moving)" => Main.EntityPlacement(
+        Main.Maple.Bumper,
+        "point",
+        Dict{String, Any}(),
+        function(entity)
+            entity.data["nodes"] = [(Int(entity.data["x"]) + 24, Int(entity.data["y"]))]
+        end
+    ),
 )
+
+function nodeLimits(entity::Main.Maple.Entity)
+    if entity.name == "bigSpinner"
+        return true, 0, 1
+    end
+end
 
 function selection(entity::Main.Maple.Entity)
     if entity.name == "bigSpinner"
         x, y = Main.entityTranslation(entity)
+        nodes = get(entity.data, "nodes", ())
+
+        if !isempty(nodes)
+            nx, ny = Int.(nodes[1])
+            return true, [Main.Rectangle(x - 10, y - 10, 20, 20), Main.Rectangle(nx - 10, ny - 10, 20, 20)]
+        end
 
         return true, Main.Rectangle(x - 10, y - 10, 20, 20)
+    end
+end
+
+function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
+    if entity.name == "bigSpinner"
+        x, y = Main.entityTranslation(entity)
+        nodes = get(entity.data, "nodes", ())
+
+        if !isempty(nodes)
+            nx, ny = Int.(nodes[1])
+
+            theta = atan2(y - ny, x - nx)
+            Main.drawArrow(ctx, x, y, nx + cos(theta) * 8, ny + sin(theta) * 8, Main.colors.selection_selected_fc, headLength=6)
+            Main.drawSprite(ctx, "objects/Bumper/Idle22.png", nx, ny)
+        end
     end
 end
 

@@ -21,7 +21,7 @@ Upon launching the program for the first time, Ahorn will ask you to select the 
 
 The config file can be found in `~/.ahorn`.
 
-Ahorn and Maple can be updated like any Julia package using `Pkg.update()`. To uninstall Ahorn, run `Pkg.rm("Ahorn")`, `Pkg.rm("Maple")` and then `Pkg.resolve()` in Julia.
+Ahorn and Maple can be updated from within Ahorn, via `Help->Check for Updates`, or like any Julia package using `Pkg.update()`. To uninstall Ahorn, run `Pkg.rm("Ahorn")`, `Pkg.rm("Maple")` and then `Pkg.resolve()` in Julia.
 
 ## Usage
 The possible actions in Ahorn are listed on the right, just select one to use it.

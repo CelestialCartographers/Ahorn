@@ -55,7 +55,7 @@ function drawBucket(layer::Main.Layer, room::Main.Room)
     if bucketPosition != nothing
         x, y = bucketPosition
 
-        tiles = Main.roomTiles(layer, room)
+        tiles = Main.roomTiles(targetLayer, room)
         drawFill(x, y, tiles, layer)
     end
 end

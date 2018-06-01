@@ -3,7 +3,7 @@ if !isdefined(:TEST_RUNNING)
         Pkg.installed("Maple")
 
     catch err
-        println("Maple is not installed - Please run `julia install_ahorn.jl` to install all necessary dependendies.")
+        println("Maple is not installed - Please run `julia install_ahorn.jl` to install all necessary dependencies.")
         exit()
     end
 end
@@ -37,7 +37,7 @@ persistence = loadConfig(persistenceFilename)
 sleep(0)
 
 windowIcon = Pixbuf(filename = iconFile, width = -1, height = -1, preserve_aspect_ratio = true)
-window = Window(baseTitle, 1280, 720, true, true, icon = windowIcon
+window = Window(baseTitle, 1280, 720, true, true, icon = windowIcon, gravity = GdkGravity.GDK_GRAVITY_CENTER
 ) |> (Frame() |> (box = Box(:v)))
 
 include("init_ahorn.jl")
@@ -70,6 +70,7 @@ include("file_dialogs.jl")
 include("room_window.jl")
 include("about_window.jl")
 include("map_window.jl")
+include("styleground_window.jl")
 include("update_window.jl")
 include("exit_window.jl")
 include("everest_rcon.jl")
@@ -97,8 +98,14 @@ add_events(canvas,
     GConstants.GdkEventMask.BUTTON3_MOTION
 )
 
-# Use this for now, can't tell if map has actually changed
 signal_connect(ExitWindow.exitAhorn, window, "delete_event")
+signal_connect(
+    function(window::Gtk.GtkWindowLeaf, event::Gtk.GdkEventAny)
+        persistence["start_maximized"] = getproperty(window, :is_maximized, Bool)
+    end,
+    window,
+    "window-state-event"
+)
 
 # signal_connect(resize_event, window, "resize")
 signal_connect(key_press_event, window, "key-press-event")
@@ -152,14 +159,17 @@ hotkeys = Hotkey[
 ]
 
 menubar = generateMenubar(
-    ("File", "Room", "Help"),
+    ("File", "Map", "Room", "Help"),
     [
         [
             ("New", createNewMap),
             ("Open", showFileOpenDialog),
             ("Save", menuFileSave),
             ("Save as", showFileSaveDialog),
-            ("Exit", ExitWindow.exitAhorn)
+            ("Exit", ExitWindow.exitAhorn),
+        ],
+        [
+            ("Stylegrounds", StylegroundWindow.editStylegrounds),
         ],
         [
             ("Add", RoomWindow.createRoom),
@@ -191,7 +201,11 @@ grid[6, 2] = scrollableWindowMaterialList
 push!(box, grid)
 
 showall(window)
-maximize(window)
+
+# If the window was previously maximized, maximize again
+if get(persistence, "start_maximized", false)
+    maximize(window)
+end
 
 # Select the specified room or the first one
 if loadedState.room !== nothing

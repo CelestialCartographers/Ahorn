@@ -114,7 +114,7 @@ function selectionMotion(rect::Main.Rectangle)
 end
 
 function selectionFinish(rect::Main.Rectangle)
-    roomTiles = Main.layerName(targetLayer) == "fgTiles"? Main.loadedState.room.fgTiles : Main.loadedState.room.bgTiles
+    roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
     applyRectangle!(selection, roomTiles, material, filled)
 
     global selection = nothing

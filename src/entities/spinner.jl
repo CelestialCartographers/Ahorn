@@ -36,6 +36,39 @@ placements = Dict{String, Main.EntityPlacement}(
         )
     ),
 
+    "Crystal Spinner (Blue, Attached)" => Main.EntityPlacement(
+        Main.Maple.Spinner,
+        "point",
+        Dict{String, Any}(
+            "color" => "blue",
+            "attachToSolid" => true,
+        )
+    ),
+    "Crystal Spinner (Red, Attached)" => Main.EntityPlacement(
+        Main.Maple.Spinner,
+        "point",
+        Dict{String, Any}(
+            "color" => "red",
+            "attachToSolid" => true,
+        )
+    ),
+    "Crystal Spinner (Purple, Attached)" => Main.EntityPlacement(
+        Main.Maple.Spinner,
+        "point",
+        Dict{String, Any}(
+            "color" => "purple",
+            "attachToSolid" => true,
+        )
+    ),
+    "Dust Sprite (Attached)" => Main.EntityPlacement(
+        Main.Maple.Spinner,
+        "point",
+        Dict{String, Any}(
+            "dust" => true,
+            "attachToSolid" => true,
+        )
+    ),
+
     "Dust Sprite (Rotating, Clockwise)" => Main.EntityPlacement(
         Main.Maple.RotateSpinner,
         "point",

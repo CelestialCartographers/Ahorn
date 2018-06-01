@@ -2,7 +2,7 @@ module moveBlock
 
 placements = Dict{String, Main.EntityPlacement}()
 
-directions = ["up", "right", "left"]
+directions = ["up", "right", "left", "down"]
 
 for direction in directions, steerable in false:true, fast in false:true
     key = "Move Block ($(titlecase(direction)), $(fast? "Fast" : "Slow")$(steerable? ", Steerable" :    ""))"
@@ -46,7 +46,8 @@ highlightColor = (59, 50, 101) ./ 255
 arrows = Dict{String, String}(
     "up" => "objects/moveBlock/arrow02",
     "left" => "objects/moveBlock/arrow04",
-    "right" => "objects/moveBlock/arrow00"
+    "right" => "objects/moveBlock/arrow00",
+    "down" => "objects/moveBlock/arrow06",
 )
 
 button = "objects/moveBlock/button"
@@ -69,7 +70,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
 
         frame = "objects/moveBlock/base"
         if canSteer
-            if direction == "up"
+            if direction == "up" || direction == "down"
                 frame = "objects/moveBlock/base_v"
 
             else
@@ -84,7 +85,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
             Main.drawImage(ctx, frame, (i - 1) * 8, 0, 8, 0, 8, 8)
             Main.drawImage(ctx, frame, (i - 1) * 8, height - 8, 8, 16, 8, 8)
 
-            if canSteer && direction != "up"
+            if canSteer && (direction != "up" && direction != "down")
                 Main.drawImage(ctx, button, (i - 1) * 8, -2, 6, 0, 8, 6)
             end
         end
@@ -93,7 +94,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
             Main.drawImage(ctx, frame, 0, (i - 1) * 8, 0, 8, 8, 8)
             Main.drawImage(ctx, frame, width - 8, (i - 1) * 8, 16, 8, 8, 8)
 
-            if canSteer && direction == "up"
+            if canSteer && (direction == "up" || direction == "down")
                 Main.Cairo.save(ctx)
 
                 Main.rotate(ctx, -pi / 2)
@@ -110,7 +111,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
         Main.drawImage(ctx, frame, 0, height - 8, 0, 16, 8, 8)
         Main.drawImage(ctx, frame, width - 8, height - 8, 16, 16, 8, 8)
 
-        if canSteer && direction != "up"
+        if canSteer && (direction != "up" && direction != "down")
             Main.Cairo.save(ctx)
 
             Main.drawImage(ctx, button, 2, -2, 0, 0, 6, 6)
@@ -120,7 +121,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
             Main.Cairo.restore(ctx)
         end
 
-        if canSteer && direction == "up"
+        if canSteer && (direction == "up" || direction == "down")
             Main.Cairo.save(ctx)
 
             Main.rotate(ctx, -pi / 2)
@@ -132,7 +133,6 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
 
             Main.Cairo.restore(ctx)
         end
-
 
         Main.drawRectangle(ctx, div(width - arrowSprite.width, 2) + 1, div(height - arrowSprite.height, 2) + 1, 8, 8, highlightColor, highlightColor)
         Main.drawImage(ctx, arrowSprite, div(width - arrowSprite.width, 2), div(height - arrowSprite.height, 2))
