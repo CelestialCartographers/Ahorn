@@ -102,6 +102,8 @@ signal_connect(ExitWindow.exitAhorn, window, "delete_event")
 signal_connect(
     function(window::Gtk.GtkWindowLeaf, event::Gtk.GdkEventAny)
         persistence["start_maximized"] = getproperty(window, :is_maximized, Bool)
+
+        return false
     end,
     window,
     "window-state-event"
