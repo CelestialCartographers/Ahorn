@@ -140,7 +140,7 @@ function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=trues)
     setproperty!(speedXEntry, :text, string(get(parallax.data, "speedx", 0)))
     setproperty!(speedYEntry, :text, string(get(parallax.data, "speedy", 0)))
 
-    setproperty!(alphaEntry, :text, string(get(parallax.data, "alpha", 0)))
+    setproperty!(alphaEntry, :text, string(get(parallax.data, "alpha", 1)))
     setproperty!(colorEntry, :text, string(get(parallax.data, "color", "ffffff")))
 
     setproperty!(onlyEntry, :text, string(get(parallax.data, "only", "*")))
