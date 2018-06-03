@@ -4,7 +4,7 @@ using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Maple
 
 roomWindow = nothing
-templateRoom = Maple.Room()
+templateRoom = Maple.Room(name="1")
 
 songList = collect(keys(Maple.Songs.songs))
 windPatterns = Maple.windpatterns

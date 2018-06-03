@@ -180,7 +180,7 @@ function drawRoom(ctx::Cairo.CairoContext, camera::Camera, room::DrawableRoom; a
     renderingLayer = room.rendering
     drawingLayers = room.layers
 
-    renderingLayer.redraw = redrawRenderingLayer(room.layers)
+    renderingLayer.redraw = redrawRenderingLayer(renderingLayer, room.layers)
 
     if renderingLayer.redraw
         resetLayer!(renderingLayer, room)

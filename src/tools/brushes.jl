@@ -141,7 +141,7 @@ function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, 
     Main.updateTreeView!(subTools, [brush.name for brush in brushes], row -> row[1] == wantedBrush)
 
     wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
-    Main.updateTreeView!(layers, ["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
+    Main.updateLayerList!(["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
 
     Main.redrawingFuncs["tools"] = drawBrushes
     Main.redrawLayer!(toolsLayer)
@@ -168,7 +168,7 @@ function layersChanged(layers::Array{Main.Layer, 1})
 
     global drawingLayers = layers
     global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.updateLayerList!(layers, wantedLayer, "fgTiles")
+    global targetLayer = Main.selectLayer!(layers, wantedLayer, "fgTiles")
 end
 
 function subToolSelected(list::Main.ListContainer, selected::String)

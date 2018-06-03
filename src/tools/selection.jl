@@ -69,7 +69,7 @@ end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
     wantedLayer = get(Main.persistence, "placements_layer", "entities")
-    Main.updateTreeView!(layers, ["entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
+    Main.updateLayerList!(["entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
 
     Main.redrawingFuncs["tools"] = drawSelections
     Main.redrawLayer!(toolsLayer)
@@ -155,7 +155,7 @@ function layersChanged(layers::Array{Main.Layer, 1})
 
     global drawingLayers = layers
     global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.updateLayerList!(layers, wantedLayer, "entities")
+    global targetLayer = Main.selectLayer!(layers, wantedLayer, "entities")
 end
 
 function applyMovement!(target::Union{Main.Maple.Entity, Main.Maple.Trigger}, ox::Number, oy::Number, node::Number=0)

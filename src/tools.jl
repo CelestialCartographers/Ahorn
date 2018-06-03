@@ -49,10 +49,22 @@ connectChanged(subtoolList, function(list::ListContainer, selected::String)
     eventToModule(currentTool, "subToolSelected", list, selected)
 end)
 
-layersList = generateTreeView("Layer", [], sortable=false)
-connectChanged(layersList, function(list::ListContainer, selected::String)
+layersList = generateTreeView(("Layer", "Visible"), Tuple{String, Bool}[], sortable=false)
+connectChanged(layersList, function(list::ListContainer, selected::String, visible::Bool)
     eventToModule(currentTool, "layerSelected", list, selected)
+    eventToModule(currentTool, "layerSelected", list, selected, visible)
     eventToModule(currentTool, "layerSelected", list, materialList, selected)
+    eventToModule(currentTool, "layerSelected", list, materialList, selected, visible)
+end)
+connectDoubleClick(layersList, function(list::ListContainer, selected::String, visible::Bool)
+    dr = getDrawableRoom(loadedState.map, loadedState.room)
+    layer = getLayerByName(dr.layers, selected)
+    layer.visible = !visible
+    dr.rendering.redraw = true
+
+    names = String[row[1] for row in getListData!(layersList)]
+    updateLayerList!(names, row -> row[1] == selected)
+    draw(canvas)
 end)
 
 materialList = generateTreeView("Material", [], sortable=false)
@@ -126,14 +138,31 @@ function selectMaterialList!(m::String)
     select!(materialList, row -> row[1] == m)
 end
 
-function updateLayerList!(layers::Array{Layer, 1}, layer::String, default::String="")
+function selectLayer!(layers::Array{Layer, 1}, layer::String, default::String="")
     newLayer = getLayerByName(layers, layer, default)
     select!(layersList, row -> row[1] == newLayer.name)
 
     return newLayer
 end
 
-updateLayerList!(layers::Array{Layer, 1}, layer::Union{Layer, Void}, default::String="") = updateLayerList!(layers, layerName(layer), default)
+selectLayer!(layers::Array{Layer, 1}, layer::Union{Layer, Void}, default::String="") = selectLayer!(layers, layerName(layer), default)
+
+function updateLayerList!(names::Array{String, 1}, selector::Union{Function, Integer, Void}=nothing)
+    data = Tuple{String, Bool}[]
+    dr = getDrawableRoom(loadedState.map, loadedState.room)
+
+    for name in names
+        layer = getLayerByName(dr.layers, name)
+        push!(data, (name, layer.visible))
+    end
+
+    if selector !== nothing
+        updateTreeView!(layersList, data, selector)
+    
+    else
+        updateTreeView!(layersList, data)
+    end
+end
 
 function handleSelectionMotion(start::eventMouse, startCamera::Camera, current::eventMouse)
     room = loadedState.room
@@ -327,4 +356,8 @@ function handleRoomChanged(map::Map, room::Room)
     eventToModule(currentTool, "roomChanged", room)
     eventToModule(currentTool, "roomChanged", map, room)
     eventToModule(currentTool, "layersChanged", dr.layers)
+
+    # Update visibility col
+    names = String[row[1] for row in getListData!(layersList)]
+    updateLayerList!(names)
 end

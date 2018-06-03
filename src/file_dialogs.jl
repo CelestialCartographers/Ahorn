@@ -1,3 +1,6 @@
+saveDialog = isdefined(Gtk, :save_dialog_native)? Gtk.save_dialog_native : Gtk.save_dialog
+openDialog = isdefined(Gtk, :open_dialog_native)? Gtk.open_dialog_native : Gtk.open_dialog
+
 function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     celesteDir = config["celeste_dir"]
     mapsDir = joinpath(celesteDir, "ModContent", "Maps")
@@ -12,7 +15,7 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
 
     filename = ""
     cd(mapsDir) do
-        filename = open_dialog("Select map binary", window, tuple("*.bin"))
+        filename = openDialog("Select map binary", window, tuple("*.bin"))
     end
 
     # Did we actually select a file?
@@ -27,7 +30,7 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
         
         packageName = loadedState.map.package
 
-        updateTreeView!(roomList, getTreeData(loadedState.map))
+        updateTreeView!(roomList, getTreeData(loadedState.map), 1)
 
         setproperty!(window, :title, "$baseTitle - $packageName")
 
@@ -44,12 +47,11 @@ function showFileSaveDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
         if !isdir(mapsDir)
             mkpath(mapsDir)
         end
-
     end
 
     filename = ""
     cd(mapsDir) do
-        filename = save_dialog("Save as", window)
+        filename = saveDialog("Save as", window)
     end
 
     if filename != ""

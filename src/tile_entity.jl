@@ -4,6 +4,8 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
     x = Int(get(entity.data, "x", 0))
     y = Int(get(entity.data, "y", 0))
 
+    blendIn = get(entity.data, "blendin", false)
+
     width = Int(get(entity.data, "width", 32))
     height = Int(get(entity.data, "height", 32))
 
@@ -16,9 +18,16 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
     tile = get(entity.data, key, "3")
     tile = isa(tile, Number)? string(tile) : tile
     
-    # Don't draw air versions (if they even exist)
+    # Don't draw air versions, even though they shouldn't exist
     if tile != "0"
         fakeTiles = fill('0', (fth, ftw))
+
+        if blendIn
+            sliceY = max(ty - 1, 1):min(ty + th, fth)
+            sliceX = max(tx - 1, 1):min(tx + tw, ftw)
+            fakeTiles[sliceY, sliceX] = room.fgTiles.data[sliceY, sliceX]
+        end
+
         fakeTiles[max(ty, 1):min(ty + th - 1, fth), max(tx, 1):min(tx + tw - 1, ftw)] = tile[1]
 
         dr = DrawableRoom(
@@ -36,7 +45,13 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
         )
     end
 
+    Cairo.save(ctx)
+
+    rectangle(ctx, x, y, width, height)
+    clip(ctx)
     drawTiles(ctx, dr, alpha=alpha)
+
+    Cairo.restore(ctx)
 end
 
 function tileEntityFinalizer(entity::Maple.Entity)

@@ -5,24 +5,33 @@ MOD_CONTENT_GAMEPLAY = joinpath(config["celeste_dir"], "ModContent", "Graphics",
 
 drawingAlpha = 1
 
+function addSprite!(name::String)
+    surface = read_from_png("$MOD_CONTENT_GAMEPLAY/$name.png")
+    sprites[name] = Sprite(
+        0,
+        0,
+
+        Int(width(surface)),
+        Int(height(surface)),
+
+        0,
+        0,
+        Int(width(surface)),
+        Int(height(surface)),
+
+        surface
+    )
+end
+
 # Gets a resource or loads a modded one
 function getSprite(name::String)
+    # Remove entry if its (0, 0) in size
+    if haskey(sprites, name) && sprites[name].width == 0 && sprites[name].height == 0
+        delete!(sprites, name)
+    end
+
     if !haskey(sprites, name)
-        surface = read_from_png("$MOD_CONTENT_GAMEPLAY/$name.png")
-        sprites[name] = Sprite(
-            0,
-            0,
-
-            Int(width(surface)),
-            Int(height(surface)),
-
-            0,
-            0,
-            Int(width(surface)),
-            Int(height(surface)),
-
-            surface
-        )
+        addSprite!(name)
     end
 
     return sprites[name]
@@ -48,7 +57,7 @@ getGlobalAlpha() = drawingAlpha
 
 # Image based #
 
-function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::T, y::T, quadX::T, quadY::T, width::T, height::T; alpha::Number=getGlobalAlpha()) where T <: Integer
+function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha())
     Cairo.save(ctx)
 
     rectangle(ctx, x, y, width, height)
@@ -62,15 +71,15 @@ function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::T, y
     restore(ctx)
 end
 
-function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::T, y::T; alpha::Number=getGlobalAlpha()) where T <: Integer
+function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Number, y::Number; alpha::Number=getGlobalAlpha())
     drawImage(ctx, surface, x, y, 0, 0, Int(surface.width), Int(surface.height); alpha=alpha)
 end
 
-drawImage(canvas::Gtk.GtkCanvas, name::String, x::T, y::T, quadX::T, quadY::T, width::T, height::T; alpha::Number=getGlobalAlpha()) where T <: Integer = drawImage(canvas, getSprite(name), x, y, quadX, quadY, width, height, alpha=alpha)
-drawImage(ctx::Cairo.CairoContext, name::String, x::T, y::T, quadX::T, quadY::T, width::T, height::T; alpha::Number=getGlobalAlpha()) where T <: Integer = drawImage(ctx, getSprite(name), x, y, quadX, quadY, width, height, alpha=alpha)
-drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::T, y::T, quadX::T, quadY::T, width::T, height::T; alpha::Number=getGlobalAlpha()) where T <: Integer = drawImage(Gtk.getgc(canvas), sprite.surface, x, y, quadX, quadY, width, height, alpha=alpha)
+drawImage(canvas::Gtk.GtkCanvas, name::String, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha()) = drawImage(canvas, getSprite(name), x, y, quadX, quadY, width, height, alpha=alpha)
+drawImage(ctx::Cairo.CairoContext, name::String, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha()) = drawImage(ctx, getSprite(name), x, y, quadX, quadY, width, height, alpha=alpha)
+drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha()) = drawImage(Gtk.getgc(canvas), sprite.surface, x, y, quadX, quadY, width, height, alpha=alpha)
 
-function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::T, y::T, quadX::T, quadY::T, width::T, height::T; alpha::Number=getGlobalAlpha()) where T <: Integer
+function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha())
     Cairo.save(ctx)
 
     rectangle(ctx, x, y, width, height)
@@ -84,11 +93,11 @@ function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::T, y::T, quadX::T
     restore(ctx)
 end
 
-drawImage(canvas::Gtk.GtkCanvas, name::String, x::T, y::T; alpha::Number=getGlobalAlpha()) where T <: Integer = drawImage(canvas, getSprite(name), x, y, alpha=alpha)
-drawImage(ctx::Cairo.CairoContext, name::String, x::T, y::T; alpha::Number=getGlobalAlpha()) where T <: Integer = drawImage(ctx, getSprite(name), x, y, alpha=alpha)
-drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::T, y::T; alpha::Number=getGlobalAlpha()) where T <: Integer = drawImage(Gtk.getgc(canvas), image, x, y, alpha=alpha)
+drawImage(canvas::Gtk.GtkCanvas, name::String, x::Number, y::Number; alpha::Number=getGlobalAlpha()) = drawImage(canvas, getSprite(name), x, y, alpha=alpha)
+drawImage(ctx::Cairo.CairoContext, name::String, x::Number, y::Number; alpha::Number=getGlobalAlpha()) = drawImage(ctx, getSprite(name), x, y, alpha=alpha)
+drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::Number, y::Number; alpha::Number=getGlobalAlpha()) = drawImage(Gtk.getgc(canvas), image, x, y, alpha=alpha)
 
-function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::T, y::T; alpha::Number=getGlobalAlpha()) where T <: Integer
+function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::Number, y::Number; alpha::Number=getGlobalAlpha())
     drawImage(ctx, sprite, x, y, 0, 0, Int(sprite.width), Int(sprite.height), alpha=alpha)
 end
 
@@ -136,7 +145,7 @@ end
 clearSurface(surface::Cairo.CairoSurface) = clearSurface(creategc(surface))
 
 # Without border
-function drawRectangle(ctx::Cairo.CairoContext, x::T, y::T, w::T, h::T, c::colorTupleType=(0.0, 0.0, 0.0)) where T <: Integer
+function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number, h::Number, c::colorTupleType=(0.0, 0.0, 0.0))
     Cairo.save(ctx)
 
     setSourceColor(ctx, c)
@@ -147,7 +156,7 @@ function drawRectangle(ctx::Cairo.CairoContext, x::T, y::T, w::T, h::T, c::color
 end
 
 # With border
-function drawRectangle(ctx::Cairo.CairoContext, x::T, y::T, w::T, h::T, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0)) where T <: Integer
+function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number, h::Number, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0))
     Cairo.save(ctx)
 
     setSourceColor(ctx, fc)
@@ -186,7 +195,7 @@ function drawLines(ctx::Cairo.CairoContext, nodes::Array{T, 1}, sc::colorTupleTy
     restore(ctx)
 end
 
-function drawArc(ctx::Cairo.CairoContext, x::T, y::T, r::Number, alpha::Number, beta::Number, c::colorTupleType=(0.0, 0.0, 0.0)) where T <: Integer
+function drawArc(ctx::Cairo.CairoContext, x::Number, y::Number, r::Number, alpha::Number, beta::Number, c::colorTupleType=(0.0, 0.0, 0.0))
     Cairo.save(ctx)
 
     setSourceColor(ctx, c)
@@ -196,12 +205,12 @@ function drawArc(ctx::Cairo.CairoContext, x::T, y::T, r::Number, alpha::Number, 
     restore(ctx)
 end
 
-function drawCircle(ctx::Cairo.CairoContext, x::T, y::T, r::Number, c::colorTupleType=(0.0, 0.0, 0.0)) where T <: Integer
+function drawCircle(ctx::Cairo.CairoContext, x::Number, y::Number, r::Number, c::colorTupleType=(0.0, 0.0, 0.0))
     drawArc(ctx, x, y, r, 0, 2 * pi, c)
 end
 
 # Make this prettier
-function centeredText(ctx::Cairo.CairoContext, s::String, x::T, y::T; fontsize::Number=8, fontface::String="Sans", c::colorTupleType=(0.0, 0.0, 0.0)) where T <: Integer
+function centeredText(ctx::Cairo.CairoContext, s::String, x::Number, y::Number; fontsize::Number=8, fontface::String="Sans", c::colorTupleType=(0.0, 0.0, 0.0))
     Cairo.save(ctx);
 
     setSourceColor(ctx, c)

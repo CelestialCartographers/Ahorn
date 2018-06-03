@@ -1,14 +1,17 @@
 module CassetteBlock
 
+# Index 2 and 3 doesn't appear in the game
+# Everest makes them function, and recolors index 2
 colorNames = Dict{Int, String}(
     0 => "Blue",
     1 => "Rose",
-    2 => "Amethyst",
+    # 2 => "Amethyst", 
+    2 => "Emerald",
     3 => "Marigold"
 )
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Cassette Block ($color)" => Main.EntityPlacement(
+    "Cassette Block ($index - $color)" => Main.EntityPlacement(
         Main.Maple.CassetteBlock,
         "rectangle",
         Dict{String, Any}(
@@ -19,7 +22,7 @@ placements = Dict{String, Main.EntityPlacement}(
 
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "cassetteBlock"
-        return true, 8, 8
+        return true, 16, 16
     end
 end
 
@@ -42,7 +45,8 @@ end
 
 colors = Dict{Integer, Main.colorTupleType}(
     1 => (240, 73, 190, 1) ./ (255.0, 255.0, 255.0, 1.0),
-    2 => (197, 71, 203, 1) ./ (255.0, 255.0, 255.0, 1.0),
+    # 2 => (197, 71, 203, 1) ./ (255.0, 255.0, 255.0, 1.0),
+    2 => (28, 80, 51, 1) ./ (255.0, 255.0, 255.0, 1.0),
     3 => (182, 128, 38, 1) ./ (255.0, 255.0, 255.0, 1.0)
 )
 

@@ -146,7 +146,7 @@ function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=trues)
     setproperty!(onlyEntry, :text, string(get(parallax.data, "only", "*")))
     setproperty!(excludeEntry, :text, string(get(parallax.data, "exclude", "")))
 
-    setproperty!(backdropCombo, :active, findfirst(backdropChoices, get(parallax.data, "texture", "")) - 1)
+    Gtk.GLib.@sigatom setproperty!(backdropCombo, :active, findfirst(backdropChoices, get(parallax.data, "texture", "")) - 1)
 
     setproperty!(flipXCheckbox, :active, get(parallax.data, "flipx", false))
     setproperty!(flipYCheckbox, :active, get(parallax.data, "flipy", false))
@@ -413,6 +413,22 @@ stylegroundGrid = Grid()
 headsUpLabel = Label("All values here are in pixels and not tiles, as non multiples of 8 are commons for stylegrounds.\nAhorn will not render the stylegrounds for you.\nYou will need to test these ingame!")
 GAccessor.justify(headsUpLabel, GConstants.GtkJustification.CENTER)
 
+backdropPreview = Canvas(320, 180)
+@guarded draw(backdropPreview) do widget
+    ctx = Gtk.getgc(backdropPreview)
+    texture = Gtk.bytestring(Gtk.GAccessor.active_text(backdropCombo))
+    sprite = Main.getSprite(texture)
+
+    if sprite.width > 0 && sprite.height > 0
+        Main.clearSurface(ctx)
+        Main.drawImage(ctx, sprite, -sprite.offsetX, -sprite.offsetY)
+
+    else
+        Main.clearSurface(ctx)
+        Main.centeredText(ctx, "Unable to preview backdrop.", 160, 90, fontsize=16)
+    end
+end
+
 parallaxList = Main.generateTreeView(("Backdrop", "Foreground", "X", "Y", "Rooms", "Exclude"), parallaxDataType[], sortable=false)
 Main.connectChanged(parallaxList, function(list::Main.ListContainer, row)
     fgStyles = Main.loadedState.map.style.foregrounds
@@ -544,7 +560,8 @@ signal_connect(addEffect, effectAdd, "clicked")
 signal_connect(removeSelectedEffect, effectRemove, "clicked")
 signal_connect(editEffect, effectUpdate, "clicked")
 
-stylegroundGrid[1:8, 1] = scrollableParallaxList
+stylegroundGrid[1:6, 1] = scrollableParallaxList
+stylegroundGrid[7:8, 1] = backdropPreview
 
 stylegroundGrid[1, 2] = posXLabel
 stylegroundGrid[2, 2] = posXEntry
@@ -608,6 +625,8 @@ function createWindow()
     
     push!(stylegroundBox, stylegroundGrid)
     showall(stylegroundWindow)
+
+    @guarded signal_connect(widget -> draw(backdropPreview), backdropCombo, "changed")
 
     setproperty!(stylegroundWindow, :height_request, height(stylegroundWindow) + 400)
 

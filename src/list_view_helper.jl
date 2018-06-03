@@ -14,9 +14,21 @@ columnNames = Dict{Type, Any}(
     Gtk.GdkPixbufLeaf => "pixbuf"
 )
 
+# Broken in Gtk.jl, redefined here
+index_from_iter(store::GtkListStore, iter::Gtk.TRI) = parse(Int, Gtk.get_string_from_iter(GtkTreeModel(store), iter)) + 1
+
 sanitizeListData(t::Tuple) = t
 sanitizeListData(a::Array{T, 1}) where T <: Any = (isempty(a) && !(eltype(a) <: Tuple))? Tuple{String}[] : sanitizeListData.(a)
 sanitizeListData(v::Any) = (v,)
+
+function getSelected(list::ListContainer, default::Integer=1)
+    if hasselection(list.selection)
+        return index_from_iter(list.store, selected(list.selection))
+
+    else
+        return default
+    end
+end
 
 function unselect!(list::ListContainer)
     if hasselection(list.selection)
@@ -26,8 +38,8 @@ function unselect!(list::ListContainer)
     end
 end
 
-function Base.select!(list::ListContainer, i::Integer=1)
-    if 1 <= i <= length(list.store)
+function Base.select!(list::ListContainer, i::Integer=1; force::Bool=false)
+    if 1 <= i <= length(list.store) && (i != getSelected(list, -1) || force)
         Gtk.GLib.@sigatom select!(list.selection, Gtk.iter_from_index(list.store, i))
 
         return true
@@ -36,19 +48,22 @@ function Base.select!(list::ListContainer, i::Integer=1)
     return false
 end
 
-function Base.select!(list::ListContainer, f::Function, default::Number=1)
+function Base.select!(list::ListContainer, f::Function, default::Number=1; force::Bool=false)
     for i in 1:length(list.store)
         row = list.store[i]
 
         if f(row)
-            Gtk.GLib.@sigatom select!(list, i)
+            Gtk.GLib.@sigatom select!(list, i, force=force)
 
             return true
         end
     end
 
-    Gtk.GLib.@sigatom select!(list, default)
-    return false
+    return Gtk.GLib.@sigatom select!(list, default, force=true)
+end
+
+function getListData!(container::ListContainer)
+    return [container.store[i] for i in 1:length(container.store)]
 end
 
 function updateTreeViewUnsafe!(container::ListContainer, data::Array{T, 1}, select::Union{Integer, Function}=1) where T <: Any
@@ -66,12 +81,16 @@ function updateTreeViewUnsafe!(container::ListContainer, data::Array{T, 1}, sele
     container.selection = GAccessor.mode(container.selection, Gtk.GConstants.GtkSelectionMode.SINGLE)
 
     if !isempty(data)
-        # Select an item based on value or function
         Gtk.GLib.@sigatom select!(container, select)
     end
 end
 
-updateTreeView!(container::ListContainer, data::Array{T, 1}, select::Union{Integer, Function}=1) where T <: Any = Gtk.GLib.@sigatom updateTreeViewUnsafe!(container, data, select)
+# Default selection to current selected
+updateTreeView!(
+    container::ListContainer,
+    data::Array{T, 1},
+    select::Union{Integer, Function}=getSelected(container)
+) where T <: Any = Gtk.GLib.@sigatom updateTreeViewUnsafe!(container, data, select)
 
 function generateTreeView(header::H, data::Array{T, 1}; resize::Bool=true, sortable::Bool=true) where {T <: Any, H <: Any}
     header = sanitizeListData(header)
@@ -120,6 +139,21 @@ end
 
 function connectChanged(container::ListContainer, f::Function)
     @guarded signal_connect(container.selection, "changed") do widget
+        if hasselection(container.selection)
+            row = selected(container.selection)
+
+            if applicable(f, container, container.store[row]...)
+                f(container, container.store[row]...)
+
+            else
+                f(container, container.store[row])
+            end
+        end
+    end
+end
+
+function connectDoubleClick(container::ListContainer, f::Function)
+    @guarded signal_connect(container.tree, "row-activated") do widget, box, col
         if hasselection(container.selection)
             row = selected(container.selection)
 

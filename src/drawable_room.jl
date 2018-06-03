@@ -61,7 +61,7 @@ function roomVisible(camera::Camera, width::Integer, height::Integer, room::Room
     return checkCollision(cameraRect, roomRect)
 end
 
-redrawRenderingLayer(layers::Array{Layer, 1}) = any(map(layer -> layer.redraw, layers))
+redrawRenderingLayer(renderingLayer::Layer, layers::Array{Layer, 1}) = renderingLayer.redraw || any(map(layer -> layer.redraw, layers))
 
 function DrawableRoom(map::Map, room::Room)
     return DrawableRoom(

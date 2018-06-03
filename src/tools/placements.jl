@@ -104,7 +104,7 @@ end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
     wantedLayer = get(Main.persistence, "placements_layer", "entities")
-    Main.updateTreeView!(layers, ["entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == wantedLayer)
+    Main.updateLayerList!(["entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == wantedLayer)
     Main.updateTreeView!(subTools, [])
 
     Main.redrawingFuncs["tools"] = drawSelection
@@ -286,7 +286,7 @@ function layersChanged(layers::Array{Main.Layer, 1})
 
     global drawingLayers = layers
     global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.updateLayerList!(layers, wantedLayer, "entities")
+    global targetLayer = Main.selectLayer!(layers, wantedLayer, "entities")
 end
 
 scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
