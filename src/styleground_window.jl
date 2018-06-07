@@ -20,6 +20,7 @@ end
 function showStylegroundWindow(widget=nothing, event=nothing)
     spawnWindowIfAbsent!()
     visible(stylegroundWindow, true)
+    present(stylegroundWindow)
 
     return true
 end

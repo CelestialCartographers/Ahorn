@@ -1,13 +1,14 @@
-using Images
+#using Images
+#using Colors
 
 struct Img
     path::String
     width::Int32
     height::Int32
-    texture::Array{ARGB32,1}
+    texture::Array{Cairo.ARGB32,1}
 end
 
-ARGB(r, g, b, a) = reinterpret(ARGB32, UInt32(a)<<24 | UInt32(b)<<16 | UInt32(g)<<8 | UInt32(r))
+ARGB(r, g, b, a) = reinterpret(Cairo.ARGB32, UInt32(a)<<24 | UInt32(b)<<16 | UInt32(g)<<8 | UInt32(r))
 
 function extractFromFile(path::String, filename::String)
     fh = open(joinpath(path, filename), "r")
@@ -17,7 +18,7 @@ function extractFromFile(path::String, filename::String)
     height = read(data, Int32)
     hasAlpha = read(data, UInt8) == 1
     totalSize = width * height
-    textureData = Array{ARGB32,1}(totalSize)
+    textureData = Array{Cairo.ARGB32,1}(totalSize)
     j = 1
     while j < totalSize
         repeat = read(data, UInt8)
@@ -42,7 +43,7 @@ function extractFromFile(path::String, filename::String)
 end
 
 function extractGraphics(celestedir::String)
-    path = joinpath(celestedir, "Content/Graphics/Atlases")
+    path = joinpath(celestedir, "Content", "Graphics", "Atlases")
     filepaths = String[]
     for (root, dirs, files) in walkdir(path), file in filter(f -> contains(f, ".data"), files)
         push!(filepaths, relpath(joinpath(root, file), path))
@@ -58,5 +59,7 @@ end
 
 function dumpSprites(source::String, destination::String=source)
     img = extractFromFile(source, "Gameplay0.data")
-    Images.save(joinpath(destination, "Gameplay.png"), transpose(reshape(img.texture, (img.height, img.width))))
+
+    surface = CairoImageSurface(reshape(img.texture, (img.height, img.width)))
+    write_to_png(surface, joinpath(destination, "Gameplay.png"))
 end

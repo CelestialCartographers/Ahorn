@@ -15,7 +15,7 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
 
     filename = ""
     cd(mapsDir) do
-        filename = openDialog("Select map binary", window, tuple("*.bin"))
+        filename = openDialog("Select map binary", window, ["*.bin"])
     end
 
     # Did we actually select a file?
@@ -56,6 +56,7 @@ function showFileSaveDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
 
     if filename != ""
         loadedState.filename = filename
+        persistence["files_lastfile"] = loadedState.filename
         
         saveFile(loadedState.map, filename)
     end

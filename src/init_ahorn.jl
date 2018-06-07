@@ -2,6 +2,8 @@
     using WinReg
 end
 
+openDialog = isdefined(Gtk, :open_dialog_native)? Gtk.open_dialog_native : Gtk.open_dialog
+
 function findSteamInstallDir()
     if is_windows()
         try
@@ -38,7 +40,7 @@ function configureCelesteDir()
 
         if !found
             info_dialog("Ahorn depends on the Celeste installation directory to function.\nPlease use the file dialog to select 'Celeste.exe' on your computer.", window)
-            filename = open_dialog("Select Celeste.exe", window, tuple("*.exe"))
+            filename = openDialog("Select Celeste.exe", window, tuple("*.exe"))
 
             if filename == ""
                 return false

@@ -168,7 +168,7 @@ function updateRoomHandler(widget)
         markForRedraw(Main.loadedState.room, Main.loadedState.map)
         draw(Main.canvas)
 
-        visible(roomWindow, false)
+        showRoomWindow()
 
     else
         if isa(reason, String)
@@ -181,6 +181,7 @@ end
 function showRoomWindow(widget=nothing, event=nothing)
     spawnWindowIfAbsent!()
     visible(roomWindow, true)
+    present(roomWindow)
 
     return true
 end
@@ -212,7 +213,7 @@ function createRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
 
         Gtk.GLib.@sigatom setFieldsFromRoom(templateRoom)
 
-        visible(roomWindow, true)
+        showRoomWindow()
     end
 end
 
@@ -228,7 +229,7 @@ function configureRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
 
         Gtk.GLib.@sigatom setFieldsFromRoom(Main.loadedState.room)
 
-        visible(roomWindow, true)
+        showRoomWindow()
     end
 end
 
