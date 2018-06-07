@@ -17,6 +17,12 @@ triggerEntities = Dict{String, Function}(
     "right" => Main.Maple.TriggerSpikesRight,
 )
 
+triggerEntitiesOrig = Dict{String, Function}(
+    "up" => Main.Maple.TriggerSpikesOriginalUp,
+    "down" => Main.Maple.TriggerSpikesOriginalDown,
+    "left" => Main.Maple.TriggerSpikesOriginalLeft,
+    "right" => Main.Maple.TriggerSpikesOriginalRight,
+)
 
 for variant in variants
     for (dir, entity) in entities
@@ -29,10 +35,23 @@ for variant in variants
             )
         )
     end
+
+    if variant != "tentacles"
+        for (dir, entity) in triggerEntitiesOrig
+            key = "Trigger Spikes ($(titlecase(dir)), $(titlecase(variant)))"
+            placements[key] = Main.EntityPlacement(
+                entity,
+                "rectangle",
+                Dict{String, Any}(
+                    "type" => variant
+                )
+            )
+        end
+    end
 end
 
 for (dir, entity) in triggerEntities
-    key = "Trigger Spikes ($(titlecase(dir)))"
+    key = "Trigger Spikes ($(titlecase(dir)), Dust)"
     placements[key] = Main.EntityPlacement(
         entity,
         "rectangle"
@@ -49,6 +68,11 @@ directions = Dict{String, String}(
     "triggerSpikesDown" => "down",
     "triggerSpikesLeft" => "left",
     "triggerSpikesRight" => "right",
+
+    "triggerSpikesOriginalUp" => "up",
+    "triggerSpikesOriginalDown" => "down",
+    "triggerSpikesOriginalLeft" => "left",
+    "triggerSpikesOriginalRight" => "right",
 )
 
 offsets = Dict{String, Tuple{Integer, Integer}}(
@@ -56,6 +80,13 @@ offsets = Dict{String, Tuple{Integer, Integer}}(
     "down" => (4, 4),
     "left" => (-4, 4),
     "right" => (4, 4),
+)
+
+triggerOriginalOffsets = Dict{String, Tuple{Integer, Integer}}(
+    "up" => (0, 5),
+    "down" => (0, -4),
+    "left" => (5, 0),
+    "right" => (-4, 0),
 )
 
 rotations = Dict{String, Number}(
@@ -93,6 +124,8 @@ triggerRotationOffsets = Dict{String, Tuple{Number, Number}}(
     "down" => (5, 5),
     "left" => (-1, 4),
 )
+
+triggerOriginalNames = ["triggerSpikesOriginalDown", "triggerSpikesOriginalLeft", "triggerSpikesOriginalRight", "triggerSpikesOriginalUp"]
 
 function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
     if haskey(directions, entity.name)
@@ -172,18 +205,19 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
     if haskey(directions, entity.name)
         variant = entity.name in triggerNames? "trigger" : get(entity.data, "type", "default")
         direction = get(directions, entity.name, "up")
+        triggerOriginalOffset = entity.name in triggerOriginalNames ? triggerOriginalOffsets[direction] : (0, 0)
 
         if variant == "tentacles"
             width = get(entity.data, "width", 16)
             height = get(entity.data, "height", 16)
 
             for ox in 0:16:width - 16, oy in 0:16:height - 16
-                drawX, drawY = (ox, oy) .+ (16, 16) .* rotationOffsets[direction]
+                drawX, drawY = (ox, oy) .+ (16, 16) .* rotationOffsets[direction] .+ triggerOriginalOffset
                 Main.drawSprite(ctx, "danger/tentacles00.png", drawX, drawY, rot=rotations[direction])
             end
 
             if width / 8 % 2 == 1 || height / 8 % 2 == 1
-                drawX, drawY = (width - 16, height - 16) .+ (16, 16) .* rotationOffsets[direction]
+                drawX, drawY = (width - 16, height - 16) .+ (16, 16) .* rotationOffsets[direction] .+ triggerOriginalOffset
                 Main.drawSprite(ctx, "danger/tentacles00.png", drawX, drawY, rot=rotations[direction])
             end
 
@@ -194,7 +228,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
             updown = direction == "up" || direction == "down"
 
             for ox in 0:8:width - 8, oy in 0:8:height - 8
-                drawX, drawY = (ox, oy) .+ triggerRotationOffsets[direction]
+                drawX, drawY = (ox, oy) .+ triggerRotationOffsets[direction] .+ triggerOriginalOffset
                 Main.drawSprite(ctx, "danger/triggertentacle/wiggle_v06.png", drawX, drawY, rot=rotations[direction])
                 Main.drawSprite(ctx, "danger/triggertentacle/wiggle_v03.png", drawX + 3 * updown, drawY + 3 * !updown, rot=rotations[direction])
             end
@@ -204,7 +238,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
             height = get(entity.data, "height", 8)
 
             for ox in 0:8:width - 8, oy in 0:8:height - 8
-                drawX, drawY = (ox, oy) .+ offsets[direction]
+                drawX, drawY = (ox, oy) .+ offsets[direction] .+ triggerOriginalOffset
                 Main.drawSprite(ctx, "danger/spikes/$(variant)_$(direction)00.png", drawX, drawY)
             end
         end
