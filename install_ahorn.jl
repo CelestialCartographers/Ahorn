@@ -67,7 +67,7 @@ println("""
 Precompiling a few dependencies. This may take a while, so get yourself some cheese and a cup of fennel tea.
 ======================
 """)
-using Maple, Cairo, Gtk, Images, YAML, LightXML
+using Maple, Cairo, Gtk, YAML, LightXML
 
 if is_windows()
     println("""
