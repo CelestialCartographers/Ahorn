@@ -35,7 +35,7 @@ kevinColor = (98, 34, 43) ./ 255
 
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "crushBlock"
-        return true, 32, 32
+        return true, 24, 24
     end
 end
 

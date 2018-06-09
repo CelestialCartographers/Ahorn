@@ -9,7 +9,7 @@ function exitAhorn(widget=nothing, event=nothing)
     Main.saveConfig(Main.persistence, true)
 
     # If called via Exit button instead of "X" on window
-    if isa(widget, Gtk.GtkMenuItemLeaf)
+    if isa(widget, Gtk.GtkMenuItemLeaf) && res
         destroy(Main.window)
     end
 

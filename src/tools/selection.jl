@@ -329,8 +329,13 @@ function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Numbe
                 least, most = Main.nodeLimits(target)
                 nodes = get(target.data, "nodes", [])
 
+                # Delete the node if that doesn't result in too few nodes
+                # Delete the whole entity if it does
                 if length(nodes) - 1 >= least && length(nodes) >= node
                     deleteat!(nodes, node)
+
+                else
+                    deleteat!(targetList, index)
                 end
             end
         end

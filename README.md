@@ -74,6 +74,10 @@ Most of these are the names internally used by the game, so blame the devs. Most
 
 No. If something is not visible in Ahorn, it is still there in data and will be saved along with it. However, Maple is currently still unable to save 100% of the original maps back, only about 99%. As always, make backups.
 
+**How to I make room transitions?**
+
+A player is able to move from one room to another if the rooms are directly adjacent and there is at least one spawn point (Player entity) in each room.
+
 **So, I made a map. What now? How do I load it?**
 
 While you can load maps without, it is _highly_ recommended to install [Everest](https://github.com/EverestAPI/Everest). Once Everest is installed, place your map binary in `ModContent/Maps/` in your Celeste installtion directory. It should now be accessible from inside the game.

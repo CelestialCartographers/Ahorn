@@ -251,8 +251,6 @@ function removeFromStyles(style::Union{Maple.Parallax, Maple.Effect})
     fgStyles = Main.loadedState.map.style.foregrounds.children
     bgStyles = Main.loadedState.map.style.backgrounds.children
 
-    data = parallaxList.store[selected(parallaxList.selection)]
-
     indexFg = findfirst(s -> s == style, fgStyles)
     indexBg = findfirst(s -> s == style, bgStyles)
 
