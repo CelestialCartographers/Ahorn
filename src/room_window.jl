@@ -69,7 +69,9 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
             checkpoint = getproperty(checkpointCheckBox, :active, Bool)
             filter!(e -> e.name != "checkpoint", room.entities)
             if checkpoint
-                push!(room.entities, Maple.ChapterCheckpoint(0, 0))
+                # Allow Origin is Everest specific
+                # Uses first player placed entity if position is not changed
+                push!(room.entities, Maple.ChapterCheckpoint(0, 0, allowOrigin=true))
             end
 
             room.music = Gtk.bytestring(Gtk.GAccessor.active_text(musicCombo))
