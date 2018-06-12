@@ -595,7 +595,7 @@ setproperty!(onlyLabel, :xalign, 0.1)
 setproperty!(excludeLabel, :xalign, 0.1)
 
 parallaxAdd = Button("Add")
-parallaxRemove = Button("Update")
+parallaxRemove = Button("Remove")
 parallaxUpdate = Button("Update")
 parallaxUp = Button("↑")
 parallaxDown = Button("↓")

@@ -128,19 +128,24 @@ function registerPlacements!(placements::Dict{String, EntityPlacement}, loaded::
     end
 end
 
-function generateEntity(ep::EntityPlacement, x::Integer, y::Integer, width::Integer=-1, height::Integer=-1)
+function generateEntity(ep::EntityPlacement, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
     # Create the default entity with the correct coords, then merge the extra data in
     entity = ep.func(x, y)
     merge!(entity.data, ep.data)
 
     if ep.placement == "rectangle"
-        # Merging in width and height, safer than constructor
+        rect = selectionRectangle(x, y, nx, ny)
+
         resizeW, resizeH = canResize(entity)
         minW, minH = minimumSize(entity)
         
-        w = resizeW? max(minW, width) : minW
-        h = resizeH? max(minH, height) : minH
+        w = resizeW? max(minW, rect.w) : minW
+        h = resizeH? max(minH, rect.h) : minH
+        entity.data["x"], entity.data["y"] = rect.x, rect.y
         merge!(entity.data, Dict("width" => w, "height" => h))
+
+    elseif ep.placement == "line"
+        merge!(entity.data, Dict("nodes" => [(nx, ny)]))
     end
 
     ep.finalizer(entity)

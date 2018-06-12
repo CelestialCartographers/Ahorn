@@ -224,9 +224,6 @@ function handleMovement(event::Main.eventKey)
     return redraw
 end
 
-# TODO
-# Ask the entity if it can resize in the given direction
-# Test this when spikes are selectable
 function handleResize(event::Main.eventKey)
     redraw = false
     step = Main.modifierControl()? 1 : 8

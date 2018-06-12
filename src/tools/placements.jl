@@ -24,11 +24,14 @@ filterAnimations(s::String) = ismatch(animationRegex, s)
 function drawSelection(layer::Main.Layer, room::Main.Room)
     ctx = Main.creategc(toolsLayer.surface)
 
+
     if selectionRect !== nothing && selectionRect.w > 0 && selectionRect.h > 0
-        Main.drawRectangle(ctx, selectionRect, Main.colors.selection_selection_fc, Main.colors.selection_selection_bc)
+        if isa(material, Main.EntityPlacement) && material.placement == "rectangle" 
+            Main.drawRectangle(ctx, selectionRect, Main.colors.selection_selection_fc, Main.colors.selection_selection_bc)
+        end
     end
 
-    if previewGhost != nothing
+    if previewGhost !== nothing
         if Main.layerName(targetLayer) == "entities"
             Main.renderEntity(ctx, toolsLayer, previewGhost, room, alpha=Main.colors.ghost_preplacement_alpha)
             Main.renderEntitySelection(ctx, toolsLayer, previewGhost, room, alpha=Main.colors.ghost_preplacement_alpha)
@@ -42,12 +45,12 @@ function drawSelection(layer::Main.Layer, room::Main.Room)
     end
 end
 
-function generatePreview(layer::Main.Layer, material::Any, x::Integer, y::Integer; sx::Integer=1, sy::Integer=1, width=8, height=8)
+function generatePreview(layer::Main.Layer, material::Any, x::Integer, y::Integer; sx::Integer=1, sy::Integer=1, nx=x + 8, ny=y + 8)
     if layer.name == "entities"
-        return Main.generateEntity(material, x, y, width, height)
+        return Main.generateEntity(material, x, y, nx, ny)
 
     elseif layer.name == "triggers"
-        return Main.generateEntity(material, x, y, width, height)
+        return Main.generateEntity(material, x, y, nx, ny)
 
     elseif layer.name == "fgDecals" || layer.name == "bgDecals"
         texture = splitext(material)[1] * ".png"
@@ -228,12 +231,9 @@ function leftClick(x::Number, y::Number)
     end
 end
 
-function selectionMotion(rect::Main.Rectangle)
-    x, y = rect.x, rect.y
-    w, h = rect.w * 8, rect.h * 8
-
+function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)
     if !Main.modifierControl() && (Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers")
-        newGhost = generatePreview(targetLayer, material, x * 8 - 8, y * 8 - 8, width=w, height=h)
+        newGhost = generatePreview(targetLayer, material, x1 * 8 - 8, y1 * 8 - 8, nx=x2 * 8, ny=y2 * 8)
 
         if newGhost != previewGhost
             global previewGhost = newGhost
@@ -243,31 +243,18 @@ function selectionMotion(rect::Main.Rectangle)
     end
 end
 
-function selectionMotionAbs(rect::Main.Rectangle)
-    x, y = rect.x, rect.y
-    w, h = rect.w, rect.h
-
-    redrawTools = false
-
-    if rect != selectionRect
-        global selectionRect = rect
-        redrawTools = true
-    end
-
+function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
     if Main.modifierControl() && (Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers")
-        newGhost = generatePreview(targetLayer, material, x, y, width=w, height=h)
+        newGhost = generatePreview(targetLayer, material, x1, y1, nx=x2, ny=y2)
 
         if newGhost != previewGhost
             global previewGhost = newGhost
 
-            redrawTools = true
-            Main.redrawLayer!(targetLayer)
+            Main.redrawLayer!(toolsLayer)
         end
     end
 
-    if redrawTools
-        Main.redrawLayer!(toolsLayer)
-    end
+    global selectionRect = Main.selectionRectangle(x1, y1, x2, y2)
 end
 
 # Doesn't matter if this is grid/abs, we only need to know the selection is done
