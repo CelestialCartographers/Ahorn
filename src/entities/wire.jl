@@ -30,7 +30,6 @@ function selection(entity::Main.Maple.Entity)
     end
 end
 
-sprite = "characters/monsters/predator73.png"
 wireColor = (89, 88, 102, 1) ./ (255, 255, 255, 1)
 wireColorSelected = (Main.colors.selection_selected_fc)
 

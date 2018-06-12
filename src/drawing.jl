@@ -41,12 +41,14 @@ function loadExternalSprites!()
     celesteDir = config["celeste_dir"]
     gameplayPath = joinpath(celesteDir, "ModContent", "Graphics", "Atlases", "Gameplay")
 
-    for (root, dir, files) in walkdir(gameplayPath)
-        for file in files
-            rawpath = joinpath(root, file)
-            path = fixTexturePath(relpath(rawpath, gameplayPath))
+    if isdir(gameplayPath)
+        for (root, dir, files) in walkdir(gameplayPath)
+            for file in files
+                rawpath = joinpath(root, file)
+                path = fixTexturePath(relpath(rawpath, gameplayPath))
 
-            addSprite!(path)
+                addSprite!(path)
+            end
         end
     end
 end
