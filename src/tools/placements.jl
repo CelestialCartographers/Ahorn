@@ -87,6 +87,7 @@ function updateMaterialsTriggers!(materials::Main.ListContainer)
 end
 
 function updateMaterialsDecals!(materials::Main.ListContainer)
+    Main.loadExternalSprites!()
     textures = Main.spritesToDecalTextures(Main.sprites)
     sort!(textures)
     filter!(filterAnimations, textures)

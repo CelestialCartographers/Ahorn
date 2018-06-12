@@ -5,9 +5,30 @@ using Maple
 
 stylegroundWindow = nothing
 
-function initCombolBox!(widget, list)
-    push!.(widget, list)
+function initComboBox!(widget::Gtk.GtkComboBoxText, list)
+    push!(widget, list...)
     setproperty!(widget, :active, 0)
+end
+
+function setComboIndex!(widget::Gtk.GtkComboBoxText, choices::Array{String, 1}, item::String)
+    if !(item in choices)
+        push!(choices, item)
+        push!(widget, item)
+    end
+
+    setproperty!(widget, :active, findfirst(choices, item) - 1)
+end
+
+function setupComboBoxes!()
+    empty!(effectCombo)
+    empty!(backdropCombo)
+
+    empty!(backdropChoices)
+    push!(backdropChoices, spritesToBackgroundTextures(Main.sprites)...)
+    sort!(backdropChoices)
+
+    initComboBox!(effectCombo, effectChoices)
+    initComboBox!(backdropCombo, backdropChoices)
 end
 
 function spawnWindowIfAbsent!()
@@ -110,7 +131,7 @@ function setFieldsFromEffect!(effect::Maple.Effect, fg::Bool=true, simple::Bool=
     setproperty!(onlyEffectEntry, :text, string(get(effect.data, "only", "*")))
     setproperty!(excludeEffectEntry, :text, string(get(effect.data, "exclude", "")))
 
-    setproperty!(effectCombo, :active, findfirst(effectChoices, lowercase(effect.typ)) - 1)
+    Gtk.GLib.@sigatom setComboIndex!(effectCombo, effectChoices, lowercase(effect.typ))
 
     setproperty!(foregroundEffectCheckbox, :active, fg)
 end
@@ -147,7 +168,7 @@ function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=trues)
     setproperty!(onlyEntry, :text, string(get(parallax.data, "only", "*")))
     setproperty!(excludeEntry, :text, string(get(parallax.data, "exclude", "")))
 
-    Gtk.GLib.@sigatom setproperty!(backdropCombo, :active, findfirst(backdropChoices, get(parallax.data, "texture", "")) - 1)
+    Gtk.GLib.@sigatom setComboIndex!(backdropCombo, backdropChoices, get(parallax.data, "texture", ""))
 
     setproperty!(flipXCheckbox, :active, get(parallax.data, "flipx", false))
     setproperty!(flipYCheckbox, :active, get(parallax.data, "flipy", false))
@@ -241,13 +262,13 @@ function updateLists!(container::Main.ListContainer, typ::Type, f::Union{Void, F
         end
     end
 
-    sort!(data, by=row -> (row[2], row[1]))
+    sort!(data, by=row -> row[2])
 
     selectAfter = isa(f, Function)? f : 1
     Main.updateTreeView!(container, data, selectAfter)
 end
 
-function removeFromStyles(style::Union{Maple.Parallax, Maple.Effect})
+function findInStyles(style::Union{Maple.Parallax, Maple.Effect})
     fgStyles = Main.loadedState.map.style.foregrounds.children
     bgStyles = Main.loadedState.map.style.backgrounds.children
 
@@ -255,12 +276,28 @@ function removeFromStyles(style::Union{Maple.Parallax, Maple.Effect})
     indexBg = findfirst(s -> s == style, bgStyles)
 
     if indexFg != 0
-        deleteat!(fgStyles, indexFg)
+        return true, indexFg
     end
 
     if indexBg != 0
-        deleteat!(bgStyles, indexBg)
+        return false, indexBg
     end
+
+    return false, 0
+end
+
+function removeFromStyles(style::Union{Maple.Parallax, Maple.Effect})
+    fgStyles = Main.loadedState.map.style.foregrounds.children
+    bgStyles = Main.loadedState.map.style.backgrounds.children
+
+    fg, index = findInStyles(style)
+    target = fg? fgStyles : bgStyles
+
+    if index != 0
+        deleteat!(target, index)
+    end
+
+    return fg, index
 end
 
 function removeSelectedParallax(widget)
@@ -308,10 +345,10 @@ function editParallax(widget)
             fgStyles = Main.loadedState.map.style.foregrounds
             bgStyles = Main.loadedState.map.style.backgrounds
         
-            removeFromStyles(targetParallax)
+            existingFg, index = removeFromStyles(targetParallax)
 
             styles = fg? fgStyles.children : bgStyles.children
-            push!(styles, targetParallax)
+            insert!(styles, index, targetParallax)
 
             updateLists!(parallaxList, Maple.Parallax, row -> selectParallax(row, fg, targetParallax))
 
@@ -320,6 +357,34 @@ function editParallax(widget)
                 warn_dialog(res, StylegroundWindow)
             end
         end
+    end
+end
+
+function moveParallax(style::Union{Maple.Parallax, Maple.Effect}, fg::Bool, from::Number, to::Number)
+    fgStyles = Main.loadedState.map.style.foregrounds
+    bgStyles = Main.loadedState.map.style.backgrounds
+
+    styles = fg? fgStyles.children : bgStyles.children
+
+    if 1 <= to <= length(styles) - 1
+        deleteat!(styles, from)
+        insert!(styles, to, style)
+    end
+end
+
+function parallaxMoveUp(widget)
+    if targetParallax !== nothing
+        fg, index = findInStyles(targetParallax)
+        moveParallax(targetParallax, fg, index, index - 1)
+        updateLists!(parallaxList, Maple.Parallax, row -> selectParallax(row, fg, targetParallax))
+    end
+end
+
+function parallaxMoveDown(widget)
+    if targetParallax !== nothing
+        fg, index = findInStyles(targetParallax)
+        moveParallax(targetParallax, fg, index, index + 1)
+        updateLists!(parallaxList, Maple.Parallax, row -> selectParallax(row, fg, targetParallax))
     end
 end
 
@@ -367,10 +432,10 @@ function editEffect(widget)
             fgStyles = Main.loadedState.map.style.foregrounds
             bgStyles = Main.loadedState.map.style.backgrounds
         
-            removeFromStyles(targetEffect)
+            existingFg, index = removeFromStyles(targetEffect)
 
             styles = fg? fgStyles.children : bgStyles.children
-            push!(styles, targetEffect)
+            insert!(styles, index, targetEffect)
 
             updateLists!(effectList, Maple.Effect, row -> selectEffect(row, fg, targetEffect))
 
@@ -383,6 +448,9 @@ function editEffect(widget)
 end
 
 function editStylegrounds(widget::Gtk.GtkMenuItemLeaf=MenuItem())
+    Main.loadExternalSprites!()
+    Gtk.GLib.@sigatom setupComboBoxes!()
+
     showStylegroundWindow()
 
     if Main.loadedState.map === nothing
@@ -475,7 +543,6 @@ scrollableEffectList = ScrolledWindow(hexpand=true, vexpand=true, hscrollbar_pol
 push!(scrollableEffectList, effectList.tree)
 
 backdropCombo = ComboBoxText(true)
-initCombolBox!(backdropCombo, backdropChoices)
 
 posXEntry = Entry(text="0")
 posYEntry = Entry(text="0")
@@ -528,15 +595,18 @@ setproperty!(onlyLabel, :xalign, 0.1)
 setproperty!(excludeLabel, :xalign, 0.1)
 
 parallaxAdd = Button("Add")
-parallaxRemove = Button("Remove")
+parallaxRemove = Button("Update")
 parallaxUpdate = Button("Update")
+parallaxUp = Button("↑")
+parallaxDown = Button("↓")
 
 signal_connect(addParallax, parallaxAdd, "clicked")
 signal_connect(removeSelectedParallax, parallaxRemove, "clicked")
 signal_connect(editParallax, parallaxUpdate, "clicked")
+signal_connect(parallaxMoveUp, parallaxUp, "clicked")
+signal_connect(parallaxMoveDown, parallaxDown, "clicked")
 
 effectCombo = ComboBoxText(true)
-initCombolBox!(effectCombo, effectChoices)
 
 onlyEffectEntry = Entry(text="*")
 excludeEffectEntry = Entry(text="")
@@ -597,7 +667,9 @@ stylegroundGrid[6, 5] = blendingCheckbox
 
 stylegroundGrid[1:2, 9] = parallaxAdd
 stylegroundGrid[3:4, 9] = parallaxRemove
-stylegroundGrid[4:8, 9] = parallaxUpdate
+stylegroundGrid[5:6, 9] = parallaxUpdate
+stylegroundGrid[7, 9] = parallaxUp
+stylegroundGrid[8, 9] = parallaxDown
 
 stylegroundGrid[1:8, 10] = scrollableEffectList
 

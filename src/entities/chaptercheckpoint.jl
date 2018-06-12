@@ -8,7 +8,6 @@ function selection(entity::Main.Maple.Entity)
     end
 end
 
-# TODO - Render as tinted player entity when we have tinting
 function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
     if entity.name == "checkpoint"
         Main.drawSprite(ctx, "objects/checkpoint/flag16.png", 0, 0)

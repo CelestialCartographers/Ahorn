@@ -15,6 +15,18 @@ function initCombolBox!(widget, list)
     setproperty!(widget, :active, 0)
 end
 
+function createCheckpoint(room::Maple.Room)
+    for entity in room.entities
+        if entity.name == "player"
+            x, y = Int(get(entity.data, "x", 0)), Int(get(entity.data, "y", 0))
+
+            return Maple.ChapterCheckpoint(x, y - 16, allowOrigin=true)
+        end
+    end
+
+    return Maple.ChapterCheckpoint(Int.(room.size ./ 2)..., allowOrigin=true)
+end
+
 function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bool=false, simple::Bool=get(Main.config, "use_simple_room_values", true))
     try
         if Main.loadedState.map != nothing
@@ -69,9 +81,7 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
             checkpoint = getproperty(checkpointCheckBox, :active, Bool)
             filter!(e -> e.name != "checkpoint", room.entities)
             if checkpoint
-                # Allow Origin is Everest specific
-                # Uses first player placed entity if position is not changed
-                push!(room.entities, Maple.ChapterCheckpoint(0, 0, allowOrigin=true))
+                push!(room.entities, createCheckpoint(room))
             end
 
             room.music = Gtk.bytestring(Gtk.GAccessor.active_text(musicCombo))

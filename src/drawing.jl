@@ -37,6 +37,20 @@ function getSprite(name::String)
     return sprites[name]
 end
 
+function loadExternalSprites!()
+    celesteDir = config["celeste_dir"]
+    gameplayPath = joinpath(celesteDir, "ModContent", "Graphics", "Atlases", "Gameplay")
+
+    for (root, dir, files) in walkdir(gameplayPath)
+        for file in files
+            rawpath = joinpath(root, file)
+            path = fixTexturePath(relpath(rawpath, gameplayPath))
+
+            addSprite!(path)
+        end
+    end
+end
+
 # remove .png and convert to unix paths
 function fixTexturePath(texture::String)
     return replace(Base.splitext(texture)[1], "\\", "/")

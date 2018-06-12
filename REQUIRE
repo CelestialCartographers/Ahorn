@@ -1,6 +1,6 @@
 julia 0.6
 Cairo 0.5.1
-Gtk 0.14
+Gtk 0.14.0
 YAML
 LightXML
 ImageMagick 0.5.1
