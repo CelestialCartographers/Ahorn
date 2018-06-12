@@ -5,8 +5,9 @@ MOD_CONTENT_GAMEPLAY = joinpath(config["celeste_dir"], "ModContent", "Graphics",
 
 drawingAlpha = 1
 
-function addSprite!(name::String)
-    surface = read_from_png("$MOD_CONTENT_GAMEPLAY/$name.png")
+function addSprite!(name::String, filename::String="")
+    filename = filename == ""? "$MOD_CONTENT_GAMEPLAY/$name.png" : filename
+    surface = read_from_png(filename)
     sprites[name] = Sprite(
         0,
         0,
@@ -39,15 +40,30 @@ end
 
 function loadExternalSprites!()
     celesteDir = config["celeste_dir"]
-    gameplayPath = joinpath(celesteDir, "ModContent", "Graphics", "Atlases", "Gameplay")
+    modsPath = joinpath(celesteDir, "Mods")
+    modcontentPath = joinpath(celesteDir, "ModContent")
+    gameplayPath = joinpath("Graphics", "Atlases", "Gameplay")
 
-    if isdir(gameplayPath)
-        for (root, dir, files) in walkdir(gameplayPath)
-            for file in files
-                rawpath = joinpath(root, file)
-                path = fixTexturePath(relpath(rawpath, gameplayPath))
+    targetFolders = String[]
 
-                addSprite!(path)
+    if isdir(modsPath)
+        for fn in readdir(modsPath)
+            if isdir(joinpath(modsPath, fn))
+                push!(targetFolders, joinpath(modsPath, fn))
+            end
+        end
+    end
+
+    push!(targetFolders, modcontentPath)
+
+    for target in targetFolders
+        path = joinpath(target, gameplayPath)
+        if isdir(path)
+            for (root, dir, files) in walkdir(path)
+                for file in files
+                    rawpath = joinpath(root, file)
+                    addSprite!(fixTexturePath(relpath(rawpath, path)), rawpath)
+                end
             end
         end
     end

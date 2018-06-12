@@ -231,20 +231,12 @@ function leftClick(x::Number, y::Number)
     end
 end
 
-function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)
-    if !Main.modifierControl() && (Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers")
-        newGhost = generatePreview(targetLayer, material, x1 * 8 - 8, y1 * 8 - 8, nx=x2 * 8, ny=y2 * 8)
-
-        if newGhost != previewGhost
-            global previewGhost = newGhost
-
-            Main.redrawLayer!(toolsLayer)
-        end
-    end
-end
-
 function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
-    if Main.modifierControl() && (Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers")
+    if Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers"
+        if !Main.modifierControl()
+            x1, y1, x2, y2 = floor.(Int, [x1, y1, x2 + 8 * sign(x2 - x1), y2 + 8 * sign(y2 - y1)] ./ 8) .* 8
+        end
+
         newGhost = generatePreview(targetLayer, material, x1, y1, nx=x2, ny=y2)
 
         if newGhost != previewGhost

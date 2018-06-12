@@ -139,8 +139,8 @@ function generateEntity(ep::EntityPlacement, x::Integer, y::Integer, nx::Integer
         resizeW, resizeH = canResize(entity)
         minW, minH = minimumSize(entity)
         
-        w = resizeW? max(minW, rect.w) : minW
-        h = resizeH? max(minH, rect.h) : minH
+        w = resizeW? max(minW, rect.w - 1) : minW
+        h = resizeH? max(minH, rect.h - 1) : minH
         entity.data["x"], entity.data["y"] = rect.x, rect.y
         merge!(entity.data, Dict("width" => w, "height" => h))
 
