@@ -39,33 +39,9 @@ function getSprite(name::String)
 end
 
 function loadExternalSprites!()
-    celesteDir = config["celeste_dir"]
-    modsPath = joinpath(celesteDir, "Mods")
-    modcontentPath = joinpath(celesteDir, "ModContent")
-    gameplayPath = joinpath("Graphics", "Atlases", "Gameplay")
-
-    targetFolders = String[]
-
-    if isdir(modsPath)
-        for fn in readdir(modsPath)
-            if isdir(joinpath(modsPath, fn))
-                push!(targetFolders, joinpath(modsPath, fn))
-            end
-        end
-    end
-
-    push!(targetFolders, modcontentPath)
-
-    for target in targetFolders
-        path = joinpath(target, gameplayPath)
-        if isdir(path)
-            for (root, dir, files) in walkdir(path)
-                for file in files
-                    rawpath = joinpath(root, file)
-                    addSprite!(fixTexturePath(relpath(rawpath, path)), rawpath)
-                end
-            end
-        end
+    externalSprites = findExternalSprites()
+    for (texture, raw) in externalSprites
+        addSprite!(fixTexturePath(texture), raw)
     end
 end
 

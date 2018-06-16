@@ -1,4 +1,4 @@
-module zipMover
+module ZipMover
 
 placements = Dict{String, Main.EntityPlacement}(
     "Zip Mover" => Main.EntityPlacement(

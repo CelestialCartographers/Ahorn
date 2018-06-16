@@ -1,4 +1,4 @@
-module moveBlock
+module MoveBlock
 
 placements = Dict{String, Main.EntityPlacement}()
 

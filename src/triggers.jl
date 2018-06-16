@@ -25,7 +25,8 @@ function canResize(trigger::Main.Maple.Trigger)
     return true, true
 end
 
-loadedTriggers = joinpath.("triggers", readdir(@abs "triggers"))
+loadedTriggers = joinpath.("triggers", readdir(abs"triggers"))
+append!(loadedTriggers, findExternalModules("Ahorn", "triggers"))
 loadModule.(loadedTriggers)
 
 triggerPlacements = Dict{String, EntityPlacement}()

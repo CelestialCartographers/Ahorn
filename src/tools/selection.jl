@@ -121,6 +121,7 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
 
                 if applicable(applyMovement!, target, dx, dy, node)
                     applyMovement!(target, dx, dy, node)
+                    notifyMovement!(target)
                 end
             end
 
@@ -177,6 +178,20 @@ function applyMovement!(decal::Main.Maple.Decal, ox::Number, oy::Number, node::N
     decal.y += oy
 end
 
+function notifyMovement!(entity::Main.Maple.Entity)
+    Main.eventToModules(Main.loadedEntities, "moved", entity)
+    Main.eventToModules(Main.loadedEntities, "moved", entity, Main.loadedState.room)
+end
+
+function notifyMovement!(trigger::Main.Maple.Trigger)
+    Main.eventToModules(Main.loadedTriggers, "moved", trigger)
+    Main.eventToModules(Main.loadedTriggers, "moved", trigger, Main.loadedState.room)
+end
+
+function notifyMovement!(decal::Main.Maple.Decal)
+    # Decals doesn't care
+end
+
 resizeModifiers = Dict{Integer, Tuple{Number, Number}}(
     # w, h
     # Decrease / Increase width
@@ -216,6 +231,7 @@ function handleMovement(event::Main.eventKey)
 
         if applicable(applyMovement!, target, ox, oy, node)
             applyMovement!(target, ox, oy, node)
+            notifyMovement!(target)
 
             redraw = true
         end

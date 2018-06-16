@@ -128,7 +128,21 @@ function registerPlacements!(placements::Dict{String, EntityPlacement}, loaded::
     end
 end
 
-function generateEntity(ep::EntityPlacement, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
+function callFinalizer(map::Maple.Map, room::Main.Room, ep::EntityPlacement, target::Union{Maple.Entity, Maple.Trigger})
+    argsList = Tuple[
+        (target, map, room),
+        (target, room),
+        (target,)
+    ]
+
+    for args in argsList
+        if applicable(ep.finalizer, args...)
+            return ep.finalizer(args...)
+        end
+    end
+end
+
+function generateEntity(map::Maple.Map, room::Main.Room, ep::EntityPlacement, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
     # Create the default entity with the correct coords, then merge the extra data in
     entity = ep.func(x, y)
     merge!(entity.data, ep.data)
@@ -148,12 +162,13 @@ function generateEntity(ep::EntityPlacement, x::Integer, y::Integer, nx::Integer
         merge!(entity.data, Dict("nodes" => [(nx, ny)]))
     end
 
-    ep.finalizer(entity)
+    callFinalizer(map, room, ep, entity)
 
     return entity
 end
 
-loadedEntities = joinpath.("entities", readdir(@abs "entities"))
+loadedEntities = joinpath.("entities", readdir(abs"entities"))
+append!(loadedEntities, findExternalModules("Ahorn", "entities"))
 loadModule.(loadedEntities)
 
 entityPlacements = Dict{String, EntityPlacement}()

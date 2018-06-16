@@ -12,7 +12,7 @@ using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Cairo
 using Maple
 
-macro abs(path)
+macro abs_str(path)
     :($(normpath(joinpath(@__DIR__, path))))
 end
 
@@ -20,8 +20,8 @@ end
 sleep(0)
 
 baseTitle = "Ahorn α"
-iconFile = @abs "../docs/logo-256-a.png"
-logoFile = @abs "../docs/logo-1024-a.png"
+iconFile = abs"../docs/logo-256-a.png"
+logoFile = abs"../docs/logo-1024-a.png"
 
 storageDirectory = joinpath(homedir(), ".ahorn")
 configFilename = joinpath(storageDirectory, "config.json")
@@ -55,6 +55,7 @@ include("camera.jl")
 camera = Camera(0, 0, defaultZoom)
 loadedState = LoadedState(get(Main.persistence, "files_lastroom", ""), get(Main.persistence, "files_lastfile", ""))
 
+include("mods.jl")
 include("color_constants.jl")
 include("module_loader.jl")
 include("rectangle.jl")

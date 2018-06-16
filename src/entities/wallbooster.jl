@@ -1,4 +1,4 @@
-module wallBooster
+module WallBooster
 
 placements = Dict{String, Main.EntityPlacement}(
     "Wall Booster (Right)" => Main.EntityPlacement(

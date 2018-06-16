@@ -9,7 +9,7 @@ function spawnWindowIfAbsent!()
         icon = Pixbuf(filename = Main.logoFile, width = 256, height = 256, preserve_aspect_ratio = true)
         version = "Alpha - Very Broken - "
         try
-            version *= "Git Commit " * string(LibGit2.GitHash(LibGit2.head(LibGit2.GitRepo(Main.@abs "../"))))[1:7]
+            version *= "Git Commit " * string(LibGit2.GitHash(LibGit2.head(LibGit2.GitRepo(Main.abs"../"))))[1:7]
         catch e
             version *= "Don't expect a version number"
         end

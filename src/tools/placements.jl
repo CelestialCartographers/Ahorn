@@ -46,11 +46,8 @@ function drawSelection(layer::Main.Layer, room::Main.Room)
 end
 
 function generatePreview(layer::Main.Layer, material::Any, x::Integer, y::Integer; sx::Integer=1, sy::Integer=1, nx=x + 8, ny=y + 8)
-    if layer.name == "entities"
-        return Main.generateEntity(material, x, y, nx, ny)
-
-    elseif layer.name == "triggers"
-        return Main.generateEntity(material, x, y, nx, ny)
+    if layer.name == "entities" || layer.name == "triggers"
+        return Main.generateEntity(Main.loadedState.map, Main.loadedState.room, material, x, y, nx, ny)
 
     elseif layer.name == "fgDecals" || layer.name == "bgDecals"
         texture = splitext(material)[1] * ".png"

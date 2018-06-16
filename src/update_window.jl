@@ -12,7 +12,7 @@ end
 
 function updateAhorn(widget::Gtk.GtkMenuItemLeaf=MenuItem())
     try
-        repo = LibGit2.GitRepo(Main.@abs "../")
+        repo = LibGit2.GitRepo(Main.abs"../")
         LibGit2.fetch(repo)
         l, r = LibGit2.revcount(repo, "master", "origin/master")
         lc = string(LibGit2.GitHash(LibGit2.GitObject(repo, "master")))[1:7]
