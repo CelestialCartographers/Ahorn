@@ -19,19 +19,19 @@ end
 
 Base.size(state::TileStates) = size(state.rands)
 
-getTileStateSeed(name::String, package::String="") = foldl((a, b) -> a + Int(b) * 128, 0, collect(package * name))
-getTileStateSeed(room::Room, package::String="") = getTileStateSeed(room.name, package)
+getTileStateSeed(name::String, package::String="", fg::Bool=false) = foldl((a, b) -> a + Int(b) * 128, 0, collect(package * (fg? "fg" : "bg") * name))
+getTileStateSeed(room::Room, package::String="", fg::Bool=false) = getTileStateSeed(room.name, package, fg)
 
-function updateTileStates!(room::String, package::String, states::TileStates, width::Integer, height::Integer)
-    seed = getTileStateSeed(room, package)
-    srand(seed)
+function updateTileStates!(room::String, package::String, states::TileStates, width::Integer, height::Integer, fg::Bool=false)
+    seed = getTileStateSeed(room, package, fg)
+    rng = MersenneTwister(seed)
 
     states.quads = fill((-1, -1), (height, width))
     states.chars = fill('0', (height, width))
-    states.rands = rand(1:4, (height, width))
+    states.rands = rand(rng, 1:4, (height, width))
 end
 
-updateTileStates!(room::Room, package::String, states::TileStates, width::Integer, height::Integer) = updateTileStates!(room.name, package, states, width, height)
+updateTileStates!(room::Room, package::String, states::TileStates, width::Integer, height::Integer, fg::Bool=false) = updateTileStates!(room.name, package, states, width, height, fg)
 
 function getDrawingLayers()
     return Layer[

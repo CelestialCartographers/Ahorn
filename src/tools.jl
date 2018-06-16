@@ -228,7 +228,7 @@ function handleClicks(event::eventMouse, camera::Camera)
             # Teleport to cursor 
             if EverestRcon.loaded && event.button == 0x1 && modifierControl() && modifierShift()
                 url = get(config, "everest_rcon", "http://localhost:32270")
-                room = loadedState.roomName[5:end]
+                room = loadedState.roomName
                 EverestRcon.reload(url, room)
                 EverestRcon.teleportToRoom(url, room, ax, ay)
 

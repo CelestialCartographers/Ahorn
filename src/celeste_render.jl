@@ -37,7 +37,7 @@ function drawTiles(ctx::Cairo.CairoContext, dr::DrawableRoom, fg::Bool=true; alp
     meta = fg? fgTilerMeta : bgTilerMeta
 
     if size(states) != (height, width)
-        updateTileStates!(dr.room, dr.map.package, states, width, height)
+        updateTileStates!(dr.room, dr.map.package, states, width, height, fg)
     end
 
     drawTiles(ctx, tiles, meta, states, width, height, alpha=alpha)
