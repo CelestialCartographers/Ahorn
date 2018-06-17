@@ -4,7 +4,7 @@ eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion}
 eventKey = Gtk.GdkEventKey
 
 loadedTools = joinpath.("tools", readdir(abs"tools"))
-append!(loadedTools, findExternalModules("Ahorn", "tools"))
+append!(loadedTools, findExternalModules("tools"))
 loadModule.(loadedTools)
 currentTool = nothing
 

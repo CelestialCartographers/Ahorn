@@ -1,4 +1,27 @@
-function getModDirs()
+function getAhornModDirs()
+    if !get(config, "load_plugins_ahorn", true)
+        return String[]
+    end
+
+    modsPath = joinpath(storageDirectory, "plugins")
+    targetFolders = String[]
+
+    if isdir(modsPath)
+        for fn in readdir(modsPath)
+            if isdir(joinpath(modsPath, fn))
+                push!(targetFolders, joinpath(modsPath, fn))
+            end
+        end
+    end
+
+    return targetFolders
+end 
+
+function getCelesteModDirs()
+    if !get(config, "load_plugins_celeste", true)
+        return String[]
+    end
+
     celesteDir = config["celeste_dir"]
     modsPath = joinpath(celesteDir, "Mods")
     modcontentPath = joinpath(celesteDir, "ModContent")
@@ -18,10 +41,23 @@ function getModDirs()
     return targetFolders
 end
 
+function findExternalSprite(resource::String)
+    targetFolders = getCelesteModDirs()
+    gameplayPath = joinpath("Graphics", "Atlases", "Gameplay")
+
+    for target in targetFolders
+        fn = joinpath(target, gameplayPath, splitext(resource)[1] * ".png")
+        println(fn)
+        if isfile(fn)
+            return fn
+        end
+    end
+end
+
 function findExternalSprites()
     res = Tuple{String, String}[]
     
-    targetFolders = getModDirs()
+    targetFolders = getCelesteModDirs()
     gameplayPath = joinpath("Graphics", "Atlases", "Gameplay")
 
     for target in targetFolders
@@ -43,8 +79,11 @@ end
 
 function findExternalModules(args::String...)
     res = String[]
-    targetFolders = getModDirs()
-    
+    targetFolders = vcat(
+        joinpath.("Ahorn", getCelesteModDirs()),
+        getAhornModDirs()
+    )
+
     for folder in targetFolders
         path = joinpath(folder, args...)
         if isdir(path)

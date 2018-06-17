@@ -5,10 +5,10 @@ MOD_CONTENT_GAMEPLAY = joinpath(config["celeste_dir"], "ModContent", "Graphics",
 
 drawingAlpha = 1
 
-function addSprite!(name::String, filename::String="")
-    filename = filename == ""? "$MOD_CONTENT_GAMEPLAY/$name.png" : filename
+function addSprite!(resource::String, filename::String="")
+    filename = filename == ""? findExternalSprite(resource) : filename
     surface = read_from_png(filename)
-    sprites[name] = Sprite(
+    sprites[resource] = Sprite(
         0,
         0,
 

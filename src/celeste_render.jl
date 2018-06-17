@@ -119,6 +119,8 @@ function resetDrawingSettings()
     reset!(camera)
 end
 
+loadExternalSprites!()
+
 drawingLayers = nothing
 drawableRooms = Dict{Map, Dict{Room, DrawableRoom}}()
 
