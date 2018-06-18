@@ -2,8 +2,6 @@
     using WinReg
 end
 
-openDialog = isdefined(Gtk, :open_dialog_native)? Gtk.open_dialog_native : Gtk.open_dialog
-
 function findSteamInstallDir()
     if is_windows()
         try

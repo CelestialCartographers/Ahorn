@@ -16,6 +16,9 @@ macro abs_str(path)
     :($(normpath(joinpath(@__DIR__, path))))
 end
 
+saveDialog = isdefined(Gtk, :save_dialog_native) && Gtk.libgtk_version >= v"3.20.0"? Gtk.save_dialog_native : Gtk.save_dialog
+openDialog = isdefined(Gtk, :open_dialog_native) && Gtk.libgtk_version >= v"3.20.0"? Gtk.open_dialog_native : Gtk.open_dialog
+
 # This makes Gtk dialogs closeable
 sleep(0)
 
@@ -30,8 +33,8 @@ persistenceFilename = joinpath(storageDirectory, "persistence.json")
 include("config.jl")
 include("debug.jl")
 
-config = loadConfig(configFilename)
-persistence = loadConfig(persistenceFilename)
+config = loadConfig(configFilename, 0)
+persistence = loadConfig(persistenceFilename, 90)
 
 # Stop timemachine errors
 sleep(0)
@@ -52,8 +55,15 @@ extractGamedata(storageDirectory, get(debug.config, "ALWAYS_FORCE_GAME_EXTRACTIO
 include("loaded_state.jl")
 include("camera.jl")
 
-camera = Camera(0, 0, defaultZoom)
-loadedState = LoadedState(get(Main.persistence, "files_lastroom", ""), get(Main.persistence, "files_lastfile", ""))
+loadedState = LoadedState(
+    get(Main.persistence, "files_lastroom", ""),
+    get(Main.persistence, "files_lastfile", "")
+)
+camera = Camera(
+    get(persistence, "camera_position_x", 0),
+    get(persistence, "camera_position_y", 0),
+    get(persistence, "camera_scale", get(config, "camera_default_zoom", 4))
+)
 
 include("mods.jl")
 include("color_constants.jl")
@@ -63,7 +73,8 @@ include("line.jl")
 include("list_view_helper.jl")
 include("menubar.jl")
 include("celeste_render.jl")
-include("menu_tiles.jl")
+#include("menu_tiles.jl")
+include("map_image_dumper.jl")
 include("selections.jl")
 include("tools.jl")
 include("roomlist.jl")
@@ -88,6 +99,10 @@ setproperty!(canvas, :vexpand, true)
 @guarded draw(canvas) do widget
     if loadedState.map !== nothing && isa(loadedState.map, Map)
         drawMap(canvas, camera, loadedState.map)
+
+        persistence["camera_position_x"] = camera.x
+        persistence["camera_position_y"] = camera.y
+        persistence["camera_scale"] = camera.scale
     end
 end
 
@@ -161,29 +176,43 @@ hotkeys = Hotkey[
     )
 ]
 
-menubar = generateMenubar(
-    ("File", "Map", "Room", "Help"),
+# Handle menubars better in the feature
+# Allow registering of custom menubar items, like debug menu
+menubarHeaders = ["File", "Map", "Room", "Help"]
+menubarItems = [
     [
-        [
-            ("New", createNewMap),
-            ("Open", showFileOpenDialog),
-            ("Save", menuFileSave),
-            ("Save as", showFileSaveDialog),
-            ("Exit", ExitWindow.exitAhorn),
-        ],
-        [
-            ("Stylegrounds", StylegroundWindow.editStylegrounds),
-        ],
-        [
-            ("Add", RoomWindow.createRoom),
-            ("Configure", RoomWindow.configureRoom),
-        ],
-        [
-            ("Check for Updates", UpdateWindow.updateAhorn),
-            ("About", AboutWindow.showAboutWindow),
-        ]
+        ("New", createNewMap),
+        ("Open", showFileOpenDialog),
+        ("Save", menuFileSave),
+        ("Save as", showFileSaveDialog),
+        ("Exit", ExitWindow.exitAhorn),
+    ],
+    [
+        ("Stylegrounds", StylegroundWindow.editStylegrounds),
+        ("Save Map Image", MapImageDumper.dumpMapImageDialog)
+    ],
+    [
+        ("Add", RoomWindow.createRoom),
+        ("Configure", RoomWindow.configureRoom),
+    ],
+    [
+        ("Check for Updates", UpdateWindow.updateAhorn),
+        ("About", AboutWindow.showAboutWindow),
     ]
-)
+]
+
+if get(debug.config, "DEBUG_MENU_DROPDOWN", false)
+    push!(menubarHeaders, "Debug")
+    push!(menubarItems, [
+        ("Reload Tools", (w) -> debug.reloadTools!()),
+        ("Reload Entities", (w) -> debug.reloadEntities!()),
+        ("Reload Triggers", (w) -> debug.reloadTriggers!()),
+        ("Reload External Sprites", (w) -> loadExternalSprites!()),
+        ("Redraw All Rooms", (w) -> debug.redrawAllRooms!())
+    ])
+end
+
+menubar = Menubar.generateMenubar(menubarHeaders, menubarItems)
 
 grid = Grid()
 
@@ -213,7 +242,6 @@ end
 # Select the specified room or the first one
 if loadedState.room !== nothing
     select!(roomList, r -> r[1] == loadedState.roomName)
-    setCamera!(camera, loadedState.room.position...)
 
 else
     select!(roomList)

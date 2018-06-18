@@ -93,7 +93,6 @@ function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera
         end
 
         if layer.visible
-            roomX, roomY = room.room.position
             applyLayer!(ctx, layer, alpha=alpha)
             debug.log("Applying $(layer.name)", "DRAWING_VERBOSE")
         end

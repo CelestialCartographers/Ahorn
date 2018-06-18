@@ -41,7 +41,9 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
             TileStates(),
 
             nothing,
-            Layer[]
+            Layer[],
+
+            colors.background_room_fill
         )
     end
 

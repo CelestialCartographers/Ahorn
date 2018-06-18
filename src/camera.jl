@@ -30,6 +30,6 @@ function unlock!(camera::Camera)
     camera.locked = false
 end
 
-minimumZoom = 2.0^-1
-maximumZoom = 2.0^3
-defaultZoom = 4
+minimumZoom = get(config, "camera_minimum_zoom", 2.0^-2)
+maximumZoom = get(config, "camera_maximum_zoom", 2.0^4)
+defaultZoom = get(config, "camera_default_zoom", 4)

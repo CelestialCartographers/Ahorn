@@ -6,7 +6,13 @@ MOD_CONTENT_GAMEPLAY = joinpath(config["celeste_dir"], "ModContent", "Graphics",
 drawingAlpha = 1
 
 function addSprite!(resource::String, filename::String="")
+    # If we have a filename use that, otherwise look for the resource
+    # If the resource doesn't exist, load the "" file, giving a (0, 0) size sprite
+    # This means the resource will be marked for refetching
+    
     filename = filename == ""? findExternalSprite(resource) : filename
+    filename = isa(filename, String)? filename : ""
+
     surface = read_from_png(filename)
     sprites[resource] = Sprite(
         0,

@@ -15,6 +15,8 @@ mutable struct DrawableRoom
 
     rendering::Union{Layer, Void}
     layers::Array{Layer, 1}
+
+    fillColor::colorTupleType
 end
 
 Base.size(state::TileStates) = size(state.rands)
@@ -72,6 +74,18 @@ function DrawableRoom(map::Map, room::Room)
         TileStates(),
 
         Layer("rendering"),
-        getDrawingLayers()
+        getDrawingLayers(),
+
+        colors.background_room_fill
     )
+end
+
+function destroy(dr::DrawableRoom)
+    ctx = creategc(dr.rendering.surface)
+    Cairo.destroy(ctx)
+
+    for layer in dr.layers
+        ctx = creategc(layer.surface)
+        Cairo.destroy(ctx)
+    end
 end

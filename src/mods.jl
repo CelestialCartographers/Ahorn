@@ -47,7 +47,6 @@ function findExternalSprite(resource::String)
 
     for target in targetFolders
         fn = joinpath(target, gameplayPath, splitext(resource)[1] * ".png")
-        println(fn)
         if isfile(fn)
             return fn
         end

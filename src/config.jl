@@ -1,17 +1,17 @@
 using JSON
 
-secondsBeforeRewrite = 180
-
 mutable struct Config
     fn::String
     data::Dict{Any, Any}
     mtime::Number
+    buffertime::Number
 
-    Config(fn::String, data::Dict{K, V}) where {K, V} = new(fn, data, 0)
+    Config(fn::String, data::Dict{K, V}) where {K, V} = new(fn, data, 0, 0)
+    Config(fn::String, buffertime::Number, data::Dict{K, V}) where {K, V} = new(fn, data, 0, buffertime)
 end
 
 function saveConfig(c::Config, force::Bool=true)
-    if force || c.mtime + secondsBeforeRewrite < time()
+    if force || c.buffertime <= 0 || c.mtime + c.buffertime < time()
         path = dirname(c.fn)
 
         if !isdir(path)
@@ -25,7 +25,7 @@ function saveConfig(c::Config, force::Bool=true)
     end
 end
 
-function loadConfig(fn::String, default::Dict{K, V}=Dict{Any, Any}()) where {K, V}
+function loadConfig(fn::String, buffertime::Number=0, default::Dict{K, V}=Dict{Any, Any}()) where {K, V}
     if isfile(fn)
         return Config(fn, open(JSON.parse, fn))
 
@@ -39,12 +39,15 @@ end
 
 setDefaults!(c::Config, d::Dict{K, V}) where {K, V} = c.data = merge(d, c.data)
 
-Base.get(c::Config, key::K where K, value::V where V) = get(c.data, key, value)
 Base.haskey(c::Config, key::String) = haskey(c.data, key)
 
-function Base.setindex!(c::Config, value::V where V, key::K where K)
+function Base.setindex!(c::Config, value::V, key::K) where {K, V}
+    prev = haskey(c, key)? c.data[key] : nothing
     c.data[key] = value
-    saveConfig(c, false)
+
+    if value != prev && prev === nothing
+        saveConfig(c, false)
+    end
 end
 
 function Base.getindex(c::Config, key::Any) 
@@ -56,7 +59,7 @@ function Base.getindex(c::Config, key::Any)
     return c.data[key]
 end
 
-function Base.get(c::Config, key::K where K, value::V where V)
+function Base.get(c::Config, key::K, value::V) where {K, V}
     if mtime(c.fn) > c.mtime
         c.mtime = mtime(c.fn)
         c.data = open(JSON.parse, c.fn)

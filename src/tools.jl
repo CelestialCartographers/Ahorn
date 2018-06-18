@@ -283,34 +283,19 @@ function handleRoomModifications(event::eventKey)
     return false
 end
 
+debugKeys = Dict{Number, Tuple{String, Function}}(
+    Gtk.GdkKeySyms.F1 => ("Reloading tools", debug.reloadTools!),
+    Gtk.GdkKeySyms.F2 => ("Reloading entities and triggers", () -> debug.reloadEntities!() && debug.reloadTriggers!()),
+    Gtk.GdkKeySyms.F3 => ("Deleting room render caches", debug.redrawAllRooms!),
+)
+
 function handleDebugKeys(event::eventKey)
     if get(debug.config, "ENABLE_HOTSWAP_HOTKEYS", false)
-        # F1 Key
-        # Reload tools
-        if event.keyval == Gtk.GdkKeySyms.F1
-            loadModule.(loadedTools)
-            changeTool!(loadedTools[1])
-            select!(roomList, row -> row[1] == loadedState.roomName)
+        if haskey(debugKeys, event.keyval)
+            desc, func = debugKeys[event.keyval]
+            println("! $desc")
 
-            return true
-        end
-
-        # F2
-        # Reload entity drawing
-        if event.keyval == Gtk.GdkKeySyms.F2
-            dr = getDrawableRoom(loadedState.map, loadedState.room)
-
-            loadModule.(loadedEntities)
-            registerPlacements!(entityPlacements, loadedEntities)
-
-            loadModule.(loadedTriggers)
-            registerPlacements!(triggerPlacements, loadedTriggers)
-
-            getLayerByName(dr.layers, "entities").redraw = true
-            getLayerByName(dr.layers, "triggers").redraw = true
-            select!(roomList, row -> row[1] == loadedState.roomName)
-
-            return true
+            return func()
         end
     end
 

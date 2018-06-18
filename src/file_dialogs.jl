@@ -1,6 +1,3 @@
-saveDialog = isdefined(Gtk, :save_dialog_native)? Gtk.save_dialog_native : Gtk.save_dialog
-openDialog = isdefined(Gtk, :open_dialog_native)? Gtk.open_dialog_native : Gtk.open_dialog
-
 function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     celesteDir = config["celeste_dir"]
     mapsDir = joinpath(celesteDir, "ModContent", "Maps")
@@ -51,7 +48,7 @@ function showFileSaveDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
 
     filename = ""
     cd(mapsDir) do
-        filename = saveDialog("Save as", window)
+        filename = saveDialog("Save as", window, ["*.bin"])
     end
 
     if filename != ""

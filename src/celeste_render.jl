@@ -70,7 +70,7 @@ function drawBackground(layer::Layer, dr::DrawableRoom, camera::Camera, fg::Bool
     ctx = creategc(layer.surface)
 
     if !fg
-        paintSurface(ctx, colors.background_room_fill)
+        paintSurface(ctx, dr.fillColor)
     end
 
     for style in styles.children
@@ -160,36 +160,35 @@ function updateDrawingLayers!(map::Map, room::Room)
     global drawingLayers = getDrawableRoom(map, room).layers
 end
 
-function drawMap(canvas::Gtk.GtkCanvas, camera::Camera, map::Map)
-    ctx = Gtk.getgc(canvas)
-    paintSurface(ctx, (1.0, 1.0, 1.0, 1.0))
+function drawMap(ctx::Cairo.CairoContext, camera::Camera, map::Map; adjacentAlpha::Number=colors.adjacent_room_alpha, backgroundFill::colorTupleType=colors.background_canvas_fill)
+    width, height = floor(Int, ctx.surface.width), floor(Int, ctx.surface.height)
 
-    width, height = size(canvas)
-
-    paintSurface(ctx, colors.background_canvas_fill)
+    paintSurface(ctx, backgroundFill)
     pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
 
     for room in map.rooms
         dr = getDrawableRoom(map, room)
         if roomVisible(camera, width, height, room)
-            alpha = loadedState.roomName == room.name? 1.0 : colors.adjacent_room_alpha
+            alpha = loadedState.roomName == room.name? 1.0 : adjacentAlpha
             drawRoom(ctx, camera, dr, alpha=alpha)
         end
     end
 end
 
+drawMap(canvas::Gtk.GtkCanvas, camera::Camera, map::Map) = drawMap(Gtk.getgc(canvas), camera, map)
+
 function drawRoom(ctx::Cairo.CairoContext, camera::Camera, room::DrawableRoom; alpha::Number=getGlobalAlpha())
     renderingLayer = room.rendering
     drawingLayers = room.layers
 
-    renderingLayer.redraw = redrawRenderingLayer(renderingLayer, room.layers)
+    renderingLayer.redraw = redrawRenderingLayer(renderingLayer, drawingLayers)
 
     if renderingLayer.redraw
         resetLayer!(renderingLayer, room)
         renderingCtx = creategc(renderingLayer.surface)
 
-        combineLayers!(renderingCtx, drawingLayers, camera, room)
         renderingLayer.redraw = false
+        combineLayers!(renderingCtx, drawingLayers, camera, room)
 
         if get(debug.config, "DRAWING_LAYER_DUMP", false)
             write_to_png(renderingLayer.surface, "layersDump/$(room.map.package)_$(room.room.name)_rendered.png")

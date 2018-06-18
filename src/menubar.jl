@@ -1,4 +1,9 @@
-function generateMenubar(headers::Tuple, items::Array{Array{Tuple{String, Function}, 1}, 1})
+module Menubar
+using Gtk, Gtk.ShortNames
+
+sampleMenuItemLeaf = Gtk.GtkMenuItemLeaf()
+
+function generateMenubar(headers::Array{String, 1}, items::Array{Array{Tuple{String, Function}, 1}, 1})
     menubar = MenuBar()
 
     for (i, header) in enumerate(headers)
@@ -17,4 +22,8 @@ function generateMenubar(headers::Tuple, items::Array{Array{Tuple{String, Functi
     end
 
     return menubar
+end
+
+generateMenubar(headers::Tuple, items::Array{Array{Tuple{String, Function}, 1}, 1}) = generateMenubar(collect(headers), items)
+
 end
