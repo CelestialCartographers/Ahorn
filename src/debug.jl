@@ -39,7 +39,7 @@ function reloadTriggers!()
     dr = Main.getDrawableRoom(Main.loadedState.map, Main.loadedState.room)
 
     Main.loadModule.(Main.loadedTriggers)
-    Main.registerPlacements!(Main.entityPlacements, Main.loadedTriggers)
+    Main.registerPlacements!(Main.triggerPlacements, Main.loadedTriggers)
 
     Main.getLayerByName(dr.layers, "triggers").redraw = true
     Main.select!(Main.roomList, row -> row[1] == Main.loadedState.roomName)

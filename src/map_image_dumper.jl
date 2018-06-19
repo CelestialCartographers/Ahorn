@@ -10,8 +10,8 @@ function bounds(m::Maple.Map)
     brx = bry = typemin(Int)
 
     for room in m.rooms
-        x, y = room.position
-        w, h = room.size
+        x, y = Int.(room.position)
+        w, h = Int.(room.size)
 
         tlx = min(tlx, x)
         tly = min(tly, y)
@@ -73,12 +73,12 @@ function dumpMapImageDialog(w)
         if surfaceStatus == Cairo.STATUS_NO_MEMORY
             warn_dialog("Not enough memory to save image.", Main.window)
         end
-        
+
         fn = splitext(filename)[2] == ".png"? filename : filename * ".png"
         write_to_png(surface, fn)
-    end
 
-    Cairo.destroy(ctx)
+        Cairo.destroy(ctx)
+    end
 end
 
 end
