@@ -267,11 +267,11 @@ function layersChanged(layers::Array{Main.Layer, 1})
 end
 
 scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
-    # Vertical Mirror
-    Int('v') => (-1, 1),
+    # Vertical Flip
+    Int('v') => (1, -1),
 
-    # Horizontal Mirror
-    Int('h') => (1, -1),
+    # Horizontal Flip
+    Int('h') => (-1, 1),
 )
 
 function keyboard(event::Main.eventKey)

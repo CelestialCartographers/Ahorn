@@ -86,10 +86,6 @@ function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera
             layer.redraw = false
     
             debug.log("Done redrawing $(layer.name)", "DRAWING_VERBOSE")
-
-            if get(debug.config, "DRAWING_LAYER_DUMP", false)
-                write_to_png(layer.surface, "layersDump/$(room.map.package)_$(room.name)_$(layer.name).png")
-            end
         end
 
         if layer.visible

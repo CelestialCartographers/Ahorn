@@ -214,11 +214,11 @@ moveDirections = Dict{Integer, Tuple{Number, Number}}(
 
 # Turns out having scales besides -1 and 1 on decals causes weird behaviour?
 scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
-    # Vertical Mirror
-    Int('v') => (-1, 1),
+    # Vertical Flip
+    Int('v') => (1, -1),
 
-    # Horizontal Mirror
-    Int('h') => (1, -1),
+    # Horizontal Flip
+    Int('h') => (-1, 1),
 )
 
 function handleMovement(event::Main.eventKey)

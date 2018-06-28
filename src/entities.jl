@@ -168,7 +168,7 @@ function generateEntity(map::Maple.Map, room::Main.Room, ep::EntityPlacement, x:
 end
 
 loadedEntities = joinpath.("entities", readdir(abs"entities"))
-append!(loadedEntities, findExternalModules("Ahorn", "entities"))
+append!(loadedEntities, findExternalModules("entities"))
 loadModule.(loadedEntities)
 
 entityPlacements = Dict{String, EntityPlacement}()

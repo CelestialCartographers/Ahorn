@@ -79,7 +79,7 @@ end
 function findExternalModules(args::String...)
     res = String[]
     targetFolders = vcat(
-        joinpath.("Ahorn", getCelesteModDirs()),
+        joinpath.(getCelesteModDirs(), "Ahorn"),
         getAhornModDirs()
     )
 

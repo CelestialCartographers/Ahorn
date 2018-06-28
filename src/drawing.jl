@@ -13,7 +13,7 @@ function addSprite!(resource::String, filename::String="")
     filename = filename == ""? findExternalSprite(resource) : filename
     filename = isa(filename, String)? filename : ""
 
-    surface = read_from_png(filename)
+    surface = open(Cairo.read_from_png, filename)
     sprites[resource] = Sprite(
         0,
         0,

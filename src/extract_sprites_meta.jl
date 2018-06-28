@@ -14,7 +14,7 @@ struct Sprite
 end
 
 function loadSprites(metaFn::String, spritesFn::String)
-    surface = read_from_png(spritesFn)
+    surface = open(Cairo.read_from_png, spritesFn)
     fh = open(metaFn)
 
     res = Dict{String, Sprite}()
