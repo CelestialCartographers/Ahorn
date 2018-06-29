@@ -189,10 +189,6 @@ function drawRoom(ctx::Cairo.CairoContext, camera::Camera, room::DrawableRoom; a
 
         renderingLayer.redraw = false
         combineLayers!(renderingCtx, drawingLayers, camera, room)
-
-        if get(debug.config, "DRAWING_LAYER_DUMP", false)
-            write_to_png(renderingLayer.surface, "layersDump/$(room.map.package)_$(room.room.name)_rendered.png")
-        end
     end
 
     Cairo.save(ctx)

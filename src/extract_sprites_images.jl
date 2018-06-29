@@ -61,5 +61,5 @@ function dumpSprites(source::String, destination::String=source)
     img = extractFromFile(source, "Gameplay0.data")
 
     surface = CairoImageSurface(reshape(img.texture, (img.height, img.width)))
-    write_to_png(surface, joinpath(destination, "Gameplay.png"))
+    open(io -> write_to_png(surface, io), joinpath(destination, "Gameplay.png"), "w")
 end

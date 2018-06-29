@@ -75,7 +75,7 @@ function dumpMapImageDialog(w)
         end
 
         fn = splitext(filename)[2] == ".png"? filename : filename * ".png"
-        write_to_png(surface, fn)
+        open(io -> write_to_png(surface, io), fn, "w")
 
         Cairo.destroy(ctx)
     end
