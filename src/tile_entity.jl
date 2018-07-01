@@ -20,38 +20,50 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
     
     # Don't draw air versions, even though they shouldn't exist
     if tile != "0"
-        fakeTiles = fill('0', (fth, ftw))
+        fakeTiles = fill('0', (th + 2, tw + 2))
 
         if blendIn
-            sliceY = max(ty - 1, 1):min(ty + th, fth)
-            sliceX = max(tx - 1, 1):min(tx + tw, ftw)
-            fakeTiles[sliceY, sliceX] = room.fgTiles.data[sliceY, sliceX]
+            fakeTiles[1:end, 1:end] = get(room.fgTiles.data, (ty - 1:ty + th, tx - 1:tx + tw), '0')
         end
 
-        fakeTiles[max(ty, 1):min(ty + th - 1, fth), max(tx, 1):min(tx + tw - 1, ftw)] = tile[1]
+        fakeTiles[2:end - 1, 2:end - 1] = tile[1]
 
-        dr = DrawableRoom(
-            loadedState.map,
-            Maple.Room(
-                name=room.name,
-                fgTiles=Maple.Tiles(fakeTiles)
-            ),
-
-            TileStates(),
-            TileStates(),
-
-            nothing,
-            Layer[],
-
-            colors.background_room_fill
-        )
+        drawFakeTiles(ctx, room, fakeTiles, true, x, y, alpha=alpha, clipEdges=true)
     end
+end
+
+function drawFakeTiles(ctx::Cairo.CairoContext, room::Maple.Room, tiles::Array{Char, 2}, fg::Bool, x::Number, y::Number; alpha::Number=getGlobalAlpha(), clipEdges::Bool=false)
+    fakeDr = DrawableRoom(
+        loadedState.map,
+        Maple.Room(
+            name="$(room.name)-$x-$y",
+            fgTiles=Maple.Tiles(fg? tiles : Matrix{Char}(0, 0)),
+            bgTiles=Maple.Tiles(!fg? tiles : Matrix{Char}(0, 0))
+        ),
+
+        TileStates(),
+        TileStates(),
+
+        nothing,
+        Layer[],
+
+        colors.background_room_fill
+    )
 
     Cairo.save(ctx)
 
-    rectangle(ctx, x, y, width, height)
-    clip(ctx)
-    drawTiles(ctx, dr, alpha=alpha)
+    if clipEdges
+        height, width = (size(tiles) .- 2) .* 8
+        rectangle(ctx, x, y, width, height)
+        clip(ctx)
+
+        # Offset the drawing since we trimmed away the border
+        x -= 8
+        y -= 8
+    end
+
+    translate(ctx, x, y)
+    drawTiles(ctx, fakeDr, fg, alpha=alpha)
 
     Cairo.restore(ctx)
 end

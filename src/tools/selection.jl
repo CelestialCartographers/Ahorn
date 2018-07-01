@@ -1,9 +1,3 @@
-# Todo
-# Depricate "box" in selections?
-# Keep only target instead?
-# See how that goes once tiles are supported in here
-# We have to make a new rectangle either way, might was well just do the cheap calculations for sanity reasons
-
 module Selection
 
 displayName = "Selection"
@@ -21,7 +15,7 @@ selections = Set{Tuple{String, Main.Rectangle, Any, Number}}[]
 lastX, lastY = -1, -1
 shouldDrag = true
 
-decalValues = (1.0, 2.0^4)
+decalScaleVals = (1.0, 2.0^4)
 
 function drawSelections(layer::Main.Layer, room::Main.Room)
     drawnTargets = Set()
@@ -34,11 +28,15 @@ function drawSelections(layer::Main.Layer, room::Main.Room)
     for selection in selections
         layer, box, target, node = selection
 
-        if layer == "entities" && !(target in drawnTargets)
+        if isa(target, Main.Maple.Entity) && !(target in drawnTargets)
             Main.renderEntitySelection(ctx, toolsLayer, target, Main.loadedState.room)
+
+            push!(drawnTargets, target)
         end
 
-        push!(drawnTargets, target)
+        if isa(target, Main.TileSelection)
+            Main.drawFakeTiles(ctx, Main.loadedState.room, target.tiles, target.fg, target.selection.x, target.selection.y, clipEdges=true)
+        end
 
         # Get a new selection rectangle
         # This is easier than editing the existing rect
@@ -61,15 +59,17 @@ function clearDragging!()
 end
 
 function cleanup()
+    finalizeSelections!(selections)
     empty!(selections)
     global selectionRect = nothing
+    clearDragging!()
 
     Main.redrawLayer!(toolsLayer)
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
     wantedLayer = get(Main.persistence, "placements_layer", "entities")
-    Main.updateLayerList!(["entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
+    Main.updateLayerList!(["fgTiles", "bgTiles", "entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
 
     Main.redrawingFuncs["tools"] = drawSelections
     Main.redrawLayer!(toolsLayer)
@@ -131,10 +131,23 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
     end
 end
 
+function properlyUpdateSelections!(rect::Main.Rectangle, selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
+    retain = Main.modifierShift()
+
+    # Do this before we get new selections
+    # This way tiles are settled back into place before we select
+    if !retain
+        finalizeSelections!(selections)
+    end
+
+    unselected, newlySelected = Main.updateSelections!(selections, Main.loadedState.room, Main.layerName(targetLayer), rect, retain=retain)
+    initSelections!(newlySelected)
+end
+
 function selectionFinishAbs(rect::Main.Rectangle)
     # If we are draging we are techically not making a new selection
     if !shouldDrag
-        Main.updateSelections!(selections, Main.loadedState.room, Main.layerName(targetLayer), rect, retain=Main.modifierShift())
+        properlyUpdateSelections!(rect, selections)
     end
 
     clearDragging!()
@@ -145,9 +158,11 @@ function selectionFinishAbs(rect::Main.Rectangle)
 end
 
 function leftClickAbs(x::Number, y::Number)
-    Main.updateSelections!(selections, Main.loadedState.room, Main.layerName(targetLayer), Main.Rectangle(x, y, 1, 1), retain=Main.modifierShift(), best=true)
+    rect = Main.Rectangle(x, y, 1, 1)
+    properlyUpdateSelections!(rect, selections)
+
     clearDragging!()
-    
+
     Main.redrawLayer!(toolsLayer)
 end
 
@@ -157,6 +172,47 @@ function layersChanged(layers::Array{Main.Layer, 1})
     global drawingLayers = layers
     global toolsLayer = Main.getLayerByName(layers, "tools")
     global targetLayer = Main.selectLayer!(layers, wantedLayer, "entities")
+end
+
+function applyTileSelecitonBrush!(target::Main.TileSelection, clear::Bool=false)
+    roomTiles = target.fg? Main.loadedState.room.fgTiles : Main.loadedState.room.bgTiles
+    tiles = clear? fill('0', size(target.tiles)) : target.tiles
+
+    x, y = floor(Int, target.selection.x / 8), floor(Int, target.selection.y / 8)
+    brush = Main.Brush(
+        "Selection Finisher",
+        clear? fill(1, size(tiles) .- 2) : tiles[2:end - 1, 2:end - 1] .!= '0'
+    )
+
+    Main.applyBrush!(brush, roomTiles, tiles[2:end - 1, 2:end - 1], x + 1, y + 1)
+end
+
+function finalizeSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Number}})
+    for selection in targets
+        layer, box, target, node = selection
+
+        if layer == "fgTiles" || layer == "bgTiles"
+            applyTileSelecitonBrush!(target, false)
+        end
+    end
+
+    if !isempty(targets)
+        Main.redrawLayer!(targetLayer)
+    end
+end
+
+function initSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Number}})
+    for selection in targets
+        layer, box, target, node = selection
+
+        if layer == "fgTiles" || layer == "bgTiles"
+            applyTileSelecitonBrush!(target, true)
+        end
+    end
+
+    if !isempty(targets)
+        Main.redrawLayer!(targetLayer)
+    end
 end
 
 function applyMovement!(target::Union{Main.Maple.Entity, Main.Maple.Trigger}, ox::Number, oy::Number, node::Number=0)
@@ -178,6 +234,13 @@ function applyMovement!(decal::Main.Maple.Decal, ox::Number, oy::Number, node::N
     decal.y += oy
 end
 
+function applyMovement!(target::Main.TileSelection, ox::Number, oy::Number, node::Number=0)
+    target.offsetX += ox
+    target.offsetY += oy
+
+    target.selection = Main.Rectangle(target.startX + floor(target.offsetX / 8) * 8, target.startY + floor(target.offsetY / 8) * 8, target.selection.w, target.selection.h)
+end
+
 function notifyMovement!(entity::Main.Maple.Entity)
     Main.eventToModules(Main.loadedEntities, "moved", entity)
     Main.eventToModules(Main.loadedEntities, "moved", entity, Main.loadedState.room)
@@ -189,6 +252,10 @@ function notifyMovement!(trigger::Main.Maple.Trigger)
 end
 
 function notifyMovement!(decal::Main.Maple.Decal)
+    # Decals doesn't care
+end
+
+function notifyMovement!(target::Main.TileSelection)
     # Decals doesn't care
 end
 
@@ -265,7 +332,7 @@ function handleResize(event::Main.eventKey)
 
         elseif name == "fgDecals" || name == "bgDecals"
             extraW, extraH = resizeModifiers[event.keyval]
-            minVal, maxVal = decalValues
+            minVal, maxVal = decalScaleVals
             
             # Ready for when decals render correctly
             #target.scaleX = sign(target.scaleX) * clamp(abs(target.scaleX) * 2.0^extraW, minVal, maxVal)
@@ -325,33 +392,40 @@ function handleAddNodes(event::Main.eventKey)
 end
 
 function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
-    targetList = Main.selectionTargets[Main.layerName(targetLayer)](Main.loadedState.room)
     res = !isempty(selections)
+    targetName = Main.layerName(targetLayer)
 
-    # Sort entities, otherwise deletion will break
-    processedSelections = Main.layerName(targetLayer) == "entities"? sort(collect(selections), by=r -> (r[3].id, r[4]), rev=true) : selections
-    for selection in processedSelections
-        name, box, target, node = selection
+    if haskey(Main.selectionTargets, targetName)
+        targetList = Main.selectionTargets[targetName](Main.loadedState.room)
 
-        index = findfirst(targetList, target)
-        if index != 0
-            if node == 0
-                deleteat!(targetList, index)
+        # Sort entities, otherwise deletion will break
+        processedSelections = targetName == "entities"? sort(collect(selections), by=r -> (r[3].id, r[4]), rev=true) : selections
+        for selection in processedSelections
+            name, box, target, node = selection
 
-            elseif name == "entities"
-                least, most = Main.nodeLimits(target)
-                nodes = get(target.data, "nodes", [])
-
-                # Delete the node if that doesn't result in too few nodes
-                # Delete the whole entity if it does
-                if length(nodes) - 1 >= least && length(nodes) >= node
-                    deleteat!(nodes, node)
-
-                else
+            index = findfirst(targetList, target)
+            if index != 0
+                if node == 0
                     deleteat!(targetList, index)
+
+                elseif name == "entities"
+                    least, most = Main.nodeLimits(target)
+                    nodes = get(target.data, "nodes", [])
+
+                    # Delete the node if that doesn't result in too few nodes
+                    # Delete the whole entity if it does
+                    if length(nodes) - 1 >= least && length(nodes) >= node
+                        deleteat!(nodes, node)
+
+                    else
+                        deleteat!(targetList, index)
+                    end
                 end
             end
         end
+
+    elseif targetName == "fgTiles" || targetName == "bgTiles"
+        # Don't need to do anything, the tiles are already removed from the map
     end
 
     empty!(selections)
