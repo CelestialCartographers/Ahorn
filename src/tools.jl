@@ -1,27 +1,9 @@
 include("brush.jl")
 
-eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion}
-eventKey = Gtk.GdkEventKey
-
 loadedTools = joinpath.("tools", readdir(abs"tools"))
 append!(loadedTools, findExternalModules("tools"))
 loadModule.(loadedTools)
 currentTool = nothing
-
-mouseHandlers = Dict{Integer, String}(
-    1 => "leftClick",
-    2 => "middleClick",
-    3 => "rightClick",
-    4 => "backClick",
-    5 => "forwardClick"
-)
-
-moveDirections = Dict{Integer, Tuple{Number, Number}}(
-    Main.Gtk.GdkKeySyms.Left => (-1, 0),
-    Main.Gtk.GdkKeySyms.Right => (1, 0),
-    Main.Gtk.GdkKeySyms.Down => (0, 1),
-    Main.Gtk.GdkKeySyms.Up => (0, -1)
-)
 
 function getToolName(tool::String)
     if hasModuleField(tool, "displayName")
@@ -154,7 +136,7 @@ function updateLayerList!(names::Array{String, 1}, selector::Union{Function, Int
 
     for name in names
         layer = getLayerByName(dr.layers, name)
-        push!(data, (name, layer.visible))
+        push!(data, (name, layer.visible || layer.dummy))
     end
 
     if selector !== nothing

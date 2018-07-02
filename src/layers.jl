@@ -4,8 +4,9 @@ mutable struct Layer
     redraw::Bool
     visible::Bool
     selectable::Bool
+    dummy::Bool
 
-    Layer(name::String, surface::Cairo.CairoSurface=CairoARGBSurface(0, 0); redraw::Bool=true, visible::Bool=true, selectable::Bool=true) = new(name, surface, redraw, visible, selectable)
+    Layer(name::String, surface::Cairo.CairoSurface=CairoARGBSurface(0, 0); redraw::Bool=true, visible::Bool=true, selectable::Bool=true, dummy::Bool=false) = new(name, surface, redraw, visible, selectable, dummy)
 end
 
 include("drawable_room.jl")
@@ -70,7 +71,7 @@ end
 
 function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera::Camera, room::DrawableRoom; alpha::Number=getGlobalAlpha())
     for layer in layers
-        if layer.redraw
+        if layer.redraw && !layer.dummy
             debug.log("Redrawing ($(layer.surface.width), $(layer.surface.height)) $(layer.name)", "DRAWING_VERBOSE")
 
             resetLayer!(layer, room)
@@ -88,7 +89,7 @@ function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera
             debug.log("Done redrawing $(layer.name)", "DRAWING_VERBOSE")
         end
 
-        if layer.visible
+        if layer.visible && !layer.dummy
             applyLayer!(ctx, layer, alpha=alpha)
             debug.log("Applying $(layer.name)", "DRAWING_VERBOSE")
         end

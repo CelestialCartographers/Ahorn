@@ -6,6 +6,24 @@ lastSelection = false
 const dragButton = 0x3
 const clickThreshold = 4
 
+eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion}
+eventKey = Gtk.GdkEventKey
+
+mouseHandlers = Dict{Integer, String}(
+    1 => "leftClick",
+    2 => "middleClick",
+    3 => "rightClick",
+    4 => "backClick",
+    5 => "forwardClick"
+)
+
+moveDirections = Dict{Integer, Tuple{Number, Number}}(
+    Main.Gtk.GdkKeySyms.Left => (-1, 0),
+    Main.Gtk.GdkKeySyms.Right => (1, 0),
+    Main.Gtk.GdkKeySyms.Down => (0, 1),
+    Main.Gtk.GdkKeySyms.Up => (0, -1)
+)
+
 mouseButtonHeld(n::Integer) = get(mousePressed, n, (false, false, false))[2]
 keyHeld(n::Integer) = get(keyPressed, n, (false, false))[2]
 

@@ -10,6 +10,7 @@ end
 
 TileSelection(fg::Bool, tiles::Array{Char, 2}, selection::Rectangle) = TileSelection(fg, tiles, selection, selection.x, selection.y, 0, 0)
 
+selectableLayers = ["fgTiles", "bgTiles", "entities", "triggers", "fgDecals", "bgDecals"]
 selectionTargets = Dict{String, Function}(
     "entities" => room -> room.entities,
     "triggers" => room -> room.triggers,
@@ -152,8 +153,16 @@ function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}
         empty!(selections)
     end
 
-    # Make sure the new selections are unique
-    validSelections = getSelected(room, name, rect)
+    validSelections = Set{Tuple{String, Rectangle, Any, Number}}()
+    if name == "all"
+        for n in selectableLayers
+            union!(validSelections, getSelected(room, n, rect))
+        end
+
+    else
+        union!(validSelections, getSelected(room, name, rect))
+    end
+
     if best
         target = bestSelection(validSelections)
         if target !== nothing

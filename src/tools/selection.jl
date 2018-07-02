@@ -10,12 +10,99 @@ targetLayer = nothing
 
 # Drag selection, track individually for easy replacement
 selectionRect = Main.Rectangle(0, 0, 0, 0)
-selections = Set{Tuple{String, Main.Rectangle, Any, Number}}[]
+selections = Set{Tuple{String, Main.Rectangle, Any, Number}}()
 
 lastX, lastY = -1, -1
 shouldDrag = true
 
 decalScaleVals = (1.0, 2.0^4)
+
+relevantRoom = Main.loadedState.room
+selectionsClipboard = Set{Tuple{String, Main.Rectangle, Any, Number}}()
+
+function copySelections(cut::Bool=false)
+    if isempty(selections)
+        return false
+    end
+
+    empty!(selectionsClipboard)
+    union!(selectionsClipboard, deepcopy(selections))
+
+    if cut
+        handleDeletion(selections)
+        empty!(selections)
+    end
+
+    redrawTargetLayer!(targetLayer, selectionsClipboard)
+    Main.redrawLayer!(toolsLayer)
+
+    return true
+end
+
+cutSelections() = copySelections(true)
+
+function pasteSelections()
+    if isempty(selectionsClipboard)
+       return false
+    end
+
+    newSelections = deepcopy(selectionsClipboard)
+    room = relevantRoom
+
+    for selection in newSelections
+        layer, box, target, node = selection
+
+        if layer == "fgDecals"
+            push!(room.fgDecals, target)
+
+        elseif layer == "bgDecals"
+            push!(room.bgDecals, target)
+
+        elseif layer == "entities" && node == 0
+            target.id = Main.Maple.nextEntityId()
+
+            push!(room.entities, target)
+
+        elseif layer == "triggers" && node == 0
+            target.id = Main.Maple.nextTriggerId()
+
+            push!(room.triggers, target)
+        end
+    end
+
+    finalizeSelections!(selections)
+    empty!(selections)
+    union!(selections, newSelections)
+
+    redrawTargetLayer!(targetLayer, selections)
+    Main.redrawLayer!(toolsLayer)
+
+    return true
+end
+
+hotkeys = Main.Hotkey[
+    Main.Hotkey(
+        'c',
+        copySelections,
+        Function[
+            Main.modifierControl
+        ]
+    ),
+    Main.Hotkey(
+        'x',
+        cutSelections,
+        Function[
+            Main.modifierControl
+        ]
+    ),
+    Main.Hotkey(
+        'v',
+        pasteSelections,
+        Function[
+            Main.modifierControl,
+        ]
+    )
+]
 
 function drawSelections(layer::Main.Layer, room::Main.Room)
     drawnTargets = Set()
@@ -25,17 +112,22 @@ function drawSelections(layer::Main.Layer, room::Main.Room)
         Main.drawRectangle(ctx, selectionRect, Main.colors.selection_selection_fc, Main.colors.selection_selection_bc)
     end
 
-    for selection in selections
+    # Make sure fgTiles render after the bgTiles
+    # Looks better, shouldn't cost to much performance
+    selectionsArray = collect(selections)
+    sort!(selectionsArray, by=r -> r[1])
+
+    for selection in selectionsArray
         layer, box, target, node = selection
 
         if isa(target, Main.Maple.Entity) && !(target in drawnTargets)
-            Main.renderEntitySelection(ctx, toolsLayer, target, Main.loadedState.room)
+            Main.renderEntitySelection(ctx, toolsLayer, target, relevantRoom)
 
             push!(drawnTargets, target)
         end
 
         if isa(target, Main.TileSelection)
-            Main.drawFakeTiles(ctx, Main.loadedState.room, target.tiles, target.fg, target.selection.x, target.selection.y, clipEdges=true)
+            Main.drawFakeTiles(ctx, relevantRoom, target.tiles, target.fg, target.selection.x, target.selection.y, clipEdges=true)
         end
 
         # Get a new selection rectangle
@@ -61,7 +153,10 @@ end
 function cleanup()
     finalizeSelections!(selections)
     empty!(selections)
+
     global selectionRect = nothing
+    global relevantRoom = Main.loadedState.room
+
     clearDragging!()
 
     Main.redrawLayer!(toolsLayer)
@@ -69,7 +164,7 @@ end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
     wantedLayer = get(Main.persistence, "placements_layer", "entities")
-    Main.updateLayerList!(["fgTiles", "bgTiles", "entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == Main.layerName(targetLayer))
+    Main.updateLayerList!(vcat(["all"], Main.selectableLayers), row -> row[1] == Main.layerName(targetLayer))
 
     Main.redrawingFuncs["tools"] = drawSelections
     Main.redrawLayer!(toolsLayer)
@@ -126,12 +221,12 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
             end
 
             Main.redrawLayer!(toolsLayer)
-            Main.redrawLayer!(targetLayer)
+            redrawTargetLayer!(targetLayer, selections, String["fgTiles", "bgTiles"])
         end
     end
 end
 
-function properlyUpdateSelections!(rect::Main.Rectangle, selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
+function properlyUpdateSelections!(rect::Main.Rectangle, selections::Set{Tuple{String, Main.Rectangle, Any, Number}}; best::Bool=false)
     retain = Main.modifierShift()
 
     # Do this before we get new selections
@@ -140,8 +235,26 @@ function properlyUpdateSelections!(rect::Main.Rectangle, selections::Set{Tuple{S
         finalizeSelections!(selections)
     end
 
-    unselected, newlySelected = Main.updateSelections!(selections, Main.loadedState.room, Main.layerName(targetLayer), rect, retain=retain)
+    unselected, newlySelected = Main.updateSelections!(selections, relevantRoom, Main.layerName(targetLayer), rect, retain=retain, best=best)
     initSelections!(newlySelected)
+end
+
+function getLayersSelected(selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
+    return unique([selection[1] for selection in selections])
+end
+
+function redrawTargetLayer!(layer::Main.Layer, selections::Set{Tuple{String, Main.Rectangle, Any, Number}}, ignore::Array{String, 1}=String[])
+    if Main.layerName(layer) == "all"
+        needsRedraw = getLayersSelected(selections)
+        filter!(v -> !(v in ignore), needsRedraw)
+
+        for layer in needsRedraw
+            Main.redrawLayer!(drawingLayers, layer)
+        end
+
+    else
+        Main.redrawLayer!(layer)
+    end
 end
 
 function selectionFinishAbs(rect::Main.Rectangle)
@@ -159,7 +272,7 @@ end
 
 function leftClickAbs(x::Number, y::Number)
     rect = Main.Rectangle(x, y, 1, 1)
-    properlyUpdateSelections!(rect, selections)
+    properlyUpdateSelections!(rect, selections, best=true)
 
     clearDragging!()
 
@@ -175,7 +288,7 @@ function layersChanged(layers::Array{Main.Layer, 1})
 end
 
 function applyTileSelecitonBrush!(target::Main.TileSelection, clear::Bool=false)
-    roomTiles = target.fg? Main.loadedState.room.fgTiles : Main.loadedState.room.bgTiles
+    roomTiles = target.fg? relevantRoom.fgTiles : relevantRoom.bgTiles
     tiles = clear? fill('0', size(target.tiles)) : target.tiles
 
     x, y = floor(Int, target.selection.x / 8), floor(Int, target.selection.y / 8)
@@ -197,7 +310,7 @@ function finalizeSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Num
     end
 
     if !isempty(targets)
-        Main.redrawLayer!(targetLayer)
+        redrawTargetLayer!(targetLayer, targets)
     end
 end
 
@@ -211,7 +324,7 @@ function initSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Number}
     end
 
     if !isempty(targets)
-        Main.redrawLayer!(targetLayer)
+        redrawTargetLayer!(targetLayer, targets)
     end
 end
 
@@ -243,12 +356,12 @@ end
 
 function notifyMovement!(entity::Main.Maple.Entity)
     Main.eventToModules(Main.loadedEntities, "moved", entity)
-    Main.eventToModules(Main.loadedEntities, "moved", entity, Main.loadedState.room)
+    Main.eventToModules(Main.loadedEntities, "moved", entity, relevantRoom)
 end
 
 function notifyMovement!(trigger::Main.Maple.Trigger)
     Main.eventToModules(Main.loadedTriggers, "moved", trigger)
-    Main.eventToModules(Main.loadedTriggers, "moved", trigger, Main.loadedState.room)
+    Main.eventToModules(Main.loadedTriggers, "moved", trigger, relevantRoom)
 end
 
 function notifyMovement!(decal::Main.Maple.Decal)
@@ -272,13 +385,6 @@ resizeModifiers = Dict{Integer, Tuple{Number, Number}}(
 
 addNodeKey = Int('n')
 
-moveDirections = Dict{Integer, Tuple{Number, Number}}(
-    Main.Gtk.GdkKeySyms.Left => (-1, 0),
-    Main.Gtk.GdkKeySyms.Right => (1, 0),
-    Main.Gtk.GdkKeySyms.Down => (0, 1),
-    Main.Gtk.GdkKeySyms.Up => (0, -1)
-)
-
 # Turns out having scales besides -1 and 1 on decals causes weird behaviour?
 scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
     # Vertical Flip
@@ -294,7 +400,7 @@ function handleMovement(event::Main.eventKey)
 
     for selection in selections
         name, box, target, node = selection
-        ox, oy = moveDirections[event.keyval] .* step
+        ox, oy = Main.moveDirections[event.keyval] .* step
 
         if applicable(applyMovement!, target, ox, oy, node)
             applyMovement!(target, ox, oy, node)
@@ -347,7 +453,6 @@ end
 
 function handleScaling(event::Main.eventKey)
     redraw = false
-
     for selection in selections
         name, box, target, node = selection
         msx, msy = scaleMultipliers[event.keyval]
@@ -393,40 +498,54 @@ end
 
 function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
     res = !isempty(selections)
-    targetName = Main.layerName(targetLayer)
+    selectionsArray = collect(selections)
 
-    if haskey(Main.selectionTargets, targetName)
-        targetList = Main.selectionTargets[targetName](Main.loadedState.room)
+    # Split into different arrays
+    tileSelections = filter(s -> s[1] == "bgTiles" || s[1] == "fgTiles", selectionsArray)
+    entityTriggerSelections = filter(s -> s[1] == "entities" || s[1] == "triggers", selectionsArray)
+    decalSelections = filter(s -> s[1] == "bgDecals" || s[1] == "fgDecals", selectionsArray)
 
-        # Sort entities, otherwise deletion will break
-        processedSelections = targetName == "entities"? sort(collect(selections), by=r -> (r[3].id, r[4]), rev=true) : selections
-        for selection in processedSelections
-            name, box, target, node = selection
+    # Sort entities, otherwise deletion will break with nodes
+    sort!(entityTriggerSelections, by=r -> (r[3].id, r[4]), rev=true)
 
-            index = findfirst(targetList, target)
-            if index != 0
-                if node == 0
+    # Deletion for entities and triggers
+    for selection in entityTriggerSelections
+        name, box, target, node = selection
+        targetList = Main.selectionTargets[name](relevantRoom)
+
+        index = findfirst(targetList, target)
+        if index != 0 
+            if node == 0
+                deleteat!(targetList, index)
+
+            else
+                least, most = Main.nodeLimits(target)
+                nodes = get(target.data, "nodes", [])
+
+                # Delete the node if that doesn't result in too few nodes
+                # Delete the whole entity if it does
+                if length(nodes) - 1 >= least && length(nodes) >= node
+                    deleteat!(nodes, node)
+
+                else
                     deleteat!(targetList, index)
-
-                elseif name == "entities"
-                    least, most = Main.nodeLimits(target)
-                    nodes = get(target.data, "nodes", [])
-
-                    # Delete the node if that doesn't result in too few nodes
-                    # Delete the whole entity if it does
-                    if length(nodes) - 1 >= least && length(nodes) >= node
-                        deleteat!(nodes, node)
-
-                    else
-                        deleteat!(targetList, index)
-                    end
                 end
             end
         end
-
-    elseif targetName == "fgTiles" || targetName == "bgTiles"
-        # Don't need to do anything, the tiles are already removed from the map
     end
+
+    # Deletion for decals
+    for selection in decalSelections    
+        name, box, target, node = selection
+        targetList = Main.selectionTargets[name](relevantRoom)
+
+        index = findfirst(targetList, target)
+        if index != 0 
+            deleteat!(targetList, index)
+        end
+    end
+
+    # Tiles are deleted by removing them from the set, no special handle
 
     empty!(selections)
 
@@ -438,7 +557,13 @@ end
 function keyboard(event::Main.eventKey)
     needsRedraw = false
 
-    if haskey(moveDirections, event.keyval)
+    for hotkey in hotkeys
+        if Main.active(hotkey, event)
+            Main.callback(hotkey)
+        end
+    end
+
+    if haskey(Main.moveDirections, event.keyval)
         needsRedraw |= handleMovement(event)
     end
 
@@ -446,21 +571,21 @@ function keyboard(event::Main.eventKey)
         needsRedraw |= handleResize(event)
     end
 
-    if haskey(scaleMultipliers, event.keyval)
+    if haskey(scaleMultipliers, event.keyval) && !Main.modifierControl()
         needsRedraw |= handleScaling(event)
     end
 
-    if event.keyval == addNodeKey
+    if event.keyval == addNodeKey && !Main.modifierControl()
         needsRedraw |= handleAddNodes(event)
     end
 
-    if event.keyval == Main.Gtk.GdkKeySyms.Delete
+    if event.keyval == Main.Gtk.GdkKeySyms.Delete && !Main.modifierControl()
         needsRedraw |= handleDeletion(selections)
     end
 
     if needsRedraw
         Main.redrawLayer!(toolsLayer)
-        Main.redrawLayer!(targetLayer)
+        redrawTargetLayer!(targetLayer, selections, String["fgTiles", "bgTiles"])
     end
 
     return true

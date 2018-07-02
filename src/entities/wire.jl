@@ -49,6 +49,7 @@ function renderWire(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, col
         dx, dy = nx - x, ny - y
 
         Main.curve_to(ctx, x + 0.33 * dx, y + 0.33 * dy + abs(dy * 0.5) + 5, x + 0.66 * dx, y + 0.66 * dy + abs(dy * 0.66) + 7, nx, ny)
+        Main.move_to(ctx, nx, ny)
     end
 
     Main.stroke(ctx)

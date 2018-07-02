@@ -46,7 +46,8 @@ function getDrawingLayers()
         Layer("fgDecals"),
         Layer("triggers"),
 
-        Layer("tools", selectable=false)
+        Layer("tools", selectable=false),
+        Layer("all", dummy=true)
     ]
 end
 

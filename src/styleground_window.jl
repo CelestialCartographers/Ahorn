@@ -177,6 +177,8 @@ function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=trues)
 
     setproperty!(blendingCheckbox, :active, get(parallax.data, "blendmode", "alphablend") == "additive")
     setproperty!(instantInCheckbox, :active, get(parallax.data, "instantIn", true))
+    setproperty!(instantOutCheckbox, :active, get(parallax.data, "instantOut", false))
+    setproperty!(fadeInCheckbox, :active, get(parallax.data, "fadeIn", false))
 
     setproperty!(foregroundCheckbox, :active, fg)
 end
@@ -206,6 +208,8 @@ function setParallaxFromFields!(parallax::Maple.Parallax)
 
         parallax.data["blendmode"] = getproperty(blendingCheckbox, :active, Bool)? "additive" : "alphablend"
         parallax.data["instantIn"] = getproperty(instantInCheckbox, :active, Bool)
+        parallax.data["instantOut"] = getproperty(instantOutCheckbox, :active, Bool)
+        parallax.data["fadeIn"] = getproperty(fadeInCheckbox, :active, Bool)
 
         fg = getproperty(foregroundCheckbox, :active, Bool)
 
@@ -566,6 +570,8 @@ loopYCheckbox = CheckButton("Loop Y", active=true)
 foregroundCheckbox = CheckButton("Foreground")
 blendingCheckbox = CheckButton("Additive Blending")
 instantInCheckbox = CheckButton("Instant In", active=true)
+instantOutCheckbox = CheckButton("Instant Out")
+fadeInCheckbox = CheckButton("Fade In")
 
 backdropLabel = Label("Backdrop")
 
@@ -663,7 +669,9 @@ stylegroundGrid[2, 5] = flipYCheckbox
 stylegroundGrid[3, 5] = loopXCheckbox
 stylegroundGrid[4, 5] = loopYCheckbox
 stylegroundGrid[5, 5] = instantInCheckbox
-stylegroundGrid[6, 5] = blendingCheckbox
+stylegroundGrid[6, 5] = instantOutCheckbox
+stylegroundGrid[7, 5] = fadeInCheckbox
+stylegroundGrid[8, 5] = blendingCheckbox
 
 stylegroundGrid[1:2, 9] = parallaxAdd
 stylegroundGrid[3:4, 9] = parallaxRemove
