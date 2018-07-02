@@ -245,8 +245,16 @@ end
 
 function redrawTargetLayer!(layer::Main.Layer, selections::Set{Tuple{String, Main.Rectangle, Any, Number}}, ignore::Array{String, 1}=String[])
     if Main.layerName(layer) == "all"
-        needsRedraw = getLayersSelected(selections)
-        filter!(v -> !(v in ignore), needsRedraw)
+        redrawTargetLayer!(layer, getLayersSelected(selections), ignore)
+
+    else
+        Main.redrawLayer!(layer)
+    end
+end
+
+function redrawTargetLayer!(layer::Main.Layer, layers::Array{String, 1}, ignore::Array{String, 1}=String[])
+    if Main.layerName(layer) == "all"
+        needsRedraw = filter(v -> !(v in ignore), layers)
 
         for layer in needsRedraw
             Main.redrawLayer!(drawingLayers, layer)
@@ -556,6 +564,7 @@ end
 # this also includes the handle functions
 function keyboard(event::Main.eventKey)
     needsRedraw = false
+    layersSelected = getLayersSelected(selections)
 
     for hotkey in hotkeys
         if Main.active(hotkey, event)
@@ -585,7 +594,7 @@ function keyboard(event::Main.eventKey)
 
     if needsRedraw
         Main.redrawLayer!(toolsLayer)
-        redrawTargetLayer!(targetLayer, selections, String["fgTiles", "bgTiles"])
+        redrawTargetLayer!(targetLayer, layersSelected)
     end
 
     return true

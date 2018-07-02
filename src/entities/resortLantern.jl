@@ -8,9 +8,9 @@ placements = Dict{String, Main.EntityPlacement}(
 
 function isLeftSide(entity::Main.Maple.Entity, room::Main.Maple.Room)
     x, y = Main.entityTranslation(entity)
-    tx, ty = floor(Int, x / 8) + 1, floor(Int, y / 8) + 1
+    tx, ty = floor(Int, x / 8), floor(Int, y / 8)
 
-    return get(room.fgTiles.data, (ty, tx + 1), '0') == '0'
+    return get(room.fgTiles.data, (ty, tx + 2), '0') == '0'
 end
 
 function selection(entity::Main.Maple.Entity)
