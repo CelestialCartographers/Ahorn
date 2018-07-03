@@ -163,6 +163,8 @@ function cleanup()
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
+    global relevantRoom = Main.loadedState.room
+    
     wantedLayer = get(Main.persistence, "placements_layer", "entities")
     Main.updateLayerList!(vcat(["all"], Main.selectableLayers), row -> row[1] == Main.layerName(targetLayer))
 
@@ -171,7 +173,6 @@ function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, 
 end
 
 function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, selected::String)
-    global selections = Set{Tuple{String, Main.Rectangle, Any, Number}}()
     global targetLayer = Main.getLayerByName(drawingLayers, selected)
     Main.persistence["placements_layer"] = selected
 end
@@ -244,24 +245,14 @@ function getLayersSelected(selections::Set{Tuple{String, Main.Rectangle, Any, Nu
 end
 
 function redrawTargetLayer!(layer::Main.Layer, selections::Set{Tuple{String, Main.Rectangle, Any, Number}}, ignore::Array{String, 1}=String[])
-    if Main.layerName(layer) == "all"
-        redrawTargetLayer!(layer, getLayersSelected(selections), ignore)
-
-    else
-        Main.redrawLayer!(layer)
-    end
+    redrawTargetLayer!(layer, getLayersSelected(selections), ignore)
 end
 
 function redrawTargetLayer!(layer::Main.Layer, layers::Array{String, 1}, ignore::Array{String, 1}=String[])
-    if Main.layerName(layer) == "all"
-        needsRedraw = filter(v -> !(v in ignore), layers)
+    needsRedraw = filter(v -> !(v in ignore), layers)
 
-        for layer in needsRedraw
-            Main.redrawLayer!(drawingLayers, layer)
-        end
-
-    else
-        Main.redrawLayer!(layer)
+    for layer in needsRedraw
+        Main.redrawLayer!(drawingLayers, layer)
     end
 end
 

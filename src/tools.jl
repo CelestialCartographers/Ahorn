@@ -59,6 +59,10 @@ function changeTool!(tool::String)
     if loadedState.map !== nothing && loadedState.room !== nothing
         dr = getDrawableRoom(loadedState.map, loadedState.room)
 
+        if currentTool !== nothing
+            eventToModule(currentTool, "cleanup")
+        end
+
         if tool in loadedTools
             global currentTool = tool
         

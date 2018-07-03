@@ -7,7 +7,7 @@ placements = Dict{String, Main.EntityPlacement}(
 )
 
 function isLeftSide(entity::Main.Maple.Entity, room::Main.Maple.Room)
-    x, y = Main.entityTranslation(entity)
+    x, y = Main.entityTranslation(entity) .+ (0, 2)
     tx, ty = floor(Int, x / 8), floor(Int, y / 8)
 
     return get(room.fgTiles.data, (ty, tx + 2), '0') == '0'
