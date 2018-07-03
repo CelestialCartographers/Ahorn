@@ -3,10 +3,36 @@ module Clouds
 placements = Dict{String, Main.EntityPlacement}(
     "Cloud (Normal)" => Main.EntityPlacement(
         Main.Maple.Cloud,
+        "point",
+        Dict{String, Any}(
+            "fragile" => false,
+            "small" => false
+        )
     ),
-    "Cloud (Fragile)" => Main.EntityPlacement(
-        Main.Maple.FragileCloud,
-    )
+    "Cloud (Normal, Fragile)" => Main.EntityPlacement(
+        Main.Maple.Cloud,
+        "point",
+        Dict{String, Any}(
+            "fragile" => true,
+            "small" => false
+        )
+    ),
+    "Cloud (Small)" => Main.EntityPlacement(
+        Main.Maple.Cloud,
+        "point",
+        Dict{String, Any}(
+            "fragile" => false,
+            "small" => true
+        )
+    ),
+    "Cloud (Small, Fragile)" => Main.EntityPlacement(
+        Main.Maple.Cloud,
+        "point",
+        Dict{String, Any}(
+            "fragile" => true,
+            "small" => true
+        )
+    ),
 )
 
 function selection(entity::Main.Maple.Entity)
@@ -17,15 +43,19 @@ function selection(entity::Main.Maple.Entity)
     end
 end
 
+normalScale = 1.0
+smallScale = 29 / 35
+
 function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
     if entity.name == "cloud"
         fragile = get(entity.data, "fragile", false)
+        small = get(entity.data, "small", false)
 
         if fragile
-            Main.drawSprite(ctx, "objects/clouds/fragile00.png", 0, 0)
+            Main.drawSprite(ctx, "objects/clouds/fragile00.png", 0, 0, sx=small? smallScale : normalScale)
 
         else
-            Main.drawSprite(ctx, "objects/clouds/cloud00.png", 0, 0)
+            Main.drawSprite(ctx, "objects/clouds/cloud00.png", 0, 0, sx=small? smallScale : normalScale)
         end
 
         return true

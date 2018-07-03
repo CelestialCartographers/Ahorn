@@ -45,14 +45,15 @@ function renderBounceBlock(ctx::Main.Cairo.CairoContext, x::Number, y::Number, w
 
     for i in 0:ceil(Int, tilesWidth / 6)
         Main.drawImage(ctx, frame, i * 48 + 8, 0, 8, 0, 48, 8)
-        Main.drawImage(ctx, frame, i * 48 + 8, height - 8, 8, 56, 48, 8)
 
         for j in 0:ceil(Int, tilesHeight / 6)
             Main.drawImage(ctx, frame, i * 48 + 8, j * 48 + 8, 8, 8, 48, 48)
 
-            Main.drawImage(ctx, frame, 0, j * 48 + 8, 8, 0, 8, 48)
+            Main.drawImage(ctx, frame, 0, j * 48 + 8, 0, 8, 8, 48)
             Main.drawImage(ctx, frame, width - 8, j * 48 + 8, 56, 8, 8, 48)
         end
+
+        Main.drawImage(ctx, frame, i * 48 + 8, height - 8, 8, 56, 48, 8)
     end
 
     Main.drawImage(ctx, frame, 0, 0, 0, 0, 8, 8)

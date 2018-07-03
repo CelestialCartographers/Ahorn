@@ -6,58 +6,14 @@ function rotatingSpinnerFinalizer(entity::Main.Maple.Entity)
     entity.data["nodes"] = [(x, y)]
 end
 
+
+
 placements = Dict{String, Main.EntityPlacement}(
-    "Crystal Spinner (Blue)" => Main.EntityPlacement(
-        Main.Maple.Spinner,
-        "point",
-        Dict{String, Any}(
-            "color" => "blue"
-        )
-    ),
-    "Crystal Spinner (Red)" => Main.EntityPlacement(
-        Main.Maple.Spinner,
-        "point",
-        Dict{String, Any}(
-            "color" => "red"
-        )
-    ),
-    "Crystal Spinner (Purple)" => Main.EntityPlacement(
-        Main.Maple.Spinner,
-        "point",
-        Dict{String, Any}(
-            "color" => "purple"
-        )
-    ),
     "Dust Sprite" => Main.EntityPlacement(
         Main.Maple.Spinner,
         "point",
         Dict{String, Any}(
             "dust" => true
-        )
-    ),
-
-    "Crystal Spinner (Blue, Attached)" => Main.EntityPlacement(
-        Main.Maple.Spinner,
-        "point",
-        Dict{String, Any}(
-            "color" => "blue",
-            "attachToSolid" => true,
-        )
-    ),
-    "Crystal Spinner (Red, Attached)" => Main.EntityPlacement(
-        Main.Maple.Spinner,
-        "point",
-        Dict{String, Any}(
-            "color" => "red",
-            "attachToSolid" => true,
-        )
-    ),
-    "Crystal Spinner (Purple, Attached)" => Main.EntityPlacement(
-        Main.Maple.Spinner,
-        "point",
-        Dict{String, Any}(
-            "color" => "purple",
-            "attachToSolid" => true,
         )
     ),
     "Dust Sprite (Attached)" => Main.EntityPlacement(
@@ -107,8 +63,24 @@ placements = Dict{String, Main.EntityPlacement}(
     ),
 )
 
-speeds = ["slow", "normal", "fast"]
+crystalSpinnerColors = String[
+    "blue", "red", "purple", "core"
+]
+for color in crystalSpinnerColors
+    for attached in false:true
+        key = "Crystal Spinner ($(titlecase(color))$(attached? ", Attached" : ""))"
+        placements[key] = Main.EntityPlacement(
+            Main.Maple.Spinner,
+            "point",
+            Dict{String, Any}(
+                "color" => color,
+                "attachToSolid" => attached,
+            )
+        )
+    end
+end
 
+speeds = ["slow", "normal", "fast"]
 for speed in speeds, dusty in false:true
     key = (dusty? "Dust Sprite" : "Blade") * " (Track, $(titlecase(speed)))"
     placements[key] = Main.EntityPlacement(
@@ -169,13 +141,14 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
     if entity.name == "spinner"
         # Custom attributes from Everest
         dusty = get(entity.data, "dust", false)
-        color = get(entity.data, "color", "blue")
+        color = lowercase(get(entity.data, "color", "blue"))
 
-        if dusty  
+        if dusty
             Main.drawSprite(ctx, "danger/dustcreature/base00.png", 0, 0)
             Main.drawSprite(ctx, "danger/dustcreature/center00.png", 0, 0)
 
         else
+            color = color == "core"? "blue" : color
             Main.drawSprite(ctx, "danger/crystal/fg_$(color)03.png", 0, 0)
         end
 

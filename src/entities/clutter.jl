@@ -20,7 +20,7 @@ simpleName = Dict{String, String}(
 placements = Dict{String, Main.EntityPlacement}(
     "Clutter Cabinet" => Main.EntityPlacement(
         Main.Maple.ClutterCabinet
-    )
+    ),
 )
 
 for (raw, name) in clutterDisplayNames
@@ -32,6 +32,14 @@ for (raw, name) in clutterDisplayNames
     placements["Clutter Switch ($name)"] = Main.EntityPlacement(
         Main.Maple.ColorSwitch,
         "point",
+        Dict{String, Any}(
+            "type" => simpleName[raw]
+        )
+    )
+
+    placements["Clutter Door ($name)"] = Main.EntityPlacement(
+        Main.Maple.ClutterDoor,
+        "rectangle",
         Dict{String, Any}(
             "type" => simpleName[raw]
         )
@@ -104,11 +112,17 @@ end
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name in validClutterNames
         return true, 8, 8
+
+    elseif entity.name == "clutterDoor"
+        return true, 16, 16
     end
 end
 
 function resizable(entity::Main.Maple.Entity)
     if entity.name in validClutterNames
+        return true, true, true
+    
+    elseif entity.name == "clutterDoor"
         return true, true, true
     end
 end
@@ -131,8 +145,18 @@ function selection(entity::Main.Maple.Entity)
         x, y = Main.entityTranslation(entity)
 
         return true, Main.Rectangle(x, y, 16, 16)
+
+    elseif entity.name == "clutterDoor"
+        x, y = Main.entityTranslation(entity)
+
+        width = Int(get(entity.data, "width", 8))
+        height = Int(get(entity.data, "height", 8))
+
+        return true, Main.Rectangle(x, y, width, height)
     end
 end
+
+clutterDoorColor = (74, 71, 135, 0.6) ./ (255.0, 255.0, 255.0, 1.0)
 
 function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
     if entity.name in validClutterNames
@@ -157,6 +181,20 @@ function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room
         x, y = Main.entityTranslation(entity)
 
         Main.drawImage(ctx, "objects/resortclutter/cabinet00", x, y)
+
+        return true
+
+    elseif entity.name == "clutterDoor"
+        x, y = Main.entityTranslation(entity)
+
+        width = Int(get(entity.data, "width", 16))
+        height = Int(get(entity.data, "height", 16))
+
+        variant = lowercase(get(entity.data, "type", "red"))
+        sprite = Main.sprites["objects/resortclutter/icon_$variant"]
+
+        Main.drawRectangle(ctx, x, y, width, height, clutterDoorColor, (1.0, 1.0, 1.0, 8.0))
+        Main.drawImage(ctx, sprite, x + width / 2 - (sprite.width) / 2, y + height / 2 - (sprite.height) / 2)
 
         return true
     end

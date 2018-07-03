@@ -35,6 +35,9 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - arrow keys: move selected
  - left mouse button over selected: dragging selected
  - shift selecting keeps previous selection as well
+ - Ctrl + c: Copy selection
+ - Ctrl + x: Cut selection
+ - Ctrl + v: Paste selection
  - holding ctrl + any of the above: use 1 as step size instead of 8 for more fine-grained placements
  - v, h: vertical / horizontal mirror of decal
  - delete: delete the given node / target
