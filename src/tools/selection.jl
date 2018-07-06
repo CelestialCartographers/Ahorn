@@ -231,7 +231,7 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
             end
 
             Main.redrawLayer!(toolsLayer)
-            redrawTargetLayer!(targetLayer, layersSelected, String["fgTiles", "bgTiles"])
+            redrawTargetLayer!(targetLayer, selections, String["fgTiles", "bgTiles"])
         end
     end
 end
