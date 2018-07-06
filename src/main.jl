@@ -71,6 +71,7 @@ include("module_loader.jl")
 include("rectangle.jl")
 include("line.jl")
 include("list_view_helper.jl")
+include("materials_filter.jl")
 include("menubar.jl")
 include("celeste_render.jl")
 #include("menu_tiles.jl")
@@ -79,6 +80,7 @@ include("selections.jl")
 include("event_handler.jl")
 include("hotkey.jl")
 include("tools.jl")
+include("history_manager.jl")
 include("roomlist.jl")
 include("file_dialogs.jl")
 include("room_window.jl")
@@ -173,12 +175,34 @@ hotkeys = Hotkey[
             modifierControl,
             modifierShift
         ]
+    ),
+    Hotkey(
+        'z',
+        History.undo!,
+        Function[
+            modifierControl
+        ]
+    ),
+    Hotkey(
+        'Z',
+        History.redo!,
+        Function[
+            modifierControl,
+            modifierShift
+        ]
+    ),
+    Hotkey(
+        'f',
+        focusFilterEntry!,
+        Function[
+            modifierControl
+        ]
     )
 ]
 
 # Handle menubars better in the feature
 # Allow registering of custom menubar items, like debug menu
-menubarHeaders = ["File", "Map", "Room", "Help"]
+menubarHeaders = ["File", "Edit", "Map", "Room", "Help"]
 menubarItems = [
     [
         ("New", createNewMap),
@@ -186,6 +210,10 @@ menubarItems = [
         ("Save", menuFileSave),
         ("Save as", showFileSaveDialog),
         ("Exit", ExitWindow.exitAhorn),
+    ],
+    [
+        ("Undo", History.undo!),
+        ("Redo", History.redo!) 
     ],
     [
         ("Stylegrounds", StylegroundWindow.editStylegrounds),
@@ -223,12 +251,13 @@ scrollableWindowMaterialList = ScrolledWindow(vexpand=true, hscrollbar_policy=Gt
 push!(scrollableWindowMaterialList, materialList.tree)
 
 grid[1:6, 1] = menubar
-grid[1, 2] = scrollableWindowRoomList
-grid[2, 2] = canvas
-grid[3, 2] = toolList.tree
-grid[4, 2] = layersList.tree
-grid[5, 2] = subtoolList.tree
+grid[1, 2:3] = scrollableWindowRoomList
+grid[2, 2:3] = canvas
+grid[3, 2:3] = toolList.tree
+grid[4, 2:3] = layersList.tree
+grid[5, 2:3] = subtoolList.tree
 grid[6, 2] = scrollableWindowMaterialList
+grid[6, 3] = materialFilterEntry
 
 push!(box, grid)
 

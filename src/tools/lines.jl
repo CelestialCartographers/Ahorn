@@ -29,6 +29,9 @@ function drawLines(layer::Main.Layer, room::Main.Room)
 end
 
 function applyLine!(line::Main.Line, tiles::Main.Maple.Tiles, material::Char)
+    layer = Main.layerName(targetLayer)
+    Main.History.addSnapshot!(Main.History.RoomSnapshot("Line $(material)", Main.loadedState.room))
+
     Main.applyBrush!(lineBrush, tiles, material, 1, 1)
 end
 
@@ -38,11 +41,11 @@ function cleanup()
     Main.redrawLayer!(toolsLayer)
 end
 
-function setMaterials!(layer::Main.Layer, materials::Main.ListContainer)
+function setMaterials!(layer::Main.Layer)
     validTiles = Main.validTiles(layer)
     tileNames = Main.tileNames(layer)
 
-    Main.updateTreeView!(materials, [tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Main.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
@@ -63,7 +66,7 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
 
     tileNames = Main.tileNames(targetLayer)
     global material = get(Main.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
-    setMaterials!(targetLayer, materials)
+    setMaterials!(targetLayer)
 end
 
 function materialSelected(list::Main.ListContainer, selected::String)

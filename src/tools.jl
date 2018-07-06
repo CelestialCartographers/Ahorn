@@ -125,6 +125,17 @@ function selectMaterialList!(m::String)
     select!(materialList, row -> row[1] == m)
 end
 
+function setMaterialList!(materials::Array{String, 1}, selector::Union{Function, Integer, Void}=nothing)
+    Gtk.GLib.@sigatom setproperty!(materialFilterEntry, :text, "")
+
+    if selector !== nothing
+        updateTreeView!(materialList, materials, selector)
+    
+    else
+        updateTreeView!(materialList, materials)
+    end
+end
+
 function selectLayer!(layers::Array{Layer, 1}, layer::String, default::String="")
     newLayer = getLayerByName(layers, layer, default)
     select!(layersList, row -> row[1] == newLayer.name)
@@ -248,9 +259,12 @@ end
 function handleRoomModifications(event::eventKey)
     if modifierAlt() && loadedState.room !== nothing && loadedState.map !== nothing
         if haskey(moveDirections, event.keyval)
+            History.addSnapshot!(History.RoomSnapshot("Room Movement", loadedState.room))
+
             ox, oy = moveDirections[event.keyval] .* 8
             loadedState.room.position = loadedState.room.position .+ (ox, oy)
             updateTreeView!(roomList, getTreeData(loadedState.map), row -> row[1] == loadedState.room.name)
+
             draw(canvas)
 
             return true
@@ -258,7 +272,9 @@ function handleRoomModifications(event::eventKey)
         elseif event.keyval == Gtk.GdkKeySyms.Delete
             index = findfirst(loadedState.map.rooms, loadedState.room)
 
-            if index != 0 && ask_dialog("Are you sure you want to delete this room '$(loadedState.room.name)'", window)
+            if index != 0 && ask_dialog("Are you sure you want to delete this room? '$(loadedState.room.name)'", window)
+                History.addSnapshot!(History.MapSnapshot("Room Deletion", loadedState.map))
+
                 deleteat!(loadedState.map.rooms, index)
                 updateTreeView!(roomList, getTreeData(loadedState.map))
                 draw(canvas)

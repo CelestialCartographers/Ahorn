@@ -19,6 +19,7 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     if filename != ""
         loadedState.filename = filename
         loadedState.map = loadMap(filename)
+        loadedState.lastSavedMap = deepcopy(loadedState.map)
         loadedState.roomName = ""
         loadedState.room = nothing
 
@@ -75,6 +76,8 @@ function saveFile(map::Map, filename::String)
         sort!(map.rooms, by=r -> r.name)
         updateTreeView!(roomList, getTreeData(map), row -> row[1] == loadedState.roomName)
     end
+
+    loadedState.lastSavedMap = deepcopy(map)
 
     fn = splitext(filename)[2] == ".bin"? filename : filename * ".bin"
     encodeMap(map, fn)

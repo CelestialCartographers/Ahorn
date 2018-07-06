@@ -51,6 +51,15 @@ function shouldHandle()
     return loadedState.map !== nothing && loadedState.room !== nothing
 end
 
+function shouldConsumeKeys()
+    try
+        return !isa(GAccessor.focus(window), Gtk.GtkEntryLeaf)
+
+    catch
+        return true
+    end
+end
+
 function scroll_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventScroll)
     prevScale = camera.scale
 
@@ -147,21 +156,27 @@ function button_release_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventButton)
 end
 
 function key_press_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
-    keyPressed[event.keyval] = (event, true)
-    handleKeyPressed(event)
+    consume = shouldConsumeKeys()
+    if consume
+        keyPressed[event.keyval] = (event, true)
+        handleKeyPressed(event)
 
-    for hotkey in hotkeys
-        if active(hotkey, event)
-            callback(hotkey)
+        for hotkey in hotkeys
+            if active(hotkey, event)
+                callback(hotkey)
+            end
         end
     end
 
-    return true
+    return consume
 end
 
 function key_release_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
-    keyPressed[event.keyval] = (event, false)
-    handleKeyReleased(event)
+    consume = shouldConsumeKeys()
+    if consume
+        keyPressed[event.keyval] = (event, false)
+        handleKeyReleased(event)
+    end
 
-    return true
+    return consume
 end

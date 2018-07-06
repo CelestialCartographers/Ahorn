@@ -98,7 +98,12 @@ function expandApply!(styles::Main.Maple.Styleground)
     for style in styles.children
         if isa(style, Main.Maple.Apply)
             for p in style.parallax
-                push!(res, Main.Maple.Parallax(merge(style.data, p.data)))
+                if isa(p, Main.Maple.Parallax)
+                    push!(res, Main.Maple.Parallax(merge(style.data, p.data)))
+
+                elseif isa(p, Main.Maple.Effect)
+                    push!(res, Main.Maple.Effect(p.typ, merge(style.data, p.data)))
+                end
             end
 
         else

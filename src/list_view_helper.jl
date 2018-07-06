@@ -2,14 +2,18 @@ mutable struct ListContainer
     store::Gtk.GtkListStore
     selection::Gtk.GtkTreeSelection
     tree::Gtk.GtkTreeView
+    data::Array{Any, 1}
+    visible::Array{Bool, 1}
 end
 
 columnTypes = Dict{Type, Any}(
+    Array{String, 1} => GtkCellRendererCombo(),
     Bool => GtkCellRendererToggle(),
     Gtk.GdkPixbufLeaf => GtkCellRendererPixbuf()
 )
 
 columnNames = Dict{Type, Any}(
+    Array{String, 1} => "combo",
     Bool => "active",
     Gtk.GdkPixbufLeaf => "pixbuf"
 )
@@ -66,8 +70,13 @@ function getListData!(container::ListContainer)
     return [container.store[i] for i in 1:length(container.store)]
 end
 
-function updateTreeViewUnsafe!(container::ListContainer, data::Array{T, 1}, select::Union{Integer, Function}=1) where T <: Any
+function updateTreeViewUnsafe!(container::ListContainer, data::Array{T, 1}, select::Union{Integer, Function}=1, setData::Bool=true) where T <: Any
     data = sanitizeListData(data)
+
+    if setData
+        container.data = deepcopy(data)
+        container.visible = fill(true, length(data))
+    end
 
     # This makes sure nothing new is automaticly selected while emptying the store
     container.selection = GAccessor.mode(container.selection, Gtk.GConstants.GtkSelectionMode.NONE)
@@ -89,10 +98,38 @@ end
 updateTreeView!(
     container::ListContainer,
     data::Array{T, 1},
-    select::Union{Integer, Function}=getSelected(container)
-) where T <: Any = Gtk.GLib.@sigatom updateTreeViewUnsafe!(container, data, select)
+    select::Union{Integer, Function}=getSelected(container),
+    setData::Bool=true
+) where T <: Any = Gtk.GLib.@sigatom updateTreeViewUnsafe!(container, data, select, setData)
 
-function generateTreeView(header::H, data::Array{T, 1}; resize::Bool=true, sortable::Bool=true) where {T <: Any, H <: Any}
+function filterContainer!(container::ListContainer)
+    data = typeof(container.data)()
+
+    for (i, d) in enumerate(container.data)
+        if container.visible[i]
+            push!(data, d)
+        end
+    end
+
+    updateTreeView!(container, data, 1, false)
+end
+
+function placeholderCallback(store, col, row, text)
+
+end
+
+function textRenderer(editable::Bool=false, callback::Tuple{GtkListStore, Integer, Function}=(GtkListStore(String), 1, placeholderCallback))
+    renderer = GtkCellRendererText(editable=editable)
+    @guarded signal_connect(renderer, :edited) do widget, row, text
+        store, col, func = callback
+
+        func(store, col, parse(Int, row) + 1, text)
+    end
+
+    return renderer
+end
+
+function generateTreeView(header::H, data::Array{T, 1}; resize::Bool=true, sortable::Bool=true, editable::Array{Bool, 1}=fill(false, length(header)), callbacks::Array{F, 1}=fill(false, length(header))) where {T <: Any, H <: Any, F <: Any}
     header = sanitizeListData(header)
     data = sanitizeListData(data)
 
@@ -110,8 +147,8 @@ function generateTreeView(header::H, data::Array{T, 1}; resize::Bool=true, sorta
     for c in 1:length(tupleTypes)
         col = GtkTreeViewColumn(
             header[c],
-            get(columnTypes, tupleTypes[c], GtkCellRendererText()),
-            Dict([(get(columnNames, tupleTypes[c], "text"), c - 1)])
+            get(columnTypes, tupleTypes[c], textRenderer(editable[c], (store, c, isa(callbacks[c], Function)? callbacks[c] : placeholderCallback))),
+            Dict(get(columnNames, tupleTypes[c], "text") => c - 1)
         )
 
         push!(cols, col)
@@ -134,7 +171,7 @@ function generateTreeView(header::H, data::Array{T, 1}; resize::Bool=true, sorta
 
     selection = GAccessor.selection(treeView)
 
-    return ListContainer(store, selection, treeView)
+    return ListContainer(store, selection, treeView, deepcopy(data), fill(true, length(data)))
 end
 
 function connectChanged(container::ListContainer, f::Function)

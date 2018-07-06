@@ -13,7 +13,7 @@ selectionRect = Main.Rectangle(0, 0, 0, 0)
 selections = Set{Tuple{String, Main.Rectangle, Any, Number}}()
 
 lastX, lastY = -1, -1
-shouldDrag = true
+shouldDrag = false
 
 decalScaleVals = (1.0, 2.0^4)
 
@@ -36,7 +36,7 @@ function copySelections(cut::Bool=false)
     redrawTargetLayer!(targetLayer, selectionsClipboard)
     Main.redrawLayer!(toolsLayer)
 
-    return true
+    return cut
 end
 
 cutSelections() = copySelections(true)
@@ -192,8 +192,17 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
         global lastX = ctrl? x1 : div(x1, 8) * 8
         global lastY = ctrl? y1 : div(y1, 8) * 8
 
-        success, target = Main.hasSelectionAt(selections, Main.Rectangle(x1, y1, 1, 1))
-        global shouldDrag = success
+        if !shouldDrag
+            success, target = Main.hasSelectionAt(selections, Main.Rectangle(x1, y1, 1, 1))
+            global shouldDrag = success
+
+            if success
+                Main.History.addSnapshot!(Main.History.MultiSnapshot("Selections", Main.History.Snapshot[
+                    Main.History.RoomSnapshot("Selections", Main.loadedState.room),
+                    Main.History.SelectionSnapshot("Selections", relevantRoom, selections)
+                ]))
+            end
+        end
     end
 
     if shouldDrag
@@ -222,7 +231,7 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
             end
 
             Main.redrawLayer!(toolsLayer)
-            redrawTargetLayer!(targetLayer, selections, String["fgTiles", "bgTiles"])
+            redrawTargetLayer!(targetLayer, layersSelected, String["fgTiles", "bgTiles"])
         end
     end
 end
@@ -299,6 +308,16 @@ function applyTileSelecitonBrush!(target::Main.TileSelection, clear::Bool=false)
     Main.applyBrush!(brush, roomTiles, tiles[2:end - 1, 2:end - 1], x + 1, y + 1)
 end
 
+function afterUndo(map::Main.Maple.Map)
+    global selections = Main.fixSelections(relevantRoom, selections)
+    Main.redrawLayer!(toolsLayer)
+end
+
+function afterRedo(map::Main.Maple.Map)
+    global selections = Main.fixSelections(relevantRoom, selections)
+    Main.redrawLayer!(toolsLayer)
+end
+
 function finalizeSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Number}})
     for selection in targets
         layer, box, target, node = selection
@@ -325,6 +344,19 @@ function initSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Number}
     if !isempty(targets)
         redrawTargetLayer!(targetLayer, targets)
     end
+end
+
+function setSelections(map::Main.Maple.Map, room::Main.Maple.Room, newSelections::Set{Tuple{String, Main.Rectangle, Any, Number}})
+    if room.name == relevantRoom.name
+        empty!(selections)
+        union!(selections, Main.fixSelections(relevantRoom, newSelections))
+
+        Main.redrawLayer!(toolsLayer)
+    end
+end
+
+function getSelections()
+    return true, selections
 end
 
 function applyMovement!(target::Union{Main.Maple.Entity, Main.Maple.Trigger}, ox::Number, oy::Number, node::Number=0)
@@ -546,7 +578,9 @@ function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Numbe
 
     # Tiles are deleted by removing them from the set, no special handle
 
-    empty!(selections)
+    if !isempty(selections)
+        empty!(selections)
+    end
 
     return res
 end
@@ -556,10 +590,14 @@ end
 function keyboard(event::Main.eventKey)
     needsRedraw = false
     layersSelected = getLayersSelected(selections)
+    snapshot = Main.History.MultiSnapshot("Selections", Main.History.Snapshot[
+        Main.History.RoomSnapshot("Selections", Main.loadedState.room),
+        Main.History.SelectionSnapshot("Selections", relevantRoom, selections)
+    ])
 
     for hotkey in hotkeys
         if Main.active(hotkey, event)
-            Main.callback(hotkey)
+            needsRedraw |= Main.callback(hotkey)
         end
     end
 
@@ -584,6 +622,7 @@ function keyboard(event::Main.eventKey)
     end
 
     if needsRedraw
+        Main.History.addSnapshot!(snapshot)
         Main.redrawLayer!(toolsLayer)
         redrawTargetLayer!(targetLayer, layersSelected)
     end

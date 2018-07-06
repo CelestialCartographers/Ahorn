@@ -188,8 +188,6 @@ function applyBrush!(brush::Brush, tiles::Maple.Tiles, material::Char, x::Number
     end
 end
 
-# TODO - Test later
-# Should materials be rotated as well? 
 function applyBrush!(brush::Brush, tiles::Maple.Tiles, materials::Array{Char, 2}, x::Number, y::Number)
     brushPixels = rotr90(brush.pixels, brush.rotation)
     #materials = rotr90(materials, brush.rotation)

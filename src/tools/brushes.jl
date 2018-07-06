@@ -64,11 +64,11 @@ function cleanup()
     Main.redrawLayer!(toolsLayer)
 end
 
-function setMaterials!(layer::Main.Layer, materials::Main.ListContainer)
+function setMaterials!(layer::Main.Layer)
     validTiles = Main.validTiles(layer)
     tileNames = Main.tileNames(layer)
 
-    Main.updateTreeView!(materials, [tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Main.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
 end
 
 function mouseMotion(x::Number, y::Number)
@@ -89,6 +89,9 @@ function middleClick(x::Number, y::Number)
 end
 
 function leftClick(x::Number, y::Number)
+    layer = Main.layerName(targetLayer)
+    Main.History.addSnapshot!(Main.History.RoomSnapshot("Brush $(selectedBrush.name)", Main.loadedState.room))
+
     roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
     Main.applyBrush!(selectedBrush, roomTiles, material, x, y)
 
@@ -116,6 +119,10 @@ function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)
 end
 
 function selectionFinish(rect::Main.Rectangle)
+    if !isempty(phantomBrushes)
+        Main.History.addSnapshot!(Main.History.RoomSnapshot("Brush ($(selectedBrush.name), $material)", Main.loadedState.room))    
+    end
+
     for (pos, brush) in phantomBrushes
         x, y = pos
 
@@ -123,7 +130,7 @@ function selectionFinish(rect::Main.Rectangle)
         Main.applyBrush!(brush, roomTiles, material, x, y)
     end
 
-    if length(phantomBrushes) > 0
+    if !isempty(phantomBrushes)
         empty!(phantomBrushes)
 
         Main.redrawLayer!(targetLayer)
@@ -152,8 +159,8 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
     Main.persistence["brushes_layer"] = selected
 
     tileNames = Main.tileNames(targetLayer)
-    global material = get(Main.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
-    setMaterials!(targetLayer, materials)
+    global material = get(Main.persistence, "Brush ($(selectedBrush.name), $material)", tileNames["Air"])[1]
+    setMaterials!(targetLayer)
 end
 
 function materialSelected(list::Main.ListContainer, selected::String)

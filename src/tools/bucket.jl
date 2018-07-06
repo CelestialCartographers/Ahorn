@@ -61,7 +61,10 @@ function drawBucket(layer::Main.Layer, room::Main.Room)
 end
 
 function applyFill!(x::Number, y::Number, layer::Main.Layer, material::Char)
-    tiles = layer.name == "fgTiles"? Main.loadedState.room.fgTiles : Main.loadedState.room.bgTiles
+    layer = Main.layerName(targetLayer)
+    Main.History.addSnapshot!(Main.History.RoomSnapshot("Bucket ($material)", Main.loadedState.room))
+
+    tiles = layer == "fgTiles"? Main.loadedState.room.fgTiles : Main.loadedState.room.bgTiles
 
     Main.applyBrush!(bucketBrush, tiles, material, 1, 1)
 end
@@ -73,11 +76,11 @@ function cleanup()
     Main.redrawLayer!(toolsLayer)
 end
 
-function setMaterials!(layer::Main.Layer, materials::Main.ListContainer)
+function setMaterials!(layer::Main.Layer)
     validTiles = Main.validTiles(layer)
     tileNames = Main.tileNames(layer)
 
-    Main.updateTreeView!(materials, [tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Main.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
 end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
@@ -98,7 +101,7 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
 
     tileNames = Main.tileNames(targetLayer)
     global material = get(Main.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
-    setMaterials!(targetLayer, materials)
+    setMaterials!(targetLayer)
 end
 
 function materialSelected(list::Main.ListContainer, selected::String)

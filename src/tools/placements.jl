@@ -21,9 +21,10 @@ blacklistedCloneAttrs = ["id", "x", "y"]
 animationRegex = r"\D+0*?$"
 filterAnimations(s::String) = ismatch(animationRegex, s)
 
+placementLayers = String["entities", "triggers", "fgDecals", "bgDecals"]
+
 function drawSelection(layer::Main.Layer, room::Main.Room)
     ctx = Main.creategc(toolsLayer.surface)
-
 
     if selectionRect !== nothing && selectionRect.w > 0 && selectionRect.h > 0
         if isa(material, Main.EntityPlacement) && material.placement == "rectangle" 
@@ -46,54 +47,59 @@ function drawSelection(layer::Main.Layer, room::Main.Room)
 end
 
 function generatePreview(layer::Main.Layer, material::Any, x::Integer, y::Integer; sx::Integer=1, sy::Integer=1, nx=x + 8, ny=y + 8)
-    if layer.name == "entities" || layer.name == "triggers"
-        return Main.generateEntity(Main.loadedState.map, Main.loadedState.room, material, x, y, nx, ny)
+    if material !== nothing
+        if layer.name == "entities" || layer.name == "triggers"
+            return Main.generateEntity(Main.loadedState.map, Main.loadedState.room, material, x, y, nx, ny)
 
-    elseif layer.name == "fgDecals" || layer.name == "bgDecals"
-        texture = splitext(material)[1] * ".png"
-        return Main.Maple.Decal(texture, x, y, sx, sy)
+        elseif layer.name == "fgDecals" || layer.name == "bgDecals"
+            texture = splitext(material)[1] * ".png"
+            return Main.Maple.Decal(texture, x, y, sx, sy)
+        end
     end
 end
 
 function pushPreview!(layer::Main.Layer, room::Main.Maple.Room, preview::Any)
-    if Main.layerName(layer) == "entities"
+    name = Main.layerName(layer)
+    Main.History.addSnapshot!(Main.History.RoomSnapshot("Placement ($name)", room))
+
+    if name == "entities"
         push!(room.entities, preview)
 
-    elseif Main.layerName(layer) == "triggers"
+    elseif name == "triggers"
         push!(room.triggers, preview)
 
-    elseif Main.layerName(layer) == "fgDecals"
+    elseif name == "fgDecals"
         push!(room.fgDecals, preview)
 
-    elseif Main.layerName(layer) == "bgDecals"
+    elseif name == "bgDecals"
         push!(room.bgDecals, preview)
     end
 end
 
-function updateMaterialsEntities!(materials::Main.ListContainer)
+function updateMaterialsEntities!()
     selectables = collect(keys(Main.entityPlacements))
     sort!(selectables)
 
     wantedEntity = get(Main.persistence, "placements_placements_entity", selectables[1])
-    Main.updateTreeView!(materials, selectables, row -> row[1] == wantedEntity)
+    Main.setMaterialList!(selectables, row -> row[1] == wantedEntity)
 end
 
-function updateMaterialsTriggers!(materials::Main.ListContainer)
+function updateMaterialsTriggers!()
     selectables = collect(keys(Main.triggerPlacements))
     sort!(selectables)
 
     wantedTrigger = get(Main.persistence, "placements_placements_trigger", selectables[1])
-    Main.updateTreeView!(materials, selectables, row -> row[1] == wantedTrigger)
+    Main.setMaterialList!(selectables, row -> row[1] == wantedTrigger)
 end
 
-function updateMaterialsDecals!(materials::Main.ListContainer)
+function updateMaterialsDecals!()
     Main.loadExternalSprites!()
     textures = Main.spritesToDecalTextures(Main.sprites)
     sort!(textures)
     filter!(filterAnimations, textures)
 
     wantedDecal = get(Main.persistence, "placements_placements_decal", textures[1])
-    Main.updateTreeView!(materials, textures, row -> row[1] == wantedDecal)
+    Main.setMaterialList!(textures, row -> row[1] == wantedDecal)
 end
 
 function cleanup()
@@ -105,7 +111,7 @@ end
 
 function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
     wantedLayer = get(Main.persistence, "placements_layer", "entities")
-    Main.updateLayerList!(["entities", "triggers", "fgDecals", "bgDecals"], row -> row[1] == wantedLayer)
+    Main.updateLayerList!(placementLayers, row -> row[1] == wantedLayer)
     Main.updateTreeView!(subTools, [])
 
     Main.redrawingFuncs["tools"] = drawSelection
@@ -113,19 +119,20 @@ function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, 
 end
 
 function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, selected::String)
+    prevLayer = Main.layerName(targetLayer)
     global targetLayer = Main.getLayerByName(drawingLayers, selected)
+
     if selected == "entities"
-        updateMaterialsEntities!(materials)
-        global previewGhost = nothing
+        updateMaterialsEntities!()
 
     elseif selected == "triggers"
-        updateMaterialsTriggers!(materials)
-        global previewGhost = nothing
+        updateMaterialsTriggers!()
 
-    elseif selected == "fgDecals" || selected == "bgDecals"
-        updateMaterialsDecals!(materials)
-        global previewGhost = nothing
+    elseif (selected == "fgDecals" || selected == "bgDecals") && prevLayer != "fgDecals" && prevLayer != "bgDecals" || isempty(materials.data)
+        updateMaterialsDecals!()
     end
+
+    global previewGhost = nothing
 
     Main.persistence["placements_layer"] = selected
 end
@@ -136,12 +143,16 @@ end
 
 function materialSelected(list::Main.ListContainer, selected::String)
     if Main.layerName(targetLayer) == "entities"
-        global material = Main.entityPlacements[selected]
-        Main.persistence["placements_placements_entity"] = selected
+        if haskey(Main.entityPlacements, selected)
+            global material = Main.entityPlacements[selected]
+            Main.persistence["placements_placements_entity"] = selected
+        end
 
     elseif Main.layerName(targetLayer) == "triggers"
-        global material = Main.triggerPlacements[selected]
-        Main.persistence["placements_placements_trigger"] = selected
+        if haskey(Main.triggerPlacements, selected)
+            global material = Main.triggerPlacements[selected]
+            Main.persistence["placements_placements_trigger"] = selected
+        end
 
     elseif Main.layerName(targetLayer) == "fgDecals" || Main.layerName(targetLayer) == "bgDecals" 
         global material = selected

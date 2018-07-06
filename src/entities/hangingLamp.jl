@@ -18,6 +18,18 @@ placements = Dict{String, Main.EntityPlacement}(
     )
 )
 
+function minimumSize(entity::Main.Maple.Entity)
+    if entity.name == "hanginglamp"
+        return true, 0, 8
+    end
+end
+
+function resizable(entity::Main.Maple.Entity)
+    if entity.name == "hanginglamp"
+        return true, false, true
+    end
+end
+
 function selection(entity::Main.Maple.Entity)
     if entity.name == "hanginglamp"
         x, y = Main.entityTranslation(entity)

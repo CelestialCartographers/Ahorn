@@ -178,4 +178,25 @@ function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}
     return unselected, newlySelected
 end
 
+function fixSelections(room::Maple.Room, selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
+    res = Set{Tuple{String, Main.Rectangle, Any, Number}}()
+
+    for selection in selections
+        layer, box, target, node = selection
+        if haskey(selectionTargets, layer)
+            targets = selectionTargets[layer](room)
+
+            index = findfirst(isequal(target), targets)
+            if index > 0
+                push!(res, (layer, box, targets[index], node))
+            end
+
+        else
+            push!(res, (layer, box, target, node))
+        end
+    end
+
+    return res
+end
+
 updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}}, room::Room, layer::Layer, rect::Rectangle) = updateSelections!(selections, room, layerName(layer), rect)
