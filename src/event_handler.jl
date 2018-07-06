@@ -156,9 +156,9 @@ function button_release_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventButton)
 end
 
 function key_press_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
+    keyPressed[event.keyval] = (event, true)
     consume = shouldConsumeKeys()
     if consume
-        keyPressed[event.keyval] = (event, true)
         handleKeyPressed(event)
 
         for hotkey in hotkeys
@@ -172,9 +172,9 @@ function key_press_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
 end
 
 function key_release_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
+    keyPressed[event.keyval] = (event, false)
     consume = shouldConsumeKeys()
     if consume
-        keyPressed[event.keyval] = (event, false)
         handleKeyReleased(event)
     end
 
