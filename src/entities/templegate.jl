@@ -3,7 +3,7 @@ module TempleGate
 placements = Dict{String, Main.EntityPlacement}()
 
 textures = ["default", "mirror", "theo"]
-modes = ["NearestSwitch", "HoldingTheo", "TouchSwitches", "CloseBehindPlayer"]
+modes = Main.Maple.temple_gate_modes
 
 for texture in textures
     for mode in modes
@@ -15,6 +15,15 @@ for texture in textures
                 "sprite" => texture,
                 "type" => mode
             )
+        )
+    end
+end
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "templeGate"
+        return true, Dict{String, Any}(
+            "type" => modes,
+            "sprite" => textures
         )
     end
 end

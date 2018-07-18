@@ -287,6 +287,14 @@ function leftClickAbs(x::Number, y::Number)
     Main.redrawLayer!(toolsLayer)
 end
 
+function rightClickAbs(x::Number, y::Number)
+    Main.displayProperties(x, y, relevantRoom, targetLayer)
+
+    clearDragging!()
+
+    Main.redrawLayer!(toolsLayer)        
+end
+
 function layersChanged(layers::Array{Main.Layer, 1})
     wantedLayer = get(Main.persistence, "placements_layer", "entities")
 

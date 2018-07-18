@@ -9,6 +9,14 @@ placements = Dict{String, Main.EntityPlacement}(
     ),
 )
 
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "exitBlock"
+        return true, Dict{String, Any}(
+            "tileType" => string.(Main.Maple.tile_entity_legal_tiles)
+        )
+    end
+end
+
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "exitBlock"
         return true, 8, 8

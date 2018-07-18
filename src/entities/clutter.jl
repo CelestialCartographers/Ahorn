@@ -12,9 +12,9 @@ clutterFunctions = Dict{String, Function}(
     "greenBlocks" => Main.Maple.GreenBlock
 )
 simpleName = Dict{String, String}(
-    "yellowBlocks" => "yellow",
-    "redBlocks" => "red",
-    "greenBlocks" => "green"
+    "yellowBlocks" => "Yellow",
+    "redBlocks" => "Red",
+    "greenBlocks" => "Green"
 )
 
 placements = Dict{String, Main.EntityPlacement}(
@@ -106,6 +106,14 @@ function renderClutterBlock(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Ent
                 end
             end
         end
+    end
+end
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "clutterDoor" || entity.name == "colorSwitch"
+        return true, Dict{String, Any}(
+            "type" => Main.Maple.clutter_block_colors
+        )
     end
 end
 

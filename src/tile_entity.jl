@@ -19,7 +19,7 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
     tile = isa(tile, Number)? string(tile) : tile
     
     # Don't draw air versions, even though they shouldn't exist
-    if tile != "0"
+    if tile[1] in Maple.tile_entity_legal_tiles
         fakeTiles = fill('0', (th + 2, tw + 2))
 
         if blendIn

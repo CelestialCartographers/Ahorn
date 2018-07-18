@@ -45,7 +45,7 @@ connectDoubleClick(layersList, function(list::ListContainer, selected::String, v
     layer.visible = !visible
     dr.rendering.redraw = true
 
-    names = String[row[1] for row in getListData!(layersList)]
+    names = String[row[1] for row in getListData(layersList)]
     updateLayerList!(names, row -> row[1] == selected)
     draw(canvas)
 end)
@@ -346,6 +346,6 @@ function handleRoomChanged(map::Map, room::Room)
     eventToModule(currentTool, "layersChanged", dr.layers)
 
     # Update visibility col
-    names = String[row[1] for row in getListData!(layersList)]
+    names = String[row[1] for row in getListData(layersList)]
     updateLayerList!(names)
 end

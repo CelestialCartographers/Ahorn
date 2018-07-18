@@ -243,6 +243,12 @@ function leftClick(x::Number, y::Number)
     end
 end
 
+function rightClickAbs(x::Number, y::Number)
+    Main.displayProperties(x, y, Main.loadedState.room, targetLayer)
+
+    Main.redrawLayer!(toolsLayer)        
+end
+
 function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
     if Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers"
         if !Main.modifierControl()

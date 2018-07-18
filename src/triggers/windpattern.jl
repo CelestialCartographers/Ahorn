@@ -14,4 +14,12 @@ for pattern in patterns
     )
 end
 
+function editingOptions(trigger::Main.Maple.Trigger)
+    if trigger.name == "windTrigger"
+        return true, Dict{String, Any}(
+            "pattern" => patterns
+        )
+    end
+end
+
 end

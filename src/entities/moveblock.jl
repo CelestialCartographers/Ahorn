@@ -2,8 +2,7 @@ module MoveBlock
 
 placements = Dict{String, Main.EntityPlacement}()
 
-directions = ["up", "right", "left", "down"]
-
+directions = Main.Maple.move_block_directions
 for direction in directions, steerable in false:true, fast in false:true
     key = "Move Block ($(titlecase(direction)), $(fast? "Fast" : "Slow")$(steerable? ", Steerable" :    ""))"
     placements[key] = Main.EntityPlacement(
@@ -15,6 +14,14 @@ for direction in directions, steerable in false:true, fast in false:true
             "fast" => fast
         )
     )
+end
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "moveBlock"
+        return true, Dict{String, Any}(
+            "direction" => Main.Maple.move_block_directions
+        )
+    end
 end
 
 function minimumSize(entity::Main.Maple.Entity)

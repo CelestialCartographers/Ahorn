@@ -66,7 +66,7 @@ function Base.select!(list::ListContainer, f::Function, default::Number=1; force
     return Gtk.GLib.@sigatom select!(list, default, force=true)
 end
 
-function getListData!(container::ListContainer)
+function getListData(container::ListContainer)
     return [container.store[i] for i in 1:length(container.store)]
 end
 
@@ -129,11 +129,33 @@ function textRenderer(editable::Bool=false, callback::Tuple{GtkListStore, Intege
     return renderer
 end
 
+function fixTupleTypes(types)
+    res = []
+
+    for typ in types
+        if typ == Bool
+            push!(res, Bool)
+
+        elseif typ <: Integer
+            push!(res, Int64)
+
+        elseif typ <: Real
+            push!(res, Float64)
+
+        else
+            push!(res, typ)
+        end
+    end
+
+    return res
+end
+
 function generateTreeView(header::H, data::Array{T, 1}; resize::Bool=true, sortable::Bool=true, editable::Array{Bool, 1}=fill(false, length(header)), callbacks::Array{F, 1}=fill(false, length(header))) where {T <: Any, H <: Any, F <: Any}
     header = sanitizeListData(header)
     data = sanitizeListData(data)
 
-    tupleTypes = eltype(data).parameters
+    tupleTypesRaw = eltype(data).parameters
+    tupleTypes = fixTupleTypes(tupleTypesRaw)
     store = GtkListStore(tupleTypes...)
 
     for d in data
@@ -202,21 +224,4 @@ function connectDoubleClick(container::ListContainer, f::Function)
             end
         end
     end
-end
-
-function getTreeData(m::Union{Maple.Map, Void}, simple::Bool=get(config, "use_simple_room_values", true))
-    data = Tuple{String, Int, Int, Int, Int}[]
-
-    if isa(m, Maple.Map)
-        for room in m.rooms
-            if simple
-                push!(data, (room.name, round.(Int, room.position ./ 8)..., round.(Int, room.size ./ 8)...))
-
-            else
-                push!(data, (room.name, room.position..., room.size...))
-            end
-        end
-    end
-
-    return data
 end

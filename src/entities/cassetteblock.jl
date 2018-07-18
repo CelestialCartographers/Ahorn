@@ -20,6 +20,14 @@ placements = Dict{String, Main.EntityPlacement}(
     ) for (index, color) in colorNames
 )
 
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "cassetteBlock"
+        return true, Dict{String, Any}(
+            "index" => [0, 1, 2, 3]
+        )
+    end
+end
+
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "cassetteBlock"
         return true, 16, 16

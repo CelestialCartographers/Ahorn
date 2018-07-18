@@ -21,6 +21,34 @@ function minimumSize(trigger::Main.Maple.Trigger)
     return 8, 8
 end
 
+function nodeLimits(trigger::Main.Maple.Trigger)
+    selectionRes = Main.eventToModules(Main.loadedTriggers, "nodeLimits", trigger)
+    
+    if isa(selectionRes, Tuple)
+        success, least, most = selectionRes
+
+        if success
+            return least, most
+        end
+    end
+
+    return 0, 0
+end
+
+function editingOptions(trigger::Maple.Trigger)
+    selectionRes = Main.eventToModules(Main.loadedTriggers, "editingOptions", trigger)
+    
+    if isa(selectionRes, Tuple)
+        success, options = selectionRes
+
+        if success
+            return success, options
+        end
+    end
+
+    return false, Dict{String, Any}()
+end
+
 function canResize(trigger::Main.Maple.Trigger)
     return true, true
 end

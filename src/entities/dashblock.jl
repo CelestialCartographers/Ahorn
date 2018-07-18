@@ -20,6 +20,14 @@ for permanent in false:true, blendIn in false:true, canDash in false:true
     )
 end
 
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "dashBlock"
+        return true, Dict{String, Any}(
+            "tiletype" => string.(Main.Maple.tile_entity_legal_tiles)
+        )
+    end
+end
+
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "dashBlock"
         return true, 8, 8

@@ -1,28 +1,22 @@
 module Bonfire
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Bonfire (Unlit)" => Main.EntityPlacement(
+    "Bonfire ($(titlecase(mode)))" => Main.EntityPlacement(
         Main.Maple.Bonfire,
         "point",
         Dict{String, Any}(
-            "mode" => "unlit",
+            "mode" => mode,
         )
-    ),
-    "Bonfire (Lit)" => Main.EntityPlacement(
-        Main.Maple.Bonfire,
-        "point",
-        Dict{String, Any}(
-            "mode" => "lit",
-        )
-    ),
-    "Bonfire (Smoking)" => Main.EntityPlacement(
-        Main.Maple.Bonfire,
-        "point",
-        Dict{String, Any}(
-            "mode" => "smoking",
-        )
-    )
+    ) for mode in Main.Maple.bonfire_modes
 )
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "bonfire"
+        return true, Dict{String, Any}(
+            "mode" => Main.Maple.bonfire_modes
+        )
+    end
+end
 
 function selection(entity::Main.Maple.Entity)
     if entity.name == "bonfire"
@@ -34,7 +28,7 @@ end
 
 function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
     if entity.name == "bonfire"
-        mode = get(entity.data, "mode", "unlit")
+        mode = lowercase(get(entity.data, "mode", "unlit"))
 
         if mode == "lit"
             Main.drawSprite(ctx, "objects/campfire/fire08.png", 0, -32)

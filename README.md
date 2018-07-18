@@ -50,6 +50,7 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - alt + arrow keys: move a room
  - alt + delete: delete room
  - double click layer name in selection menu: toggle visibility
+ - right click entity / trigger with placements / selection tool: open properties menu
 
  With Everest installed and Celeste running in debug mode, it supports some more:
  - ctrl + shift + leftclick on a room in Ahorn: teleport to that room in the game

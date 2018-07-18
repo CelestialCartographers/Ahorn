@@ -6,8 +6,6 @@ function rotatingSpinnerFinalizer(entity::Main.Maple.Entity)
     entity.data["nodes"] = [(x, y)]
 end
 
-
-
 placements = Dict{String, Main.EntityPlacement}(
     "Dust Sprite" => Main.EntityPlacement(
         Main.Maple.Spinner,
@@ -63,9 +61,7 @@ placements = Dict{String, Main.EntityPlacement}(
     ),
 )
 
-crystalSpinnerColors = String[
-    "blue", "red", "purple", "core"
-]
+crystalSpinnerColors = Main.Maple.crystal_colors
 for color in crystalSpinnerColors
     for attached in false:true
         key = "Crystal Spinner ($(titlecase(color))$(attached? ", Attached" : ""))"
@@ -80,7 +76,7 @@ for color in crystalSpinnerColors
     end
 end
 
-speeds = ["slow", "normal", "fast"]
+speeds = Main.Maple.track_spinner_speeds
 for speed in speeds, dusty in false:true
     key = (dusty? "Dust Sprite" : "Blade") * " (Track, $(titlecase(speed)))"
     placements[key] = Main.EntityPlacement(
@@ -95,6 +91,19 @@ for speed in speeds, dusty in false:true
             entity.data["nodes"] = [(x + 32, y)]
         end
     )
+end
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "trackSpinner"
+        return true, Dict{String, Any}(
+            "speed" => speeds
+        )
+
+    elseif entity.name == "spinner"
+        return true, Dict{String, Any}(
+            "color" => crystalSpinnerColors
+        )
+    end
 end
 
 function nodeLimits(entity::Main.Maple.Entity)

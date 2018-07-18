@@ -9,6 +9,8 @@ function gateFinalizer(entity)
     entity.data["nodes"] = [(x + width, y)]
 end
 
+textures = ["block", "mirror", "temple"]
+
 placements = Dict{String, Main.EntityPlacement}(
     "Switch Gate (Stone)" => Main.EntityPlacement(
         Main.Maple.SwitchGate,
@@ -39,6 +41,14 @@ placements = Dict{String, Main.EntityPlacement}(
         Main.Maple.TouchSwitch
     )
 )
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "switchGates"
+        return true, Dict{String, Any}(
+            "sprite" => textures
+        )
+    end
+end
 
 function nodeLimits(entity::Main.Maple.Entity)
     if entity.name == "switchGate"

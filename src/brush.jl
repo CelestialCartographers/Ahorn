@@ -1,6 +1,43 @@
 roomTiles(layer::Layer, room::Maple.Room) = layerName(layer) == "fgTiles"? room.fgTiles : room.bgTiles
-validTiles(layer::Layer) = layerName(layer) == "fgTiles"? Maple.valid_fg_tiles : Maple.valid_bg_tiles
-tileNames(layer::Layer) = layerName(layer) == "fgTiles"? Maple.tile_fg_names : Maple.tile_bg_names
+
+function validTiles(layer::Layer, removeTemplate::Bool=true) 
+    meta = layerName(layer) == "fgTiles"? fgTilerMeta : bgTilerMeta
+
+    res = collect(keys(meta.paths))
+    push!(res, '0')
+
+    if removeTemplate
+        index = findfirst(res, 'z')
+        if index != 0
+            deleteat!(res, index)
+        end
+    end
+
+    sort!(res)
+
+    return res
+end
+
+function tileNames(layer::Layer) 
+    meta = layerName(layer) == "fgTiles"? fgTilerMeta : bgTilerMeta
+    res = Dict{Any, Any}(
+        '0' => "Air",
+        "Air" => '0'
+    )
+
+    for (id, path) in meta.paths
+        name = camelcaseToTitlecase(splitdir(path)[2])
+
+        if startswith(name, "Bg ")
+            name = name[4:end]
+        end
+
+        res[name] = id
+        res[id] = name
+    end
+
+    return res
+end
 
 nodeType = Tuple{Number, Number}
 edgeType = Tuple{nodeType, nodeType}

@@ -33,6 +33,14 @@ giantFace = "objects/crushblock/giant_block00"
 
 kevinColor = (98, 34, 43) ./ 255
 
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "crushBlock"
+        return true, Dict{String, Any}(
+            "axes" => ["both", "horizontal", "vertical"]
+        )
+    end
+end
+
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "crushBlock"
         return true, 24, 24
@@ -60,7 +68,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
     # Todo?
     # Use tiles randomness to decide on Kevin border
     if entity.name == "crushBlock"
-        axes = get(entity.data, "axes", "both")
+        axes = lowercase(get(entity.data, "axes", "both"))
         chillout = get(entity.data, "chillout", false)
 
         x = Int(get(entity.data, "x", 0))

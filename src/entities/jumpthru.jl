@@ -1,40 +1,28 @@
 module JumpThru
 
+textures = ["wood", "dream", "temple", "core"]
 placements = Dict{String, Main.EntityPlacement}(
-    "Platform (Wood)" => Main.EntityPlacement(
+    "Platform ($(titlecase(texture)))" => Main.EntityPlacement(
         Main.Maple.JumpThru,
         "rectangle",
         Dict{String, Any}(
-            "texture" => "wood"
+            "texture" => texture
         )
-    ),
-    "Platform (Dream)" => Main.EntityPlacement(
-        Main.Maple.JumpThru,
-        "rectangle",
-        Dict{String, Any}(
-            "texture" => "dream"
-        )
-    ),
-    "Platform (Temple)" => Main.EntityPlacement(
-        Main.Maple.JumpThru,
-        "rectangle",
-        Dict{String, Any}(
-            "texture" => "temple"
-        )
-    ),
-    "Platform (Core)" => Main.EntityPlacement(
-        Main.Maple.JumpThru,
-        "rectangle",
-        Dict{String, Any}(
-            "texture" => "core"
-        )
-    ),
+    ) for texture in textures
 )
 
 quads = Tuple{Integer, Integer, Integer, Integer}[
     (0, 0, 8, 7) (8, 0, 8, 7) (16, 0, 8, 7);
     (0, 8, 8, 5) (8, 8, 8, 5) (16, 8, 8, 5)
 ]
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "jumpThru"
+        return true, Dict{String, Any}(
+            "texture" => textures
+        )
+    end
+end
 
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "jumpThru"

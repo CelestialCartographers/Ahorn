@@ -118,6 +118,20 @@ function nodeLimits(entity::Main.Maple.Entity)
     return 0, 0
 end
 
+function editingOptions(entity::Maple.Entity)
+    selectionRes = Main.eventToModules(Main.loadedEntities, "editingOptions", entity)
+    
+    if isa(selectionRes, Tuple)
+        success, options = selectionRes
+
+        if success
+            return success, options
+        end
+    end
+
+    return false, Dict{String, Any}()
+end
+
 function registerPlacements!(placements::Dict{String, EntityPlacement}, loaded::Array{String, 1})
     empty!(placements)
 
@@ -165,6 +179,38 @@ function generateEntity(map::Maple.Map, room::Main.Room, ep::EntityPlacement, x:
     callFinalizer(map, room, ep, entity)
 
     return entity
+end
+
+function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
+    addedNodes = false
+    res = ConfigWindow.Option[]
+
+    success, options = editingOptions(entity)
+    nodeRange = nodeLimits(entity)
+
+    for (attr, value) in entity.data
+        keyOptions = haskey(options, attr)? options[attr] : nothing
+
+        if isa(value, Bool) || isa(value, Char) || isa(value, String)
+            push!(res, ConfigWindow.Option(Main.camelcaseToTitlecase(attr), typeof(value), value, options=keyOptions, dataName=attr))
+
+        elseif isa(value, Integer)
+            push!(res, ConfigWindow.Option(Main.camelcaseToTitlecase(attr), Int64, Int64(value), options=keyOptions, dataName=attr))
+
+        elseif isa(value, Real)
+            push!(res, ConfigWindow.Option(Main.camelcaseToTitlecase(attr), Float64, Float64(value), options=keyOptions, dataName=attr))
+
+        elseif attr == "nodes"
+            push!(res, ConfigWindow.Option("Node X;Node Y", Array{Tuple{Int64, Int64}, 1}, value, options=keyOptions, dataName=attr, rowCount=nodeRange))
+            addedNodes = true
+        end
+    end
+
+    if !addedNodes && nodeRange[2] != 0
+        push!(res, ConfigWindow.Option("Node X;Node Y", Array{Tuple{Int64, Int64}, 1}, Tuple{Int, Int}[], dataName="nodes", rowCount=nodeRange))
+    end
+
+    return res
 end
 
 loadedEntities = joinpath.("entities", readdir(abs"entities"))

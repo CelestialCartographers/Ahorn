@@ -46,7 +46,7 @@ window = Window(baseTitle, 1280, 720, true, true, icon = windowIcon, gravity = G
 include("init_ahorn.jl")
 configured = configureCelesteDir()
 
-if !configureCelesteDir()
+if !configured
     error("Celeste installation not configured")
 end
 
@@ -71,12 +71,15 @@ include("module_loader.jl")
 include("rectangle.jl")
 include("line.jl")
 include("list_view_helper.jl")
+include("ahorn_list_helper.jl")
+include("config_window.jl")
 include("materials_filter.jl")
 include("menubar.jl")
 include("celeste_render.jl")
 #include("menu_tiles.jl")
 include("map_image_dumper.jl")
 include("selections.jl")
+include("property_menu.jl")
 include("event_handler.jl")
 include("hotkey.jl")
 include("tools.jl")

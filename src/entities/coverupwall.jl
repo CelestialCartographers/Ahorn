@@ -9,6 +9,14 @@ placements = Dict{String, Main.EntityPlacement}(
     ),
 )
 
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "coverupWall"
+        return true, Dict{String, Any}(
+            "tiletype" => string.(Main.Maple.tile_entity_legal_tiles)
+        )
+    end
+end
+
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "coverupWall"
         return true, 8, 8

@@ -1,21 +1,23 @@
 module Door
 
+textures = ["wood", "metal"]
 placements = Dict{String, Main.EntityPlacement}(
-    "Door (Wood)" => Main.EntityPlacement(
+    "Door ($(titlecase(texture)))" => Main.EntityPlacement(
         Main.Maple.Door,
         "point",
         Dict{String, Any}(
-            "type" => "wood"
+            "type" => texture
         )
-    ),
-    "Door (Metal)" => Main.EntityPlacement(
-        Main.Maple.Door,
-        "point",
-        Dict{String, Any}(
-            "type" => "metal"
-        )
-    ),
+    ) for texture in textures
 )
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "door"
+        return true, Dict{String, Any}(
+            "type" => textures
+        )
+    end
+end
 
 function selection(entity::Main.Maple.Entity)
     if entity.name == "door"

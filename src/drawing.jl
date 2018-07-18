@@ -5,15 +5,14 @@ MOD_CONTENT_GAMEPLAY = joinpath(config["celeste_dir"], "ModContent", "Graphics",
 
 drawingAlpha = 1
 
+fileNotFoundSurface = CairoARGBSurface(0, 0)
+
 function addSprite!(resource::String, filename::String="")
-    # If we have a filename use that, otherwise look for the resource
-    # If the resource doesn't exist, load the "" file, giving a (0, 0) size sprite
-    # This means the resource will be marked for refetching
-    
+    # If we have a filename use that, otherwise look for the resource    
     filename = filename == ""? findExternalSprite(resource) : filename
     filename = isa(filename, String)? filename : ""
 
-    surface = open(Cairo.read_from_png, filename)
+    surface = isfile(filename)? open(Cairo.read_from_png, filename) : fileNotFoundSurface
     sprites[resource] = Sprite(
         0,
         0,

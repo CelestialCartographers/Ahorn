@@ -12,6 +12,14 @@ placements = Dict{String, Main.EntityPlacement}(
     ) for index in validFlagIndicdes
 )
 
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "cliffside_flag"
+        return true, Dict{String, Any}(
+            "index" => ["00", "01", "02", "03", "04", "05", "06", "07", "08", "10"]
+        )
+    end
+end
+
 function selection(entity::Main.Maple.Entity)
     if entity.name == "cliffside_flag"
         x, y = Main.entityTranslation(entity)
