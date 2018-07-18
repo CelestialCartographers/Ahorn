@@ -159,7 +159,8 @@ function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, 
     Main.persistence["brushes_layer"] = selected
 
     tileNames = Main.tileNames(targetLayer)
-    global material = get(Main.persistence, "Brush ($(selectedBrush.name), $material)", tileNames["Air"])[1]
+    layerName = Main.layerName(targetLayer)
+    global material = get(Main.persistence, "brushes_material_$(layerName)", tileNames["Air"])[1]
     setMaterials!(targetLayer)
 end
 

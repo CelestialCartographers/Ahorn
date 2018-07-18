@@ -62,6 +62,10 @@ function pushPreview!(layer::Main.Layer, room::Main.Maple.Room, preview::Any)
     name = Main.layerName(layer)
     Main.History.addSnapshot!(Main.History.RoomSnapshot("Placement ($name)", room))
 
+    # Make sure we don't have the same referance,
+    # as the preview can be placed multiple times
+    preview = deepcopy(preview)
+
     if name == "entities"
         push!(room.entities, preview)
 

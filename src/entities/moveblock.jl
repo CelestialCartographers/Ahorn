@@ -19,7 +19,7 @@ end
 
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name == "moveBlock"
-        return true, 24, 24
+        return true, 16, 16
     end
 end
 
