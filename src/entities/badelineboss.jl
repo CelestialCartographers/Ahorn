@@ -16,7 +16,7 @@ end
 
 function nodeLimits(entity::Main.Maple.Entity)
     if entity.name == "finalBoss"
-        return true, 1, -1
+        return true, 0, -1
     end
 end
 
