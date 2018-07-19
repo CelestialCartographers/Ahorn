@@ -3,6 +3,7 @@ mutable struct ListContainer
     selection::Gtk.GtkTreeSelection
     tree::Gtk.GtkTreeView
     data::Array{Any, 1}
+    dataType::Type
     visible::Array{Bool, 1}
 end
 
@@ -67,7 +68,7 @@ function Base.select!(list::ListContainer, f::Function, default::Number=1; force
 end
 
 function getListData(container::ListContainer)
-    return [container.store[i] for i in 1:length(container.store)]
+    return container.dataType[container.store[i] for i in 1:length(container.store)]
 end
 
 function updateTreeViewUnsafe!(container::ListContainer, data::Array{T, 1}, select::Union{Integer, Function}=1, setData::Bool=true) where T <: Any
@@ -193,7 +194,7 @@ function generateTreeView(header::H, data::Array{T, 1}; resize::Bool=true, sorta
 
     selection = GAccessor.selection(treeView)
 
-    return ListContainer(store, selection, treeView, deepcopy(data), fill(true, length(data)))
+    return ListContainer(store, selection, treeView, deepcopy(data), Tuple{tupleTypes...}, fill(true, length(data)))
 end
 
 function connectChanged(container::ListContainer, f::Function)

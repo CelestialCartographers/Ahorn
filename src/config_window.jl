@@ -159,32 +159,42 @@ function parseNumber(n::String)
     end
 end
 
+function setDataAttr!(data::Dict{String, Any}, option::Option, value::Bool)
+    data[option.dataName] = value
+end
+
+function setDataAttr!(data::Dict{String, Any}, option::Option, value::String)
+    if option.dataType <: Number
+        data[option.dataName] = parseNumber(value)
+
+    elseif option.dataType === Char
+        # TODO - Error if string is > 1 char
+        data[option.dataName] = value[1]
+
+    else
+        data[option.dataName] = value
+    end
+end
+
+function setDataAttr!(data::Dict{String, Any}, option::Option, value::Main.ListContainer)
+    data[option.dataName] = Main.getListData(value)
+end
+
 function getData(widgets)
     res = Dict{String, Any}()
 
     for (option, widget) in widgets
         if isa(widget, Gtk.GtkEntryLeaf)
-            text = getproperty(widget, :text, String)
-
-            if option.dataType <: Number
-                res[option.dataName] = parseNumber(text)
-
-            elseif option.dataType === Char
-                # TODO - Error if string is > 1 char
-                res[option.dataName] = text[1]
-
-            else
-                res[option.dataName] = text
-            end
+            setDataAttr!(res, option, getproperty(widget, :text, String))
 
         elseif isa(widget, Gtk.GtkCheckButtonLeaf)
-            res[option.dataName] = getproperty(widget, :active, Bool)
+            setDataAttr!(res, option, getproperty(widget, :active, Bool))
 
         elseif isa(widget, Gtk.GtkComboBoxTextLeaf)
-            res[option.dataName] = Gtk.bytestring(Gtk.GAccessor.active_text(widget))
+            setDataAttr!(res, option, Gtk.bytestring(Gtk.GAccessor.active_text(widget)))
 
         elseif isa(widget, Main.ListContainer)
-            res[option.dataName] = Main.getListData(widget)
+            setDataAttr!(res, option, widget)
         end
     end
 
@@ -206,7 +216,8 @@ function createWindow(title::String, options::Array{Option, 1}, callback::Functi
         try
             callback(getData(widgets))
 
-        catch
+        catch e
+            println(e)
             info_dialog("One or more of the inputs were invalid.\nPlease make sure number fields have valid numbers.", window)
         end
     end
@@ -221,8 +232,6 @@ function createWindow(title::String, options::Array{Option, 1}, callback::Functi
     if scrollableCount > 0
         setproperty!(window, :height_request, height(window) + 100 * scrollableCount)
     end
-
-    showall(window)
 
     return window
 end
