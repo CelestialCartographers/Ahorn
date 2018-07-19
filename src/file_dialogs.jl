@@ -17,22 +17,27 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
 
     # Did we actually select a file?
     if filename != ""
-        loadedState.filename = filename
-        loadedState.map = loadMap(filename)
-        loadedState.lastSavedMap = deepcopy(loadedState.map)
-        loadedState.roomName = ""
-        loadedState.room = nothing
+        dialogText = "You might have unsaved changes in your map.\nPlease confirm that you want to load '$filename'."
+        res = isequal(Main.loadedState.lastSavedMap, Main.loadedState.map) || ask_dialog(dialogText, Main.window)
 
-        persistence["files_lastroom"] = loadedState.roomName
-        persistence["files_lastfile"] = loadedState.filename
-        
-        packageName = loadedState.map.package
+        if res
+            loadedState.filename = filename
+            loadedState.map = loadMap(filename)
+            loadedState.lastSavedMap = deepcopy(loadedState.map)
+            loadedState.roomName = ""
+            loadedState.room = nothing
 
-        updateTreeView!(roomList, getTreeData(loadedState.map), 1)
+            persistence["files_lastroom"] = loadedState.roomName
+            persistence["files_lastfile"] = loadedState.filename
+            
+            packageName = loadedState.map.package
 
-        setproperty!(window, :title, "$baseTitle - $packageName")
+            updateTreeView!(roomList, getTreeData(loadedState.map), 1)
 
-        draw(canvas)
+            setproperty!(window, :title, "$baseTitle - $packageName")
+
+            draw(canvas)
+        end
     end
 end
 

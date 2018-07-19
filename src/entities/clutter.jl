@@ -46,7 +46,7 @@ for (raw, name) in clutterDisplayNames
     )
 end
 
-textureName(entity::Main.Maple.Entity, i::Integer) = "objects/resortclutter/$(simpleName[entity.name])_$(lpad(i, 2, "0"))"
+textureName(entity::Main.Maple.Entity, i::Integer) = "objects/resortclutter/$(lowercase(simpleName[entity.name]))_$(lpad(i, 2, "0"))"
 
 function getTextures(entity::Main.Maple.Entity)
     i = 0

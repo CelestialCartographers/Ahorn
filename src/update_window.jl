@@ -14,7 +14,7 @@ function clean!(repo::LibGit2.GitRepo, name::String)
     if LibGit2.isdirty(repo)
         if ask_dialog("""Your installation of $name contains changes not found on GitHub - Updating automatically is not possible.
             Would you like to revert the repository back to the state of your installed version?
-            Any changes done inside the $name installtion directory may be lost.""",
+            Any changes done inside the $name installation directory may be lost.""",
             "Cancel", "Revert Repository", Main.window)
             LibGit2.reset!(repo, LibGit2.GitHash(LibGit2.head(repo)), LibGit2.Consts.RESET_HARD)
         else

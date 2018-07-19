@@ -186,10 +186,15 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
     res = ConfigWindow.Option[]
 
     success, options = editingOptions(entity)
+    horizontalAllowed, verticalAllowed = Main.canResize(entity)
     nodeRange = nodeLimits(entity)
 
     for (attr, value) in entity.data
         keyOptions = haskey(options, attr)? options[attr] : nothing
+
+        if !horizontalAllowed && attr == "width" || !verticalAllowed && attr == "height"
+            continue
+        end
 
         if isa(value, Bool) || isa(value, Char) || isa(value, String)
             push!(res, ConfigWindow.Option(Main.camelcaseToTitlecase(attr), typeof(value), value, options=keyOptions, dataName=attr))

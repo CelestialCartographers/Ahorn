@@ -47,9 +47,22 @@ function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::
         layer, box, target, node = selection
         if layer == "entities" || layer == "triggers"
             function callback(data::Dict{String, Any})
-                History.addSnapshot!(History.RoomSnapshot("Properties", room))
-                target.data = deepcopy(data)
-                redrawLayer!(targetLayer)
+                updateTarget = true
+
+                minWidth, minHeight = Main.minimumSize(target)
+                hasWidth, hasHeight = haskey(target.data, "width"), haskey(target.data, "height")
+                width, height = Int(get(data, "width", minWidth)), Int(get(data, "width", minHeight))
+
+                if hasWidth && width < minWidth || hasHeight && height < minHeight
+                    updateTarget = ask_dialog("The size specified is smaller than the recommended minimum size ($minWidth, $minHeight)\nDo you want to keep this size regardless?", Main.window)
+                end
+
+                if updateTarget
+                    History.addSnapshot!(History.RoomSnapshot("Properties", room))
+                    target.data = deepcopy(data)
+
+                    redrawLayer!(targetLayer)
+                end
             end
 
             options = entityConfigOptions(target)

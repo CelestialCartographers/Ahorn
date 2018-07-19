@@ -274,6 +274,7 @@ end
 # Select the specified room or the first one
 if loadedState.room !== nothing
     select!(roomList, r -> r[1] == loadedState.roomName)
+    setproperty!(window, :title, "$baseTitle - $(loadedState.map.package)")
 
 else
     select!(roomList)
