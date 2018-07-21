@@ -1,14 +1,14 @@
 module OshiroTrigger
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Oshiro (Angry)" => Main.EntityPlacement(
+    "Oshiro (Spawn)" => Main.EntityPlacement(
         Main.Maple.OshiroTrigger,
         "rectangle",
         Dict{String, Any}(
             "state" => true
         )
     ),
-    "Oshiro (Happy)" => Main.EntityPlacement(
+    "Oshiro (Leave)" => Main.EntityPlacement(
         Main.Maple.OshiroTrigger,
         "rectangle",
         Dict{String, Any}(
