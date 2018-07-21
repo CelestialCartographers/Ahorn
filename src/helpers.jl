@@ -29,3 +29,9 @@ function setEntryText!(entry::Gtk.GtkEntryLeaf, value::Any; updatePlaceholder::B
         setproperty!(entry, :placeholder_text, text)
     end
 end
+
+function humanizeVariableName(s::String) 
+    text = replace(s, "_", " ")
+
+    return titlecase(join([isupper(c)? " $c" : c for c in text]))
+end

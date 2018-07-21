@@ -7,7 +7,7 @@ function renderTrigger(ctx::Cairo.CairoContext, layer::Layer, trigger::Maple.Tri
     rectangle(ctx, x, y, width, height)
     clip(ctx)
 
-    text = camelcaseToTitlecase(trigger.name)
+    text = humanizeVariableName(trigger.name)
     drawRectangle(ctx, x, y, width, height, colors.trigger_fc, colors.trigger_bc)
     centeredText(ctx, text, round(Int, x + width / 2), round(Int, y + height / 2))
 
@@ -20,7 +20,7 @@ function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::
     nodes = get(trigger.data, "nodes", Tuple{Integer, Integer}[])
     offsetCenterX, offsetCenterY = floor(Int, width / 2), floor(Int, height / 2)
     
-    text = camelcaseToTitlecase(trigger.name)
+    text = humanizeVariableName(trigger.name)
 
     for node in nodes
         nx, ny = Int.(node)

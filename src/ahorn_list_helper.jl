@@ -13,5 +13,3 @@ function getTreeData(m::Maple.Map, simple::Bool=get(config, "use_simple_room_val
 
     return data
 end
-
-camelcaseToTitlecase(s::String) = titlecase(join([isupper(c)? " $c" : c for c in s]))

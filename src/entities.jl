@@ -201,13 +201,13 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
         end
 
         if isa(value, Bool) || isa(value, Char) || isa(value, String)
-            push!(res, ConfigWindow.Option(Main.camelcaseToTitlecase(attr), typeof(value), value, options=keyOptions, dataName=attr))
+            push!(res, ConfigWindow.Option(Main.humanizeVariableName(attr), typeof(value), value, options=keyOptions, dataName=attr))
 
         elseif isa(value, Integer)
-            push!(res, ConfigWindow.Option(Main.camelcaseToTitlecase(attr), Int64, Int64(value), options=keyOptions, dataName=attr))
+            push!(res, ConfigWindow.Option(Main.humanizeVariableName(attr), Int64, Int64(value), options=keyOptions, dataName=attr))
 
         elseif isa(value, Real)
-            push!(res, ConfigWindow.Option(Main.camelcaseToTitlecase(attr), Float64, Float64(value), options=keyOptions, dataName=attr))
+            push!(res, ConfigWindow.Option(Main.humanizeVariableName(attr), Float64, Float64(value), options=keyOptions, dataName=attr))
 
         elseif attr == "nodes"
             push!(res, ConfigWindow.Option("Node X;Node Y", Array{Tuple{Int64, Int64}, 1}, value, options=keyOptions, dataName=attr, rowCount=nodeRange))

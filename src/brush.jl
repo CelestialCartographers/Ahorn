@@ -26,7 +26,7 @@ function tileNames(layer::Layer)
     )
 
     for (id, path) in meta.paths
-        name = camelcaseToTitlecase(splitdir(path)[2])
+        name = humanizeVariableName(splitdir(path)[2])
 
         if startswith(name, "Bg ")
             name = name[4:end]
