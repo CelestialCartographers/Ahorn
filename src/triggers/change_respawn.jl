@@ -7,4 +7,10 @@ placements = Dict{String, Main.EntityPlacement}(
     )
 )
 
+function nodeLimits(trigger::Main.Maple.Trigger)
+    if trigger.name == "changeRespawnTrigger"
+        return true, 0, 1
+    end
+end
+
 end

@@ -53,16 +53,6 @@ function hideStylegroundWindow(widget=nothing, event=nothing)
     return true
 end
 
-# Prefer to parse as integer, parse as float if not
-function parseNumber(s::String)
-    try
-        return parse(Int, s)
-
-    catch ArgumentError
-        return parse(Float64, s)
-    end
-end
-
 function getParallaxData(p::Main.Parallax, fg::Bool)
     return (
         get(p.data, "texture", ""),
@@ -133,8 +123,8 @@ function spritesToBackgroundTextures(sprites::Dict{String, Main.Sprite})
 end
 
 function setFieldsFromEffect!(effect::Maple.Effect, fg::Bool=true, simple::Bool=get(Main.config, "use_simple_room_values", true))
-    setproperty!(onlyEffectEntry, :text, string(get(effect.data, "only", "*")))
-    setproperty!(excludeEffectEntry, :text, string(get(effect.data, "exclude", "")))
+    Main.setEntryText!(onlyEffectEntry, get(effect.data, "only", "*"))
+    Main.setEntryText!(excludeEffectEntry, get(effect.data, "exclude", ""))
 
     Gtk.GLib.@sigatom setComboIndex!(effectCombo, effectChoices, lowercase(effect.typ))
 
@@ -158,20 +148,20 @@ function setEffectFromFields!(effect::Maple.Effect, simple::Bool=get(Main.config
     end
 end
 
-function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=trues)
-    setproperty!(posXEntry, :text, string(round(Int, get(parallax.data, "x", 0))))
-    setproperty!(posYEntry, :text, string(round(Int, get(parallax.data, "y", 0))))
+function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=true)
+    Main.setEntryText!(posXEntry, round(Int, get(parallax.data, "x", 0)))
+    Main.setEntryText!(posYEntry, round(Int, get(parallax.data, "y", 0)))
 
-    setproperty!(scrollXEntry, :text, string(get(parallax.data, "scrollx", 1)))
-    setproperty!(scrollYEntry, :text, string(get(parallax.data, "scrolly", 1)))
-    setproperty!(speedXEntry, :text, string(get(parallax.data, "speedx", 0)))
-    setproperty!(speedYEntry, :text, string(get(parallax.data, "speedy", 0)))
+    Main.setEntryText!(scrollXEntry, get(parallax.data, "scrollx", 1))
+    Main.setEntryText!(scrollYEntry, get(parallax.data, "scrolly", 1))
+    Main.setEntryText!(speedXEntry, get(parallax.data, "speedx", 0))
+    Main.setEntryText!(speedYEntry, get(parallax.data, "speedy", 0))
 
-    setproperty!(alphaEntry, :text, string(get(parallax.data, "alpha", 1)))
-    setproperty!(colorEntry, :text, string(get(parallax.data, "color", "ffffff")))
+    Main.setEntryText!(alphaEntry, get(parallax.data, "alpha", 1))
+    Main.setEntryText!(colorEntry, get(parallax.data, "color", "ffffff"))
 
-    setproperty!(onlyEntry, :text, string(get(parallax.data, "only", "*")))
-    setproperty!(excludeEntry, :text, string(get(parallax.data, "exclude", "")))
+    Main.setEntryText!(onlyEntry, get(parallax.data, "only", "*"))
+    Main.setEntryText!(excludeEntry, get(parallax.data, "exclude", ""))
 
     Gtk.GLib.@sigatom setComboIndex!(backdropCombo, backdropChoices, get(parallax.data, "texture", ""))
 
@@ -190,15 +180,15 @@ end
 
 function setParallaxFromFields!(parallax::Maple.Parallax)
     try
-        parallax.data["x"] = parseNumber(getproperty(posXEntry, :text, String))
-        parallax.data["y"] = parseNumber(getproperty(posYEntry, :text, String))
+        parallax.data["x"] = Main.parseNumber(getproperty(posXEntry, :text, String))
+        parallax.data["y"] = Main.parseNumber(getproperty(posYEntry, :text, String))
         
-        parallax.data["scrollx"] = parseNumber(getproperty(scrollXEntry, :text, String))
-        parallax.data["scrolly"] = parseNumber(getproperty(scrollYEntry, :text, String))
-        parallax.data["speedx"] = parseNumber(getproperty(speedXEntry, :text, String))
-        parallax.data["speedy"] = parseNumber(getproperty(speedYEntry, :text, String))
+        parallax.data["scrollx"] = Main.parseNumber(getproperty(scrollXEntry, :text, String))
+        parallax.data["scrolly"] = Main.parseNumber(getproperty(scrollYEntry, :text, String))
+        parallax.data["speedx"] = Main.parseNumber(getproperty(speedXEntry, :text, String))
+        parallax.data["speedy"] = Main.parseNumber(getproperty(speedYEntry, :text, String))
 
-        parallax.data["alpha"] = parseNumber(getproperty(alphaEntry, :text, String))
+        parallax.data["alpha"] = Main.parseNumber(getproperty(alphaEntry, :text, String))
         parallax.data["color"] = getproperty(colorEntry, :text, String)
 
         parallax.data["only"] = getproperty(onlyEntry, :text, String)
@@ -222,7 +212,7 @@ function setParallaxFromFields!(parallax::Maple.Parallax)
 
     catch e
         println(e)
-        return false, "Some of the inputs you have made might be incorrect."
+        return false, "One or more of the inputs were invalid.\nPlease make sure number fields have valid numbers."
     end
 end
 
@@ -522,7 +512,7 @@ Main.connectChanged(parallaxList, function(list::Main.ListContainer, row)
     ), styles)
     if index != 0
         global targetParallax = styles[index]
-        setFieldsFromParallax!(targetParallax, fg)
+        Gtk.GLib.@sigatom setFieldsFromParallax!(targetParallax, fg)
     end
 end)
 
@@ -541,9 +531,13 @@ Main.connectChanged(effectList, function(list::Main.ListContainer, row)
     ), styles)
     if index != 0
         global targetEffect = styles[index]
-        setFieldsFromEffect!(targetEffect, fg)
+        Gtk.GLib.@sigatom setFieldsFromEffect!(targetEffect, fg)
     end
 end)
+
+function colorTintingValidator(s::String)
+    return ismatch(r"[a-fA-F0-9]{6}", s)
+end
 
 scrollableParallaxList = ScrolledWindow(hexpand=true, vexpand=true, hscrollbar_policy=Gtk.GtkPolicyType.NEVER)
 push!(scrollableParallaxList, parallaxList.tree)
@@ -553,19 +547,19 @@ push!(scrollableEffectList, effectList.tree)
 
 backdropCombo = ComboBoxText(true)
 
-posXEntry = Entry(text="0")
-posYEntry = Entry(text="0")
+posXEntry = Main.ValidationEntry(0)
+posYEntry = Main.ValidationEntry(0)
 
-scrollXEntry = Entry(text="1")
-scrollYEntry = Entry(text="1")
-speedXEntry = Entry(text="0")
-speedYEntry = Entry(text="0")
+scrollXEntry = Main.ValidationEntry(1)
+scrollYEntry = Main.ValidationEntry(1)
+speedXEntry = Main.ValidationEntry(0)
+speedYEntry = Main.ValidationEntry(0)
 
-alphaEntry = Entry(text="1")
-colorEntry = Entry(text="ffffff")
+alphaEntry = Main.ValidationEntry(1)
+colorEntry = Main.ValidationEntry("ffffff", colorTintingValidator)
 
-onlyEntry = Entry(text="*")
-excludeEntry = Entry(text="")
+onlyEntry = Main.ValidationEntry("*")
+excludeEntry = Main.ValidationEntry("")
 
 flipXCheckbox = CheckButton("Flip X")
 flipYCheckbox = CheckButton("Flip Y")
@@ -619,8 +613,8 @@ signal_connect(parallaxMoveDown, parallaxDown, "clicked")
 
 effectCombo = ComboBoxText(true)
 
-onlyEffectEntry = Entry(text="*")
-excludeEffectEntry = Entry(text="")
+onlyEffectEntry = Main.ValidationEntry("*")
+excludeEffectEntry = Main.ValidationEntry("")
 
 effectLabel = Label("Effect")
 onlyEffectLabel = Label("Only")

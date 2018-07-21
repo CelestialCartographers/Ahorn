@@ -126,6 +126,12 @@ function drawSelections(layer::Main.Layer, room::Main.Room)
             push!(drawnTargets, target)
         end
 
+        if isa(target, Main.Maple.Trigger) && !(target in drawnTargets)
+            Main.renderTriggerSelection(ctx, toolsLayer, target, relevantRoom)
+
+            push!(drawnTargets, target)
+        end
+
         if isa(target, Main.TileSelection)
             Main.drawFakeTiles(ctx, relevantRoom, target.tiles, target.fg, target.selection.x, target.selection.y, clipEdges=true)
         end
@@ -513,7 +519,7 @@ function handleAddNodes(event::Main.eventKey)
     for selection in selections
         name, box, target, node = selection
 
-        if name == "entities"
+        if name == "entities" || name == "triggers"
             least, most = Main.nodeLimits(target)
             nodes = get(target.data, "nodes", [])
 

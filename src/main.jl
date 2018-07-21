@@ -65,6 +65,8 @@ camera = Camera(
     get(persistence, "camera_scale", get(config, "camera_default_zoom", 4))
 )
 
+include("helpers.jl")
+include("validation_entry.jl")
 include("mods.jl")
 include("color_constants.jl")
 include("module_loader.jl")

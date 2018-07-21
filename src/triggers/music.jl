@@ -1,16 +1,16 @@
-module EventTrigger
+module MusicTrigger
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Event" => Main.EntityPlacement(
-        Main.Maple.EventTrigger,
+    "Music" => Main.EntityPlacement(
+        Main.Maple.MusicTrigger,
         "rectangle"
     )
 )
 
 function editingOptions(trigger::Main.Maple.Trigger)
-    if trigger.name == "eventTrigger"
+    if trigger.name == "musicTrigger"
         return true, Dict{String, Any}(
-            "event" => Main.Maple.event_trigger_events
+            "track" => sort(collect(keys(Main.Maple.Songs.songs)))
         )
     end
 end

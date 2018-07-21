@@ -1,4 +1,4 @@
-module WindPatternTrigger
+module WindTrigger
 
 placements = Dict{String, Main.EntityPlacement}()
 

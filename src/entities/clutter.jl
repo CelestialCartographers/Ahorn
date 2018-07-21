@@ -39,7 +39,7 @@ for (raw, name) in clutterDisplayNames
 
     placements["Clutter Door ($name)"] = Main.EntityPlacement(
         Main.Maple.ClutterDoor,
-        "rectangle",
+        "point",
         Dict{String, Any}(
             "type" => simpleName[raw]
         )
@@ -120,17 +120,11 @@ end
 function minimumSize(entity::Main.Maple.Entity)
     if entity.name in validClutterNames
         return true, 8, 8
-
-    elseif entity.name == "clutterDoor"
-        return true, 16, 16
     end
 end
 
 function resizable(entity::Main.Maple.Entity)
     if entity.name in validClutterNames
-        return true, true, true
-    
-    elseif entity.name == "clutterDoor"
         return true, true, true
     end
 end
@@ -157,8 +151,8 @@ function selection(entity::Main.Maple.Entity)
     elseif entity.name == "clutterDoor"
         x, y = Main.entityTranslation(entity)
 
-        width = Int(get(entity.data, "width", 8))
-        height = Int(get(entity.data, "height", 8))
+        width = Int(get(entity.data, "width", 24))
+        height = Int(get(entity.data, "height", 24))
 
         return true, Main.Rectangle(x, y, width, height)
     end
@@ -195,8 +189,8 @@ function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room
     elseif entity.name == "clutterDoor"
         x, y = Main.entityTranslation(entity)
 
-        width = Int(get(entity.data, "width", 16))
-        height = Int(get(entity.data, "height", 16))
+        width = Int(get(entity.data, "width", 24))
+        height = Int(get(entity.data, "height", 24))
 
         variant = lowercase(get(entity.data, "type", "red"))
         sprite = Main.sprites["objects/resortclutter/icon_$variant"]

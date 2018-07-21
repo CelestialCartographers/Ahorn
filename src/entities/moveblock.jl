@@ -72,7 +72,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
         tilesHeight = div(height, 8)
 
         canSteer = get(entity.data, "canSteer", false)
-        direction = get(entity.data, "direction", "up")
+        direction = lowercase(get(entity.data, "direction", "up"))
         arrowSprite = Main.sprites[arrows[lowercase(direction)]]
 
         frame = "objects/moveBlock/base"

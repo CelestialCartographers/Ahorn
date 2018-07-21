@@ -6,6 +6,8 @@ using Maple
 roomWindow = nothing
 templateRoom = Maple.Room(name="1")
 
+currentRoom = ""
+
 songList = collect(keys(Maple.Songs.songs))
 windPatterns = Maple.windpatterns
 sort!(songList)
@@ -20,7 +22,7 @@ function createCheckpoint(room::Maple.Room)
         if entity.name == "player"
             x, y = Int(get(entity.data, "x", 0)), Int(get(entity.data, "y", 0))
 
-            return Maple.ChapterCheckpoint(x, y - 16, allowOrigin=true)
+            return Maple.ChapterCheckpoint(x, y, allowOrigin=true)
         end
     end
 
@@ -105,15 +107,17 @@ end
 function setFieldsFromRoom(room::Maple.Room, simple::Bool=get(Main.config, "use_simple_room_values", true))
     multiplier = simple? 8 : 1
 
-    setproperty!(roomTextfield, :text, room.name)
+    Main.setEntryText!(roomTextfield, room.name)
 
     width, height = room.size
-    setproperty!(widthTextfield, :text, string(round(Int, width / multiplier)))
-    setproperty!(heightTextfield, :text, string(round(Int, height / multiplier)))
+    displayWidth, displayHeight = string(round(Int, width / multiplier)), string(round(Int, height / multiplier))
+    Main.setEntryText!(widthTextfield, displayWidth)
+    Main.setEntryText!(heightTextfield, displayHeight)
 
     x, y = room.position
-    setproperty!(posXTextfield, :text, string(round(Int, x / multiplier)))
-    setproperty!(posYTextfield, :text, string(round(Int, y / multiplier)))
+    displayX, displayY =string(round(Int, x / multiplier)), string(round(Int, y / multiplier))
+    Main.setEntryText!(posXTextfield, displayX)
+    Main.setEntryText!(posYTextfield, displayY)
 
     setproperty!(darkCheckBox, :active, room.dark)
     setproperty!(spaceCheckBox, :active, room.space)
@@ -212,6 +216,7 @@ function createRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
     else
         spawnWindowIfAbsent!()
 
+        global currentRoom = ""
         setproperty!(roomWindow, :title, "$(Main.baseTitle) - Create Room")
 
         signal_handler_disconnect(roomCreationButton, roomButtonSignal)
@@ -233,7 +238,8 @@ function configureRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
     if Main.loadedState.map != nothing && Main.loadedState.room != nothing
         spawnWindowIfAbsent!()
 
-        setproperty!(roomWindow, :title, "$(Main.baseTitle) - $(Main.loadedState.room.name)")
+        global currentRoom = Main.loadedState.room.name
+        setproperty!(roomWindow, :title, "$(Main.baseTitle) - $(currentRoom)")
 
         signal_handler_disconnect(roomCreationButton, roomButtonSignal)
         setproperty!(roomCreationButton, :label, "Update Room")
@@ -245,13 +251,19 @@ function configureRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
     end
 end
 
+function roomNameValidator(s::String)
+    room = Maple.getRoomByName(Main.loadedState.map, s)
+
+    return s != "" && (s == currentRoom || !isa(room, Main.Maple.Room))
+end
+
 # Create all the Gtk widgets
 roomGrid = Grid()
-roomTextfield = Entry()
-widthTextfield = Entry()
-heightTextfield = Entry()
-posXTextfield = Entry()
-posYTextfield = Entry()
+roomTextfield = Main.ValidationEntry("1", roomNameValidator)
+widthTextfield = Main.ValidationEntry(320)
+heightTextfield = Main.ValidationEntry(184)
+posXTextfield = Main.ValidationEntry(0)
+posYTextfield = Main.ValidationEntry(0)
 
 darkCheckBox = CheckButton("Dark")
 spaceCheckBox = CheckButton("Space")

@@ -21,8 +21,21 @@ selectionTargets = Dict{String, Function}(
 function getSelection(trigger::Maple.Trigger, node::Number=0)
     x, y = Int(trigger.data["x"]), Int(trigger.data["y"])
     width, height = Int(trigger.data["width"]), Int(trigger.data["height"])
+    nodes = get(trigger.data, "nodes", Tuple{Integer, Integer}[])
 
-    return true, Rectangle(x, y, width, height)
+    if isempty(nodes)
+        return true, Rectangle(x, y, width, height)
+
+    else
+        res = Rectangle[Rectangle(x, y, width, height)]
+
+        for node in nodes
+            nx, ny = Int.(node)
+            push!(res, Rectangle(nx, ny, width, height))
+        end
+
+        return true, res
+    end
 end
 
 function getSelection(decal::Maple.Decal, node::Number=0)

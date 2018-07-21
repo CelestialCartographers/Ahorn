@@ -34,7 +34,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
         onlyFire = get(entity.data, "onlyFire", false)
         
         if onlyIce
-            Main.drawSprite(ctx, "objects/coreFlipSwitch/switch13.png", 0, 8)
+            Main.drawSprite(ctx, "objects/coreFlipSwitch/switch13.png", 0, 0)
 
         elseif onlyFire
             Main.drawSprite(ctx, "objects/coreFlipSwitch/switch15.png", 0, 0)

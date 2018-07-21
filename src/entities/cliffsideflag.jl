@@ -1,13 +1,13 @@
 module CliffsideFlag
 
-validFlagIndicdes = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "10"]
+validFlagIndicdes = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10]
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Cliffside Flag (Variant $(index))" => Main.EntityPlacement(
+    "Cliffside Flag (Variant $(lpad(string(index), 2, "0")))" => Main.EntityPlacement(
         Main.Maple.CliffsideFlag,
         "point",
         Dict{String, Any}(
-            "index" => parse(Int, index),
+            "index" => index,
         )
     ) for index in validFlagIndicdes
 )
@@ -15,7 +15,7 @@ placements = Dict{String, Main.EntityPlacement}(
 function editingOptions(entity::Main.Maple.Entity)
     if entity.name == "cliffside_flag"
         return true, Dict{String, Any}(
-            "index" => ["00", "01", "02", "03", "04", "05", "06", "07", "08", "10"]
+            "index" => validFlagIndicdes
         )
     end
 end

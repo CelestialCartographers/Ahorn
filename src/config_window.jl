@@ -42,7 +42,7 @@ end
 
 function columnEditCallback(store, col, row, value)
     if typeof(store[row, col]) <: Number
-        store[row, col] = parseNumber(value)
+        store[row, col] = Main.parseNumber(value)
 
     else
         store[row, col] = value
@@ -128,7 +128,8 @@ function addOptions!(window::Gtk.GtkWindowLeaf, grid::Gtk.GtkGridLeaf, options::
             grid[lcol, lrow] = label
 
             if isa(option.options, Void)
-                entry = Entry(text=string(option.startValue))
+                startValue = option.startValue
+                entry = Main.ValidationEntry(startValue)
 
                 grid[ecol, erow] = entry
                 push!(widgets, (option, entry))
@@ -149,15 +150,6 @@ function addOptions!(window::Gtk.GtkWindowLeaf, grid::Gtk.GtkGridLeaf, options::
     return index, widgets
 end
 
-function parseNumber(n::String)
-    try
-        return parse(Int, n)
-
-    catch
-        # For locales with , as decimal sep
-        return parse(Float64, replace(n, ",", "."))
-    end
-end
 
 function setDataAttr!(data::Dict{String, Any}, option::Option, value::Bool)
     data[option.dataName] = value
@@ -165,7 +157,7 @@ end
 
 function setDataAttr!(data::Dict{String, Any}, option::Option, value::String)
     if option.dataType <: Number
-        data[option.dataName] = parseNumber(value)
+        data[option.dataName] = Main.parseNumber(value)
 
     elseif option.dataType === Char
         # TODO - Error if string is > 1 char

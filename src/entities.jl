@@ -196,6 +196,10 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
             continue
         end
 
+        if attr == "originX" || attr == "originY"
+            continue
+        end
+
         if isa(value, Bool) || isa(value, Char) || isa(value, String)
             push!(res, ConfigWindow.Option(Main.camelcaseToTitlecase(attr), typeof(value), value, options=keyOptions, dataName=attr))
 

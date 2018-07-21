@@ -7,10 +7,36 @@ function renderTrigger(ctx::Cairo.CairoContext, layer::Layer, trigger::Maple.Tri
     rectangle(ctx, x, y, width, height)
     clip(ctx)
 
+    text = camelcaseToTitlecase(trigger.name)
     drawRectangle(ctx, x, y, width, height, colors.trigger_fc, colors.trigger_bc)
-    centeredText(ctx, trigger.name, round(Int, x + width / 2), round(Int, y + height / 2))
+    centeredText(ctx, text, round(Int, x + width / 2), round(Int, y + height / 2))
 
     restore(ctx)
+end
+
+function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::Maple.Trigger, room::Maple.Room; alpha::Number=1)
+    x, y = Int(trigger.data["x"]), Int(trigger.data["y"])
+    width, height = Int(trigger.data["width"]), Int(trigger.data["height"])
+    nodes = get(trigger.data, "nodes", Tuple{Integer, Integer}[])
+    offsetCenterX, offsetCenterY = floor(Int, width / 2), floor(Int, height / 2)
+    
+    text = camelcaseToTitlecase(trigger.name)
+
+    for node in nodes
+        nx, ny = Int.(node)
+
+        Cairo.save(ctx)
+
+        rectangle(ctx, nx, ny, width, height)
+        clip(ctx)
+    
+        drawRectangle(ctx, nx, ny, width, height, colors.trigger_fc, colors.trigger_bc)
+        centeredText(ctx, text, round(Int, nx + width / 2), round(Int, ny + height / 2))
+
+        Cairo.restore(ctx)
+
+        Main.drawArrow(ctx, x + offsetCenterX, y + offsetCenterY, nx + offsetCenterX, ny + offsetCenterY, Main.colors.selection_selected_fc, headLength=6)
+    end
 end
 
 function minimumSize(trigger::Main.Maple.Trigger)

@@ -251,21 +251,59 @@ end
 
 function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
     if Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers"
-        if !Main.modifierControl()
-            x1, y1, x2, y2 = floor.(Int, [x1, y1, x2 + 8 * sign(x2 - x1), y2 + 8 * sign(y2 - y1)] ./ 8) .* 8
-        end
+        if material.placement == "line"
+            if !Main.modifierControl()
+                x1, y1, x2, y2 = floor.(Int, [x1, y1, x2 + 8 * sign(x2 - x1), y2 + 8 * sign(y2 - y1)] ./ 8) .* 8
+            end
 
-        newGhost = generatePreview(targetLayer, material, x1, y1, nx=x2, ny=y2)
+            newGhost = generatePreview(targetLayer, material, x1, y1, nx=x2, ny=y2)
 
-        if newGhost != previewGhost
-            global previewGhost = newGhost
+            if newGhost != previewGhost
+                global previewGhost = newGhost
 
-            Main.redrawLayer!(toolsLayer)
+                Main.redrawLayer!(toolsLayer)
+            end
         end
     end
-
-    global selectionRect = Main.selectionRectangle(x1, y1, x2, y2)
 end
+
+function selectionMotionAbs(rect::Main.Rectangle)
+    if Main.modifierControl()
+        if Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers"
+            if material.placement == "rectangle"
+                newGhost = generatePreview(targetLayer, material, rect.x, rect.y, nx=rect.x + rect.w, ny=rect.y + rect.h)
+
+                if newGhost != previewGhost
+                    global previewGhost = newGhost
+
+                    Main.redrawLayer!(toolsLayer)
+                end
+            end
+        end
+
+        global selectionRect = rect
+    end
+end
+
+function selectionMotion(rect::Main.Rectangle)
+    if !Main.modifierControl()
+        if material.placement == "rectangle"
+            if Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers"
+                ax1, ay1, ax2, ay2 = rect.x * 8 - 8, rect.y * 8 - 8, (rect.x + rect.w) * 8 - 8, (rect.y + rect.h) * 8 - 8
+                newGhost = generatePreview(targetLayer, material, ax1, ay1, nx=ax2, ny=ay2)
+
+                if newGhost != previewGhost
+                    global previewGhost = newGhost
+
+                    Main.redrawLayer!(toolsLayer)
+                end
+            end
+        end
+
+        global selectionRect = Main.Rectangle(ax1, ay1, rect.w * 8, rect.h * 8)
+    end
+end
+
 
 # Doesn't matter if this is grid/abs, we only need to know the selection is done
 function selectionFinish(rect::Main.Rectangle)

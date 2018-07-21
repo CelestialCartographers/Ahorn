@@ -11,6 +11,13 @@ Ahorn is based on [Maple](https://github.com/CelestialCartographers/Maple), a th
 This project is an unofficial map maker and level editor, it is merely a fan project aiming to aid map development until something official is available. None of this code is developed by or connected to the Celeste development team.
 
 ## Installation
+
+### Windows auto-installer
+
+An easy installer file is available for Windows users. [**Check `#mod_readme` on Discord**](https://discord.gg/PN9f3xh) for a link to the latest installer.
+
+### Cross-platform manual installation
+
 First, [install Julia if you haven't already](https://julialang.org/downloads/). You need at least Julia 0.6.
 
 The easiest way to install Ahorn would be to download [the installer `install_ahorn.jl`](https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/install_ahorn.jl) (Right-click the link and press "Save as...") and run it with Julia. Just follow its instructions. Ahorn and Maple are installed using Julia's `Pkg` system. The installer will also download and install required dependencies, so grab yourself a glass of juice while you wait.
@@ -24,10 +31,9 @@ The config file can be found in `~/.ahorn`.
 Ahorn and Maple can be updated from within Ahorn, via `Help->Check for Updates`, or like any Julia package using `Pkg.update()`. To uninstall Ahorn, run `Pkg.rm("Ahorn")`, `Pkg.rm("Maple")` and then `Pkg.resolve()` in Julia.
 
 ## Usage
+
 The possible actions in Ahorn are listed on the right, just select one to use it.
 Hold right click to move around the map. Left click is your main way to place an object or select something. Tools like rectangle or line require holding left click while moving across the screen. Scroll to zoom.
-
-**Ahorn currently does not have any undo/redo functionality yet, so make sure to have backups and save often!**
 
 Ahorn supports a couple of keybinds and special mouse functionality, with more to come. The following list might not be comprehensive.
  - q, w: shrink / grow width on selected
