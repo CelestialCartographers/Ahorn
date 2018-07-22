@@ -169,6 +169,19 @@ function mouseMotion(x::Number, y::Number)
         newGhost = generatePreview(targetLayer, material, x * 8 - 8, y * 8 - 8, sx=scaleX, sy=scaleY)
 
         if selectionRect === nothing && newGhost != previewGhost
+            # No need to redraw if the target is on the same tile
+            if isa(previewGhost, Main.Maple.Entity) || isa(previewGhost, Main.Maple.Trigger)
+                if newGhost.data["x"] == previewGhost.data["x"] && newGhost.data["y"] == previewGhost.data["y"]
+                    return false
+                end
+            end
+
+            if isa(previewGhost, Main.Maple.Decal)
+                if newGhost.x == previewGhost.x && newGhost.y == previewGhost.y
+                    return false
+                end
+            end
+
             global previewGhost = newGhost
 
             Main.redrawLayer!(toolsLayer)
@@ -184,7 +197,6 @@ function mouseMotionAbs(x::Number, y::Number)
             global previewGhost = newGhost
 
             Main.redrawLayer!(toolsLayer)
-            Main.redrawLayer!(targetLayer)
         end
     end
 end
@@ -287,9 +299,10 @@ end
 
 function selectionMotion(rect::Main.Rectangle)
     if !Main.modifierControl()
-        if material.placement == "rectangle"
-            if Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers"
-                ax1, ay1, ax2, ay2 = rect.x * 8 - 8, rect.y * 8 - 8, (rect.x + rect.w) * 8 - 8, (rect.y + rect.h) * 8 - 8
+        ax1, ay1, ax2, ay2 = rect.x * 8 - 8, rect.y * 8 - 8, (rect.x + rect.w) * 8 - 8, (rect.y + rect.h) * 8 - 8
+
+        if Main.layerName(targetLayer) == "entities" || Main.layerName(targetLayer) == "triggers"
+            if material.placement == "rectangle"
                 newGhost = generatePreview(targetLayer, material, ax1, ay1, nx=ax2, ny=ay2)
 
                 if newGhost != previewGhost

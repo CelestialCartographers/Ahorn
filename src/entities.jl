@@ -11,6 +11,8 @@ struct EntityPlacement
     EntityPlacement(func::Function, placement::String="point", data::Dict{String, Any}=Dict{String, Any}(), finalizer::Function=e -> e) = new(func, placement, data, finalizer)
 end
 
+entityNameLookup = Dict{String, String}()
+
 # The point the entity will be drawn relative too
 # Make sure it returns in Int32/64
 function entityTranslation(entity::Maple.Entity)
@@ -20,63 +22,122 @@ function entityTranslation(entity::Maple.Entity)
     )
 end
 
-function renderEntity(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)
+function renderEvent(fn::String, func::String, args...)
+    res = eventToModule(fn, func, args...)
+
+    return !isa(res, Void) && res
+end
+
+function attemptEntityRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room, fn::String)
     Cairo.save(ctx)
+
+    res = renderEvent(fn, "renderAbs", ctx, entity) ||
+        renderEvent(fn, "renderAbs", layer, entity) || 
+        renderEvent(fn, "renderAbs", ctx, entity, room) ||
+        renderEvent(fn, "renderAbs", layer, entity, room)
+
+    translate(ctx, entityTranslation(entity)...)
+    res |= renderEvent(fn, "render", ctx, entity) ||
+        renderEvent(fn, "render", layer, entity) || 
+        renderEvent(fn, "render", ctx, entity, room) ||
+        renderEvent(fn, "render", layer, entity, room)
+
+    Cairo.restore(ctx)
+
+    return res
+end
+
+function renderEntity(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)
+    success = false
 
     # Set global alpha here, passing alpha to the entity renderer is not sane
     setGlobalAlpha!(alpha)
 
-    res = eventToModules(loadedEntities, "renderAbs", ctx, entity) ||
-          eventToModules(loadedEntities, "renderAbs", layer, entity) || 
-          eventToModules(loadedEntities, "renderAbs", ctx, entity, room) ||
-          eventToModules(loadedEntities, "renderAbs", layer, entity, room)
+    if haskey(entityNameLookup, entity.name)
+        fn = entityNameLookup[entity.name]
+        success = attemptEntityRender(ctx, layer, entity, room, fn)
 
-    translate(ctx, entityTranslation(entity)...)
-    res |= eventToModules(loadedEntities, "render", ctx, entity) ||
-          eventToModules(loadedEntities, "render", layer, entity) || 
-          eventToModules(loadedEntities, "render", ctx, entity, room) ||
-          eventToModules(loadedEntities, "render", layer, entity, room)
-    
+    else
+        for fn in loadedEntities
+            success = attemptEntityRender(ctx, layer, entity, room, fn)
+
+            if success
+                entityNameLookup[entity.name] = fn
+
+                break
+            end
+        end
+    end
+
     # Reset global alpha again
     setGlobalAlpha!(1)
-    restore(ctx)
 
-    if !res
+    if !success
         debug.log("Couldn't render entity '$(entity.name)' in room '$(room.name)'", "DRAWING_ENTITY_MISSING")
     end
 end
 
-function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)
+function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room, fn::String)
     Cairo.save(ctx)
 
-    # Set global alpha here, passing alpha to the entity renderer is not sane
-    setGlobalAlpha!(alpha)
-    
-    res = eventToModules(loadedEntities, "renderSelectedAbs", ctx, entity) ||
-        eventToModules(loadedEntities, "renderSelectedAbs", layer, entity) || 
-        eventToModules(loadedEntities, "renderSelectedAbs", ctx, entity, room) ||
-        eventToModules(loadedEntities, "renderSelectedAbs", layer, entity, room)
+    res = eventToModules(fn, "renderSelectedAbs", ctx, entity) ||
+        eventToModules(fn, "renderSelectedAbs", layer, entity) || 
+        eventToModules(fn, "renderSelectedAbs", ctx, entity, room) ||
+        eventToModules(fn, "renderSelectedAbs", layer, entity, room)
 
     translate(ctx, entityTranslation(entity)...)
-    res |= eventToModules(loadedEntities, "renderSelected", ctx, entity) ||
-        eventToModules(loadedEntities, "renderSelected", layer, entity) || 
-        eventToModules(loadedEntities, "renderSelected", ctx, entity, room) ||
-        eventToModules(loadedEntities, "renderSelected", layer, entity, room)
+    res |= eventToModules(fn, "renderSelected", ctx, entity) ||
+        eventToModules(fn, "renderSelected", layer, entity) || 
+        eventToModules(fn, "renderSelected", ctx, entity, room) ||
+        eventToModules(fn, "renderSelected", layer, entity, room)
+
+        Cairo.restore(ctx)
+
+    return res
+end
+
+function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)    
+    # Set global alpha here, passing alpha to the entity renderer is not sane
+    setGlobalAlpha!(alpha)
+
+    if haskey(entityNameLookup, entity.name)
+        fn = entityNameLookup[entity.name]
+        success = attemptEntitySelectionRender(ctx, layer, entity, room, fn)
+
+    else
+        for fn in loadedEntities
+            success = attemptEntitySelectionRender(ctx, layer, entity, room, fn)
+
+            if success
+                entityNameLookup[entity.name] = fn
+
+                break
+            end
+        end
+    end
 
     # Reset global alpha again
     setGlobalAlpha!(1)
-    restore(ctx)
 end
 
-function minimumSize(entity::Main.Maple.Entity)
+function entityPropertyQuery(entity::Maple.Entity, func::String)
+    if haskey(entityNameLookup, entity.name)
+        return eventToModule(entityNameLookup[entity.name], func, entity)
+
+    else
+        return eventToModules(loadedEntities, func, entity)
+    end
+end
+
+function minimumSize(entity::Maple.Entity)
     if get(debug.config, "IGNORE_MINIMUM_SIZE", false)
         return 0, 0
     end
-
-    selectionRes = Main.eventToModules(Main.loadedEntities, "minimumSize", entity)
     
-    if isa(selectionRes, Tuple)
-        success, width, height = selectionRes
+    sizeRes = entityPropertyQuery(entity, "minimumSize")
+
+    if isa(sizeRes, Tuple)
+        success, width, height = sizeRes
 
         if success
             return width, height
@@ -86,15 +147,15 @@ function minimumSize(entity::Main.Maple.Entity)
     return 0, 0
 end
 
-function canResize(entity::Main.Maple.Entity)
+function canResize(entity::Maple.Entity)
     if get(debug.config, "IGNORE_CAN_RESIZE", false)
         return true, true
     end
 
-    selectionRes = Main.eventToModules(Main.loadedEntities, "resizable", entity)
+    resizeRes = entityPropertyQuery(entity, "resizable")
     
-    if isa(selectionRes, Tuple)
-        success, vertical, horizontal = selectionRes
+    if isa(resizeRes, Tuple)
+        success, vertical, horizontal = resizeRes
 
         if success
             return vertical, horizontal
@@ -104,11 +165,11 @@ function canResize(entity::Main.Maple.Entity)
     return false, false
 end
 
-function nodeLimits(entity::Main.Maple.Entity)
-    selectionRes = Main.eventToModules(Main.loadedEntities, "nodeLimits", entity)
+function nodeLimits(entity::Maple.Entity)
+    nodeRes = entityPropertyQuery(entity, "nodeLimits")
     
-    if isa(selectionRes, Tuple)
-        success, least, most = selectionRes
+    if isa(nodeRes, Tuple)
+        success, least, most = nodeRes
 
         if success
             return least, most
@@ -119,10 +180,10 @@ function nodeLimits(entity::Main.Maple.Entity)
 end
 
 function editingOptions(entity::Maple.Entity)
-    selectionRes = Main.eventToModules(Main.loadedEntities, "editingOptions", entity)
+    optionsRes = entityPropertyQuery(entity, "editingOptions")
     
-    if isa(selectionRes, Tuple)
-        success, options = selectionRes
+    if isa(optionsRes, Tuple)
+        success, options = optionsRes
 
         if success
             return success, options
@@ -142,7 +203,7 @@ function registerPlacements!(placements::Dict{String, EntityPlacement}, loaded::
     end
 end
 
-function callFinalizer(map::Maple.Map, room::Main.Room, ep::EntityPlacement, target::Union{Maple.Entity, Maple.Trigger})
+function callFinalizer(map::Maple.Map, room::Room, ep::EntityPlacement, target::Union{Maple.Entity, Maple.Trigger})
     argsList = Tuple[
         (target, map, room),
         (target, room),
@@ -156,7 +217,7 @@ function callFinalizer(map::Maple.Map, room::Main.Room, ep::EntityPlacement, tar
     end
 end
 
-function generateEntity(map::Maple.Map, room::Main.Room, ep::EntityPlacement, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
+function generateEntity(map::Maple.Map, room::Room, ep::EntityPlacement, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
     # Create the default entity with the correct coords, then merge the extra data in
     entity = ep.func(x, y)
     merge!(entity.data, ep.data)
@@ -186,7 +247,7 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
     res = ConfigWindow.Option[]
 
     success, options = editingOptions(entity)
-    horizontalAllowed, verticalAllowed = Main.canResize(entity)
+    horizontalAllowed, verticalAllowed = canResize(entity)
     nodeRange = nodeLimits(entity)
 
     for (attr, value) in entity.data
@@ -201,13 +262,13 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
         end
 
         if isa(value, Bool) || isa(value, Char) || isa(value, String)
-            push!(res, ConfigWindow.Option(Main.humanizeVariableName(attr), typeof(value), value, options=keyOptions, dataName=attr))
+            push!(res, ConfigWindow.Option(humanizeVariableName(attr), typeof(value), value, options=keyOptions, dataName=attr))
 
         elseif isa(value, Integer)
-            push!(res, ConfigWindow.Option(Main.humanizeVariableName(attr), Int64, Int64(value), options=keyOptions, dataName=attr))
+            push!(res, ConfigWindow.Option(humanizeVariableName(attr), Int64, Int64(value), options=keyOptions, dataName=attr))
 
         elseif isa(value, Real)
-            push!(res, ConfigWindow.Option(Main.humanizeVariableName(attr), Float64, Float64(value), options=keyOptions, dataName=attr))
+            push!(res, ConfigWindow.Option(humanizeVariableName(attr), Float64, Float64(value), options=keyOptions, dataName=attr))
 
         elseif attr == "nodes"
             push!(res, ConfigWindow.Option("Node X;Node Y", Array{Tuple{Int64, Int64}, 1}, value, options=keyOptions, dataName=attr, rowCount=nodeRange))

@@ -12,6 +12,9 @@ function ValidationEntry(value::Any, validation::Function=guessValidationFunctio
         setproperty!(entry, :placeholder_text, placeholder)
     end
 
+    icon = validation(text)? validationPassedIcon : validationFailedIcon
+    setproperty!(entry, :primary_icon_name, icon)
+
     @guarded signal_connect(entry, "changed") do widget
         text = getproperty(widget, :text, String)
         icon = validation(text)? validationPassedIcon : validationFailedIcon

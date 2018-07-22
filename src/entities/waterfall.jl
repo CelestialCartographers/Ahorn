@@ -1,6 +1,6 @@
 module Waterfall
 
-function applyWaterfallHeight!(entity::Main.Maple.Entity, room::Main.Maple.Room)
+function getHeight(entity::Main.Maple.Entity, room::Main.Maple.Room)
     waterEntities = filter(e -> e.name == "water", room.entities)
     waterRects = [
         Main.Rectangle(
@@ -13,6 +13,7 @@ function applyWaterfallHeight!(entity::Main.Maple.Entity, room::Main.Maple.Room)
 
     width, height = room.size
     x, y = Int(get(entity.data, "x", 0)), Int(get(entity.data, "y", 0))
+    tx, ty = floor(Int, x / 8) + 1, floor(Int, y / 8) + 1
 
     wantedHeight = 8 - y % 8
     while wantedHeight < height - y
@@ -22,18 +23,20 @@ function applyWaterfallHeight!(entity::Main.Maple.Entity, room::Main.Maple.Room)
             break
         end
 
+        if get(room.fgTiles.data, (ty + 1, tx), '0') != '0'
+            break
+        end
+
         wantedHeight += 8
+        ty += 1
     end
 
-    entity.data["height"] = wantedHeight
+    return wantedHeight
 end
 
 placements = Dict{String, Main.EntityPlacement}(
     "Waterfall" => Main.EntityPlacement(
-        Main.Maple.Waterfall,
-        "rectangle",
-        Dict{String, Any}(),
-        applyWaterfallHeight!
+        Main.Maple.Waterfall
     )
 )
 
@@ -43,7 +46,8 @@ function selection(entity::Main.Maple.Entity)
     if entity.name == "waterfall"
         x, y = Main.entityTranslation(entity)
 
-        height = Int(get(entity.data, "height", 8))
+        # TODO - Handle room in selections better, this is bound to cause problems down the road
+        height = getHeight(entity, Main.loadedState.room)
 
         return true, Main.Rectangle(x, y, 8, height)
     end
@@ -54,7 +58,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
         x = Int(get(entity.data, "x", 0))
         y = Int(get(entity.data, "y", 0))
 
-        height = Int(get(entity.data, "height", 8))
+        height = getHeight(entity, room)
 
         Main.drawRectangle(ctx, 0, 0, 8, height, waterfallColor, (0.0, 0.0, 0.0, 0.0))
 
@@ -62,12 +66,6 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
     end
 
     return false
-end
-
-function moved(entity::Main.Maple.Entity, room::Main.Maple.Room)
-    if entity.name == "waterfall"
-        applyWaterfallHeight!(entity, room)
-    end
 end
 
 end

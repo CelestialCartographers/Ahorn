@@ -28,9 +28,8 @@ function selection(entity::Main.Maple.Entity)
         x, y = Main.entityTranslation(entity)
 
         return true, Main.Rectangle(x - 2, y - 16, 12, 16)
-    end
-
-    if entity.name == "darkChaserEnd"
+        
+    elseif entity.name == "darkChaserEnd"
         x, y = Main.entityTranslation(entity)
 
         width = Int(get(entity.data, "width", 8))
@@ -45,9 +44,8 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
         Main.drawSprite(ctx, "characters/badeline/sleep00.png", 4, -16)
 
         return true
-    end
 
-    if entity.name == "darkChaserEnd"
+    elseif entity.name == "darkChaserEnd"
         width = Int(get(entity.data, "width", 32))
         height = Int(get(entity.data, "height", 32))
 
@@ -55,6 +53,8 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
 
         return true
     end
+
+    return false
 end
 
 end

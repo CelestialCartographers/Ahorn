@@ -26,22 +26,23 @@ function eventToModule(modul::Module, funcname::String, args...)
         # Get function and call with arguments
         func = getModuleField(modul, funcname)
 
-        try
-            if isa(func, Function) && applicable(func, args...)
+        if isa(func, Function) && applicable(func, args...)
+            try
                 return func(args...)
+
+            catch e
+                # Error running the function
+                println("Exception running function $funcname for $modul")
+                println(e)
+                println.(stacktrace())
+                println("---")
             end
 
+        else
             # Can't call the function with the arguments we have
             # This is normal, event is not consumed
-
+            
             return false
-
-        catch e
-            # Error running the function
-            println("Exception running function $funcname for $modul")
-            println(e)
-            println.(stacktrace())
-            println("---")
         end
 
     else

@@ -32,6 +32,8 @@ function reloadEntities!()
     Main.getLayerByName(dr.layers, "entities").redraw = true
     Main.select!(Main.roomList, row -> row[1] == Main.loadedState.roomName)
 
+    empty!(Main.entityNameLookup)
+
     return true
 end
 

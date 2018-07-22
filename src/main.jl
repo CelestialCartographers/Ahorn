@@ -105,7 +105,13 @@ setproperty!(canvas, :vexpand, true)
 
 @guarded draw(canvas) do widget
     if loadedState.map !== nothing && isa(loadedState.map, Map)
+        startTime = time()
+
         drawMap(canvas, camera, loadedState.map)
+
+        stopTime = time()
+        deltaTime = stopTime - startTime
+        debug.log("Drawing canvas took $deltaTime seconds", "DRAWING_CANVAS_DRAW_DURATION")
 
         persistence["camera_position_x"] = camera.x
         persistence["camera_position_y"] = camera.y
