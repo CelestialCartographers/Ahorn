@@ -80,39 +80,33 @@ end
 function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room, fn::String)
     Cairo.save(ctx)
 
-    res = eventToModules(fn, "renderSelectedAbs", ctx, entity) ||
-        eventToModules(fn, "renderSelectedAbs", layer, entity) || 
-        eventToModules(fn, "renderSelectedAbs", ctx, entity, room) ||
-        eventToModules(fn, "renderSelectedAbs", layer, entity, room)
+    eventToModule(fn, "renderSelectedAbs", ctx, entity)
+    eventToModule(fn, "renderSelectedAbs", layer, entity) 
+    eventToModule(fn, "renderSelectedAbs", ctx, entity, room)
+    eventToModule(fn, "renderSelectedAbs", layer, entity, room)
 
     translate(ctx, entityTranslation(entity)...)
-    res |= eventToModules(fn, "renderSelected", ctx, entity) ||
-        eventToModules(fn, "renderSelected", layer, entity) || 
-        eventToModules(fn, "renderSelected", ctx, entity, room) ||
-        eventToModules(fn, "renderSelected", layer, entity, room)
+    eventToModule(fn, "renderSelected", ctx, entity)
+    eventToModule(fn, "renderSelected", layer, entity) 
+    eventToModule(fn, "renderSelected", ctx, entity, room)
+    eventToModule(fn, "renderSelected", layer, entity, room)
 
-        Cairo.restore(ctx)
-
-    return res
+    Cairo.restore(ctx)
 end
 
 function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)    
     # Set global alpha here, passing alpha to the entity renderer is not sane
     setGlobalAlpha!(alpha)
 
+    # Selection renders are less strict on returning if they have been handled
+    # Assume that we can use the same filename as for `render` call, or all other otherwise
     if haskey(entityNameLookup, entity.name)
         fn = entityNameLookup[entity.name]
-        success = attemptEntitySelectionRender(ctx, layer, entity, room, fn)
+        attemptEntitySelectionRender(ctx, layer, entity, room, fn)
 
     else
         for fn in loadedEntities
-            success = attemptEntitySelectionRender(ctx, layer, entity, room, fn)
-
-            if success
-                entityNameLookup[entity.name] = fn
-
-                break
-            end
+            attemptEntitySelectionRender(ctx, layer, entity, room, fn)
         end
     end
 

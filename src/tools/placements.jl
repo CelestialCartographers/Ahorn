@@ -23,7 +23,7 @@ filterAnimations(s::String) = ismatch(animationRegex, s)
 
 placementLayers = String["entities", "triggers", "fgDecals", "bgDecals"]
 
-function drawSelection(layer::Main.Layer, room::Main.Room)
+function drawPlacements(layer::Main.Layer, room::Main.Room)
     ctx = Main.creategc(toolsLayer.surface)
 
     if selectionRect !== nothing && selectionRect.w > 0 && selectionRect.h > 0
@@ -118,7 +118,7 @@ function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, 
     Main.updateLayerList!(placementLayers, row -> row[1] == wantedLayer)
     Main.updateTreeView!(subTools, [])
 
-    Main.redrawingFuncs["tools"] = drawSelection
+    Main.redrawingFuncs["tools"] = drawPlacements
     Main.redrawLayer!(toolsLayer)
 end
 
