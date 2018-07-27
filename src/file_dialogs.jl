@@ -1,17 +1,11 @@
 function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     celesteDir = config["celeste_dir"]
-    mapsDir = joinpath(celesteDir, "ModContent", "Maps")
-
-    if isdir(celesteDir)
-        if !isdir(mapsDir)
-            mkpath(mapsDir)
-        end
-
-        cd(mapsDir)
-    end
+    mapsDir = joinpath(celesteDir, "Mods")
+    lastDir = dirname(get(persistence, "files_lastfile", mapsDir))
+    targetDir = ispath(lastDir)? lastDir : mapsDir
 
     filename = ""
-    cd(mapsDir) do
+    cd(targetDir) do
         filename = openDialog("Select map binary", window, ["*.bin"])
     end
 
@@ -44,16 +38,12 @@ end
 # save_dialog only warns on overwrite, but will ONLY return the filename
 function showFileSaveDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     celesteDir = config["celeste_dir"]
-    mapsDir = joinpath(celesteDir, "ModContent", "Maps")
-
-    if isdir(celesteDir)
-        if !isdir(mapsDir)
-            mkpath(mapsDir)
-        end
-    end
+    mapsDir = joinpath(celesteDir, "Mods")
+    lastDir = dirname(get(persistence, "files_lastfile", mapsDir))
+    targetDir = ispath(lastDir)? lastDir : mapsDir
 
     filename = ""
-    cd(mapsDir) do
+    cd(targetDir) do
         filename = saveDialog("Save as", window, ["*.bin"])
     end
 

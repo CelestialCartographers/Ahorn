@@ -252,6 +252,10 @@ function configureRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
 end
 
 function roomNameValidator(s::String)
+    if Main.loadedState.map === nothing
+        return false
+    end
+
     room = Maple.getRoomByName(Main.loadedState.map, s)
 
     return s != "" && (s == currentRoom || !isa(room, Main.Maple.Room))
