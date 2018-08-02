@@ -212,7 +212,7 @@ function setParallaxFromFields!(parallax::Maple.Parallax)
 
     catch e
         println(e)
-        return false, "One or more of the inputs were invalid.\nPlease make sure number fields have valid numbers."
+        return false, "One or more of the inputs are invalid.\nPlease make sure number fields have valid numbers."
     end
 end
 
@@ -572,32 +572,21 @@ instantInCheckbox = CheckButton("Instant In", active=true)
 instantOutCheckbox = CheckButton("Instant Out")
 fadeInCheckbox = CheckButton("Fade In")
 
-backdropLabel = Label("Backdrop")
+backdropLabel = Label("Backdrop", xalign=0.0, margin_start=8)
 
-posXLabel = Label("X")
-posYLabel = Label("Y")
+posXLabel = Label("X", xalign=0.0, margin_start=8)
+posYLabel = Label("Y", xalign=0.0, margin_start=8)
 
-scrollXLabel = Label("Scroll X")
-scrollYLabel = Label("Scroll Y")
-speedXLabel = Label("Speed X")
-speedYLabel = Label("Speed Y")
+scrollXLabel = Label("Scroll X", xalign=0.0, margin_start=8)
+scrollYLabel = Label("Scroll Y", xalign=0.0, margin_start=8)
+speedXLabel = Label("Speed X", xalign=0.0, margin_start=8)
+speedYLabel = Label("Speed Y", xalign=0.0, margin_start=8)
 
-alphaLabel = Label("Alpha")
-colorLabel = Label("Tinting (Hex color)")
+alphaLabel = Label("Alpha", xalign=0.0, margin_start=8)
+colorLabel = Label("Tinting (Hex color)", xalign=0.0, margin_start=8)
 
-onlyLabel = Label("Only")
-excludeLabel = Label("Exclude")
-
-setproperty!(posXLabel, :xalign, 0.1)
-setproperty!(posYLabel, :xalign, 0.1)
-setproperty!(scrollXLabel, :xalign, 0.1)
-setproperty!(scrollYLabel, :xalign, 0.1)
-setproperty!(speedXLabel, :xalign, 0.1)
-setproperty!(speedYLabel, :xalign, 0.1)
-setproperty!(alphaLabel, :xalign, 0.1)
-setproperty!(colorLabel, :xalign, 0.1)
-setproperty!(onlyLabel, :xalign, 0.1)
-setproperty!(excludeLabel, :xalign, 0.1)
+onlyLabel = Label("Only", xalign=0.0, margin_start=8)
+excludeLabel = Label("Exclude", xalign=0.0, margin_start=8)
 
 parallaxAdd = Button("Add")
 parallaxRemove = Button("Remove")

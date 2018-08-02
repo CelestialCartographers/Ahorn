@@ -166,6 +166,9 @@ function key_press_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
                 callback(hotkey)
             end
         end
+    
+    else
+        return handleFilterKeyPressed(event)
     end
 
     return consume

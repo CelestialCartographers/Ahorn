@@ -1,18 +1,10 @@
 module SpaceJam
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Space Jam (Moving)" => Main.EntityPlacement(
-        Main.Maple.DreamBlock,
-        "rectangle",
-        Dict{String, Any}(),
-        function(entity)
-            entity.data["nodes"] = [(Int(entity.data["x"]) + Int(entity.data["width"]) + 8, Int(entity.data["y"]))]
-        end
-    ),
     "Space Jam" => Main.EntityPlacement(
         Main.Maple.DreamBlock,
         "rectangle"
-    ),
+    )
 )
 
 function minimumSize(entity::Main.Maple.Entity)
@@ -73,10 +65,10 @@ function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Enti
         if !isempty(nodes)
             nx, ny = Int.(nodes[1])
 
-            cox, cyx = floor(Int, width / 2), floor(Int, height / 2)
+            cox, coy = floor(Int, width / 2), floor(Int, height / 2)
 
             renderSpaceJam(ctx, nx, ny, width, height)
-            Main.drawArrow(ctx, x + cox, y + cyx, nx + cox, ny + cyx, Main.colors.selection_selected_fc, headLength=6)
+            Main.drawArrow(ctx, x + cox, y + coy, nx + cox, ny + coy, Main.colors.selection_selected_fc, headLength=6)
         end
     end
 end

@@ -25,6 +25,8 @@ function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::
     for node in nodes
         nx, ny = Int.(node)
 
+        Main.drawArrow(ctx, x + offsetCenterX, y + offsetCenterY, nx + offsetCenterX, ny + offsetCenterY, Main.colors.selection_selected_fc, headLength=6)
+
         Cairo.save(ctx)
 
         rectangle(ctx, nx, ny, width, height)
@@ -34,8 +36,6 @@ function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::
         centeredText(ctx, text, round(Int, nx + width / 2), round(Int, ny + height / 2))
 
         Cairo.restore(ctx)
-
-        Main.drawArrow(ctx, x + offsetCenterX, y + offsetCenterY, nx + offsetCenterX, ny + offsetCenterY, Main.colors.selection_selected_fc, headLength=6)
     end
 end
 
@@ -82,6 +82,7 @@ end
 loadedTriggers = joinpath.("triggers", readdir(abs"triggers"))
 append!(loadedTriggers, findExternalModules("triggers"))
 loadModule.(loadedTriggers)
+loadExternalModules!(loadedModules, loadedTriggers, "triggers")
 
 triggerPlacements = Dict{String, EntityPlacement}()
 registerPlacements!(triggerPlacements, loadedTriggers)

@@ -16,7 +16,8 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
 
         if res
             loadedState.filename = filename
-            loadedState.map = loadMap(filename)
+            loadedState.side = loadSide(filename)
+            loadedState.map = loadedState.side.map
             loadedState.lastSavedMap = deepcopy(loadedState.map)
             loadedState.roomName = ""
             loadedState.room = nothing
@@ -28,7 +29,7 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
 
             updateTreeView!(roomList, getTreeData(loadedState.map), 1)
 
-            setproperty!(window, :title, "$baseTitle - $packageName")
+            setproperty!(window, :title, "$baseTitle - $(Maple.getSideName(loadedState.side))")
 
             draw(canvas)
         end
@@ -51,7 +52,7 @@ function showFileSaveDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
         loadedState.filename = filename
         persistence["files_lastfile"] = loadedState.filename
         
-        saveFile(loadedState.map, filename)
+        saveFile(loadedState.side, filename)
     end
 end
 
@@ -60,11 +61,12 @@ function menuFileSave(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
         showFileSaveDialog(leaf)
 
     else
-        saveFile(loadedState.map, loadedState.filename)
+        saveFile(loadedState.side, loadedState.filename)
     end
 end
 
-function saveFile(map::Map, filename::String) 
+function saveFile(side::Side, filename::String)
+    map = side.map
     sortRoomNames = get(config, "sort_rooms_on_save", true)
 
     if sortRoomNames
@@ -74,6 +76,6 @@ function saveFile(map::Map, filename::String)
 
     loadedState.lastSavedMap = deepcopy(map)
 
-    fn = splitext(filename)[2] == ".bin"? filename : filename * ".bin"
-    encodeMap(map, fn)
+    fn = hasExt(filename, ".bin")? filename : filename * ".bin"
+    encodeSide(side, fn)
 end

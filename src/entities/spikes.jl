@@ -2,7 +2,7 @@ module Spikes
 
 placements = Dict{String, Main.EntityPlacement}()
 
-variants = ["default", "cliffside", "tentacles", "reflection"]
+variants = String["default", "cliffside", "tentacles", "reflection"]
 entities = Dict{String, Function}(
     "up" => Main.Maple.SpikesUp,
     "down" => Main.Maple.SpikesDown,
@@ -56,6 +56,20 @@ for (dir, entity) in triggerEntities
         entity,
         "rectangle"
     )
+end
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name in spikeNames
+        return true, Dict{String, Any}(
+            "type" => variants
+        )
+
+    elseif entity.name in triggerOriginalNames
+        # Doesn't support tentacles
+        return true, Dict{String, Any}(
+            "type" => String["default", "cliffside", "reflection"]
+        )
+    end
 end
 
 directions = Dict{String, String}(
@@ -116,6 +130,8 @@ tentacleSelectionOffsets = Dict{String, Tuple{Number, Number}}(
     "left" => (-8, 0),
     "right" => (-8, 0)
 )
+
+spikeNames = ["spikesDown", "spikesLeft", "spikesRight", "spikesUp"]
 
 triggerNames = ["triggerSpikesDown", "triggerSpikesLeft", "triggerSpikesRight", "triggerSpikesUp"]
 triggerRotationOffsets = Dict{String, Tuple{Number, Number}}(

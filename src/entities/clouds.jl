@@ -9,28 +9,12 @@ placements = Dict{String, Main.EntityPlacement}(
             "small" => false
         )
     ),
-    "Cloud (Normal, Fragile)" => Main.EntityPlacement(
+    "Cloud (Fragile)" => Main.EntityPlacement(
         Main.Maple.Cloud,
         "point",
         Dict{String, Any}(
             "fragile" => true,
             "small" => false
-        )
-    ),
-    "Cloud (Small)" => Main.EntityPlacement(
-        Main.Maple.Cloud,
-        "point",
-        Dict{String, Any}(
-            "fragile" => false,
-            "small" => true
-        )
-    ),
-    "Cloud (Small, Fragile)" => Main.EntityPlacement(
-        Main.Maple.Cloud,
-        "point",
-        Dict{String, Any}(
-            "fragile" => true,
-            "small" => true
         )
     ),
 )

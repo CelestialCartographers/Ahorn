@@ -4,26 +4,11 @@ placements = Dict{String, Main.EntityPlacement}(
     "Feather" => Main.EntityPlacement(
         Main.Maple.Feather
     ),
-    "Feather (Single Use)" => Main.EntityPlacement(
-        Main.Maple.Feather,
-        "point",
-        Dict{String, Any}(
-            "singleUse" => true
-        )
-    ),
     "Feather (Shielded)" => Main.EntityPlacement(
         Main.Maple.Feather,
         "point",
         Dict{String, Any}(
             "shielded" => true
-        )
-    ),
-    "Feather (Single Use, Shielded)" => Main.EntityPlacement(
-        Main.Maple.Feather,
-        "point",
-        Dict{String, Any}(
-            "shielded" => true,
-            "singleUse" => true
         )
     )
 )

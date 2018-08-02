@@ -1,18 +1,11 @@
 module WindTrigger
 
-placements = Dict{String, Main.EntityPlacement}()
-
-patterns = Main.Maple.windpatterns
-for pattern in patterns
-    key = "Wind Pattern ($(titlecase(pattern)))"
-    placements[key] = Main.EntityPlacement(
+placements = Dict{String, Main.EntityPlacement}(
+    "Wind Pattern" => Main.EntityPlacement(
         Main.Maple.WindTrigger,
-        "rectangle",
-        Dict{String, Any}(
-            "pattern" => pattern,
-        )
+        "rectangle"
     )
-end
+)
 
 function editingOptions(trigger::Main.Maple.Trigger)
     if trigger.name == "windTrigger"

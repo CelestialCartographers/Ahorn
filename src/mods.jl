@@ -15,7 +15,26 @@ function getAhornModDirs()
     end
 
     return targetFolders
-end 
+end
+
+function getAhornModZips()
+    if !get(config, "load_plugins_ahorn_zip", true)
+        return String[]
+    end
+
+    modsPath = joinpath(storageDirectory, "plugins")
+    targetFolders = String[]
+
+    if isdir(modsPath)
+        for fn in readdir(modsPath)
+            if isfile(joinpath(modsPath, fn)) && hasExt(fn, ".zip")
+                push!(targetZips, joinpath(modsPath, fn))
+            end
+        end
+    end
+
+    return targetFolders
+end
 
 function getCelesteModDirs()
     if !get(config, "load_plugins_celeste", true)
@@ -24,7 +43,6 @@ function getCelesteModDirs()
 
     celesteDir = config["celeste_dir"]
     modsPath = joinpath(celesteDir, "Mods")
-    modcontentPath = joinpath(celesteDir, "ModContent")
 
     targetFolders = String[]
 
@@ -36,13 +54,33 @@ function getCelesteModDirs()
         end
     end
 
-    push!(targetFolders, modcontentPath)
-
     return targetFolders
+end
+
+function getCelesteModZips()
+    if !get(config, "load_plugins_celeste_zip", true)
+        return String[]
+    end
+
+    celesteDir = config["celeste_dir"]
+    modsPath = joinpath(celesteDir, "Mods")
+
+    targetZips = String[]
+
+    if isdir(modsPath)
+        for fn in readdir(modsPath)
+            if isfile(joinpath(modsPath, fn)) && hasExt(fn, ".zip")
+                push!(targetZips, joinpath(modsPath, fn))
+            end
+        end
+    end
+
+    return targetZips
 end
 
 function findExternalSprite(resource::String)
     targetFolders = getCelesteModDirs()
+    targetZips = getCelesteModZips()
     gameplayPath = joinpath("Graphics", "Atlases", "Gameplay")
 
     for target in targetFolders
@@ -51,12 +89,26 @@ function findExternalSprite(resource::String)
             return fn
         end
     end
+
+    for target in targetZips
+        fn = joinpath(gameplayPath, splitext(resource)[1] * ".png")
+        zipfh = ZipFile.Reader(target)
+
+        for file in zipfh.files
+            if file.name == fn
+                return target
+            end
+        end
+
+        close(zipfh)
+    end
 end
 
 function findExternalSprites()
     res = Tuple{String, String}[]
     
     targetFolders = getCelesteModDirs()
+    targetZips = getCelesteModZips()
     gameplayPath = joinpath("Graphics", "Atlases", "Gameplay")
 
     for target in targetFolders
@@ -64,7 +116,7 @@ function findExternalSprites()
         if isdir(path)
             for (root, dir, files) in walkdir(path)
                 for file in files
-                    if splitext(file)[2] == ".png"
+                    if hasExt(file, ".png")
                         rawpath = joinpath(root, file)
                         push!(res, (relpath(rawpath, path), rawpath))
                     end
@@ -73,11 +125,28 @@ function findExternalSprites()
         end
     end
 
+    for target in targetZips
+        zipfh = ZipFile.Reader(target)
+
+        for file in zipfh.files
+            name = file.name
+
+            if startswith(name, gameplayPath)
+                if hasExt(name, ".png")
+                    push!(res, (relpath(name, gameplayPath), target))
+                end
+            end
+        end
+
+        close(zipfh)
+    end
+    
     return res
 end
 
 function findExternalModules(args::String...)
     res = String[]
+
     targetFolders = vcat(
         joinpath.(getCelesteModDirs(), "Ahorn"),
         getAhornModDirs()
@@ -87,7 +156,7 @@ function findExternalModules(args::String...)
         path = joinpath(folder, args...)
         if isdir(path)
             for file in readdir(path)
-                if splitext(file)[2] == ".jl"
+                if hasExt(file, ".jl")
                     push!(res, joinpath(path, file))
                 end
             end
@@ -95,4 +164,35 @@ function findExternalModules(args::String...)
     end
 
     return res
+end
+
+function loadExternalModules!(loadedModules::Dict{String, Module}, loadedNames::Array{String, 1}, args::String...)
+    path = joinpath("Ahorn", args...)
+
+    targets = vcat(
+        getCelesteModZips(),
+        getAhornModZips()
+    )
+
+    for target in targets
+        zipfh = ZipFile.Reader(target)
+
+        for file in zipfh.files
+            name = file.name
+
+            if startswith(name, path) && file.uncompressedsize > 0
+                # Add .from_zip to the filename
+                # Prevents hotswaping from trying to access invalid file
+                fakeFn = name * ".from_zip"
+
+                loadedModules[fakeFn] = eval(parse(readstring(file)))
+
+                if !(fakeFn in loadedNames)
+                    push!(loadedNames, fakeFn)
+                end
+            end
+        end
+
+        close(zipfh)
+    end
 end

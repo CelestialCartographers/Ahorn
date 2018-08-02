@@ -280,6 +280,7 @@ end
 loadedEntities = joinpath.("entities", readdir(abs"entities"))
 append!(loadedEntities, findExternalModules("entities"))
 loadModule.(loadedEntities)
+loadExternalModules!(loadedModules, loadedEntities, "entities")
 
 entityPlacements = Dict{String, EntityPlacement}()
 registerPlacements!(entityPlacements, loadedEntities)

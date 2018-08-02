@@ -3,15 +3,7 @@ module Bumper
 placements = Dict{String, Main.EntityPlacement}(
     "Bumper" => Main.EntityPlacement(
         Main.Maple.Bumper
-    ),
-    "Bumper (Moving)" => Main.EntityPlacement(
-        Main.Maple.Bumper,
-        "point",
-        Dict{String, Any}(),
-        function(entity)
-            entity.data["nodes"] = [(Int(entity.data["x"]) + 24, Int(entity.data["y"]))]
-        end
-    ),
+    )
 )
 
 function nodeLimits(entity::Main.Maple.Entity)

@@ -3,6 +3,8 @@ include("brush.jl")
 loadedTools = joinpath.("tools", readdir(abs"tools"))
 append!(loadedTools, findExternalModules("tools"))
 loadModule.(loadedTools)
+loadExternalModules!(loadedModules, loadedTools, "tools")
+
 currentTool = nothing
 
 function getToolName(tool::String)

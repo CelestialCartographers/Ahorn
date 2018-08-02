@@ -1,13 +1,10 @@
 module Bonfire
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Bonfire ($(titlecase(mode)))" => Main.EntityPlacement(
+    "Bonfire" => Main.EntityPlacement(
         Main.Maple.Bonfire,
-        "point",
-        Dict{String, Any}(
-            "mode" => mode,
-        )
-    ) for mode in Main.Maple.bonfire_modes
+        "point"
+    )
 )
 
 function editingOptions(entity::Main.Maple.Entity)

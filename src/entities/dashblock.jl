@@ -1,24 +1,13 @@
 module DashBlock
 
-placements = Dict{String, Main.EntityPlacement}()
-
-for permanent in false:true, blendIn in false:true, canDash in false:true
-    keySegments = String[]
-    permanent && push!(keySegments, "Permanent")
-    blendIn && push!(keySegments, "Blend")
-    canDash && push!(keySegments, "Breakable")
-    key = "Dash Block" * (!isempty(keySegments)? " (" * join(keySegments, ", ") * ")" : "")
-    placements[key] = Main.EntityPlacement(
+placements = Dict{String, Main.EntityPlacement}(
+    "Dash Block" => Main.EntityPlacement(
         Main.Maple.DashBlock,
         "rectangle",
-        Dict{String, Any}(
-            "blendin" => blendIn,
-            "permanent" => permanent,
-            "canDash" => canDash
-        ),
+        Dict{String, Any}(),
         Main.tileEntityFinalizer
     )
-end
+)
 
 function editingOptions(entity::Main.Maple.Entity)
     if entity.name == "dashBlock"

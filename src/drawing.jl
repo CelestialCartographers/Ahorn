@@ -1,18 +1,49 @@
 include("extract_sprites_meta.jl")
 
 sprites = loadSprites(joinpath(storageDirectory, "Gameplay.meta"), joinpath(storageDirectory, "Gameplay.png"))
-MOD_CONTENT_GAMEPLAY = joinpath(config["celeste_dir"], "ModContent", "Graphics", "Atlases", "Gameplay")
 
 drawingAlpha = 1
 
 fileNotFoundSurface = CairoARGBSurface(0, 0)
 
-function addSprite!(resource::String, filename::String="")
+function getSpriteSurface(resource::String, filename::String)
     # If we have a filename use that, otherwise look for the resource    
-    filename = filename == ""? findExternalSprite(resource) : filename
+    filename = isempty(filename)? findExternalSprite(resource) : filename
     filename = isa(filename, String)? filename : ""
 
-    surface = isfile(filename)? open(Cairo.read_from_png, filename) : fileNotFoundSurface
+    path, ext = splitext(filename)
+
+    if isfile(filename)
+        if ext == ".png"
+            return open(Cairo.read_from_png, filename), filename
+
+        elseif ext == ".zip"
+            res = fileNotFoundSurface
+            zipfh = ZipFile.Reader(filename)
+
+            # Cheaper to fix resource name than every filename from zip
+            resourcePath = joinpath("Graphics", "Atlases", "Gameplay", splitext(resource)[1] * ".png")
+
+            for file in zipfh.files
+                if file.name == resourcePath
+                    res = Cairo.read_from_png(file)
+
+                    break
+                end
+            end
+            
+            close(zipfh)
+
+            return res, filename
+        end
+
+    else
+        return fileNotFoundSurface, filename
+    end
+end
+
+function addSprite!(resource::String, filename::String="")
+    surface, filename = getSpriteSurface(resource, filename)
     sprites[resource] = Sprite(
         0,
         0,
@@ -25,7 +56,8 @@ function addSprite!(resource::String, filename::String="")
         Int(width(surface)),
         Int(height(surface)),
 
-        surface
+        surface,
+        filename
     )
 end
 

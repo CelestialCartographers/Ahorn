@@ -1,6 +1,13 @@
 loadedModules = Dict{String, Module}()
 
 function loadModule(fn::String)
+    # Explicit check for .jl extensions
+    # Modules from zip will have .jl.from_zip to prevent loading via this method
+    
+    if !hasExt(fn, ".jl")
+        return false
+    end
+
     try
         loadedModules[fn] = include(fn)
 
@@ -13,7 +20,6 @@ function loadModule(fn::String)
         return false
     end
 end
-
 
 hasModuleField(modul::Module, funcname::String) = isdefined(modul, Symbol(funcname))
 hasModuleField(modul::String, funcname::String) = isdefined(loadedModules[modul], Symbol(funcname))

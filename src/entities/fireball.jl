@@ -8,29 +8,11 @@ function fireballFinalizer(entity::Main.Maple.Entity)
 end
 
 placements = Dict{String, Main.EntityPlacement}(
-    "Fireball (1)" => Main.EntityPlacement(
-        Main.Maple.FireBall,
-        "point",
-        Dict{String, Any}(
-            "amount" => 1
-        ),
-        fireballFinalizer
-    ),
-
-    "Fireball (3)" => Main.EntityPlacement(
+    "Fireball" => Main.EntityPlacement(
         Main.Maple.FireBall,
         "point",
         Dict{String, Any}(
             "amount" => 3
-        ),
-        fireballFinalizer
-    ),
-
-    "Fireball (5)" => Main.EntityPlacement(
-        Main.Maple.FireBall,
-        "point",
-        Dict{String, Any}(
-            "amount" => 5
         ),
         fireballFinalizer
     )

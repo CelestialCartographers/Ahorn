@@ -18,6 +18,17 @@ end
     Gtk.GLib.@sigatom setproperty!(widget, :text, "")
 end
 
+function handleFilterKeyPressed(event::Gtk.GdkEventKey)
+    if event.keyval == Gtk.GdkKeySyms.Return || event.keyval == Gtk.GdkKeySyms.Escape
+        # Can't focus the canvas
+        GAccessor.focus(window, scrollableWindowMaterialList)
+
+        return true
+    end
+
+    return false
+end
+
 function focusFilterEntry!(args...)
     GAccessor.focus(window, materialFilterEntry)
 end

@@ -39,6 +39,7 @@ function drawPlacements(layer::Main.Layer, room::Main.Room)
 
         elseif Main.layerName(targetLayer) == "triggers"
             Main.renderTrigger(ctx, toolsLayer, previewGhost, room, alpha=Main.colors.ghost_preplacement_alpha)
+            Main.renderTriggerSelection(ctx, toolsLayer, previewGhost, room, alpha=Main.colors.ghost_preplacement_alpha)
 
         elseif Main.layerName(targetLayer) == "fgDecals" || Main.layerName(targetLayer) == "bgDecals"
             Main.drawDecal(ctx, previewGhost, alpha=Main.colors.ghost_preplacement_alpha)
@@ -216,9 +217,17 @@ function middleClickAbs(x::Number, y::Number)
 
         elseif name == "entities" || name == "triggers"
             func = name == "entities"? Main.Maple.Entity : Main.Maple.Trigger
+            horizontal, vertical = Main.canResize(target)
+
+            placementType = horizontal || vertical? "rectangle" : "point"
+
+            # Fake a entity/trigger of the target
+            # Copy all allowed attributes and store a fake (x, y) position for offseting nodes properly
+            # If the entity/trigger is resizeable use "rectangle" placement rather than "point"
+
             global material = Main.EntityPlacement(
                 (x, y) -> func(target.name, x=x, y=y),
-                "point",
+                placementType,
                 merge(
                     Dict{String, Any}((k, v) for (k, v) in deepcopy(target.data) if !(k in blacklistedCloneAttrs)),
                     Dict{String, Any}("__x" => target.data["x"], "__y" => target.data["y"])

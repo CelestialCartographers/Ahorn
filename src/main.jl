@@ -11,6 +11,7 @@ end
 using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Cairo
 using Maple
+using ZipFile
 
 macro abs_str(path)
     :($(normpath(joinpath(@__DIR__, path))))
@@ -92,6 +93,7 @@ include("room_window.jl")
 include("about_window.jl")
 include("map_window.jl")
 include("styleground_window.jl")
+include("metadata_window.jl")
 include("update_window.jl")
 include("exit_window.jl")
 include("everest_rcon.jl")
@@ -228,6 +230,7 @@ menubarItems = [
     ],
     [
         ("Stylegrounds", StylegroundWindow.editStylegrounds),
+        ("Metadata", MetadataWindow.configureMetadata),
         ("Save Map Image", MapImageDumper.dumpMapImageDialog)
     ],
     [
@@ -282,7 +285,7 @@ end
 # Select the specified room or the first one
 if loadedState.room !== nothing
     select!(roomList, r -> r[1] == loadedState.roomName)
-    setproperty!(window, :title, "$baseTitle - $(loadedState.map.package)")
+    setproperty!(window, :title, "$baseTitle - $(Maple.getSideName(loadedState.side))")
 
 else
     select!(roomList)

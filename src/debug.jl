@@ -17,6 +17,7 @@ end
 
 function reloadTools!()
     Main.loadModule.(Main.loadedTools)
+    Main.loadExternalModules!(Main.loadedModules, Main.loadedTools, "tools")
     Main.changeTool!(Main.loadedTools[1])
     Main.select!(Main.roomList, row -> row[1] == Main.loadedState.roomName)
 
@@ -27,6 +28,7 @@ function reloadEntities!()
     dr = Main.getDrawableRoom(Main.loadedState.map, Main.loadedState.room)
 
     Main.loadModule.(Main.loadedEntities)
+    Main.loadExternalModules!(Main.loadedModules, Main.loadedEntities, "entities")
     Main.registerPlacements!(Main.entityPlacements, Main.loadedEntities)
 
     Main.getLayerByName(dr.layers, "entities").redraw = true
@@ -41,6 +43,7 @@ function reloadTriggers!()
     dr = Main.getDrawableRoom(Main.loadedState.map, Main.loadedState.room)
 
     Main.loadModule.(Main.loadedTriggers)
+    Main.loadExternalModules!(Main.loadedModules, Main.loadedTriggers, "triggers")
     Main.registerPlacements!(Main.triggerPlacements, Main.loadedTriggers)
 
     Main.getLayerByName(dr.layers, "triggers").redraw = true

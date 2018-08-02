@@ -7,15 +7,16 @@ placements = Dict{String, Main.EntityPlacement}(
         Dict{String, Any}(
             "clockwise" => true
         )
-    ),
-    "Slider" => Main.EntityPlacement(
-        Main.Maple.Slider,
-        "point",
-        Dict{String, Any}(
-            "clockwise" => false
-        )
-    ),
+    )
 )
+
+function editingOptions(entity::Main.Maple.Entity)
+    if entity.name == "slider"
+        return true, Dict{String, Any}(
+            "surface" => Main.Maple.slider_surfaces
+        )
+    end
+end
 
 function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
     if entity.name == "slider"

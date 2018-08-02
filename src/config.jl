@@ -18,14 +18,32 @@ function saveConfig(c::Config, force::Bool=true)
             mkdir(path)
         end
 
-        open(c.fn, "w") do fh
+        # Save to $fn.saving first, then delete fn and move the temp file
+        # Prevents corruption of data if program is terminated while writing
+        open(c.fn * ".saving", "w") do fh
             c.mtime = time()
             JSON.print(fh, c.data, 4)
         end
+
+        mv(c.fn * ".saving", c.fn, remove_destination=true)
     end
 end
 
 function loadConfig(fn::String, buffertime::Number=0, default::Dict{K, V}=Dict{Any, Any}()) where {K, V}
+    tempFn = fn * ".saving"
+
+    # Program terminated before the config was moved
+    # Temp file has correct data
+    if !isfile(fn) && isfile(tempFn)
+        mv(tempFn, fn)
+    end
+
+    # Delete any left over temp files
+    # Program was terminated while config was saved
+    if isfile(tempFn)
+        rm(tempFn)
+    end
+
     if isfile(fn)
         return Config(fn, open(JSON.parse, fn))
 

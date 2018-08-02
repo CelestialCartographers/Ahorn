@@ -11,6 +11,7 @@ struct Sprite
     realHeight::Integer
 
     surface::Cairo.CairoSurface
+    filename::String
 end
 
 function loadSprites(metaFn::String, spritesFn::String)
@@ -44,7 +45,8 @@ function loadSprites(metaFn::String, spritesFn::String)
                 read(fh, Int16),
                 read(fh, Int16),
 
-                surface
+                surface,
+                spritesFn
             )
         end
     end

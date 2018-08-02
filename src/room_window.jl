@@ -6,7 +6,7 @@ using Maple
 roomWindow = nothing
 templateRoom = Maple.Room(name="1")
 
-currentRoom = ""
+currentRoom = nothing
 
 songList = collect(keys(Maple.Songs.songs))
 windPatterns = Maple.windpatterns
@@ -175,13 +175,13 @@ function markForRedraw(room::Maple.Room, map::Maple.Map)
 end
 
 function updateRoomHandler(widget)
-    success, reason = updateRoomFromFields!(Main.loadedState.map, Main.loadedState.room, true)
+    success, reason = updateRoomFromFields!(Main.loadedState.map, currentRoom, true)
 
     if success
-        Maple.updateTileSize!(Main.loadedState.room, Maple.tile_fg_names["Air"], Maple.tile_fg_names["Stone"])
+        Maple.updateTileSize!(currentRoom, Maple.tile_fg_names["Air"], Maple.tile_fg_names["Stone"])
 
-        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedState.map), row -> row[1] == Main.loadedState.room.name)
-        markForRedraw(Main.loadedState.room, Main.loadedState.map)
+        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedState.map), row -> row[1] == currentRoom.name)
+        markForRedraw(currentRoom, Main.loadedState.map)
         draw(Main.canvas)
 
         showRoomWindow()
@@ -238,8 +238,8 @@ function configureRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
     if Main.loadedState.map != nothing && Main.loadedState.room != nothing
         spawnWindowIfAbsent!()
 
-        global currentRoom = Main.loadedState.room.name
-        setproperty!(roomWindow, :title, "$(Main.baseTitle) - $(currentRoom)")
+        global currentRoom = Main.loadedState.room
+        setproperty!(roomWindow, :title, "$(Main.baseTitle) - $(currentRoom.name)")
 
         signal_handler_disconnect(roomCreationButton, roomButtonSignal)
         setproperty!(roomCreationButton, :label, "Update Room")
@@ -252,13 +252,13 @@ function configureRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
 end
 
 function roomNameValidator(s::String)
-    if Main.loadedState.map === nothing
+    if Main.loadedState.map === nothing || currentRoom === nothing
         return false
     end
 
     room = Maple.getRoomByName(Main.loadedState.map, s)
 
-    return s != "" && (s == currentRoom || !isa(room, Main.Maple.Room))
+    return s != "" && (s == currentRoom.name || !isa(room, Main.Maple.Room))
 end
 
 # Create all the Gtk widgets
@@ -288,22 +288,14 @@ windPatternCombo = ComboBoxText()
 initCombolBox!(musicCombo, songList)
 initCombolBox!(windPatternCombo, windPatterns)
 
-roomLabel = Label("Room Name")
-widthLabel = Label("Width")
-heightLabel = Label("Height")
-posXLabel = Label("X")
-posYLabel = Label("Y")
+roomLabel = Label("Room Name", xalign=0.0, margin_start=8)
+widthLabel = Label("Width", xalign=0.0, margin_start=8)
+heightLabel = Label("Height", xalign=0.0, margin_start=8)
+posXLabel = Label("X", xalign=0.0, margin_start=8)
+posYLabel = Label("Y", xalign=0.0, margin_start=8)
 
-windPatternLabel = Label("Wind Pattern")
-musicLabel = Label("Music")
-
-setproperty!(roomLabel, :xalign, 0.1)
-setproperty!(widthLabel, :xalign, 0.1)
-setproperty!(heightLabel, :xalign, 0.1)
-setproperty!(posXLabel, :xalign, 0.1)
-setproperty!(posYLabel, :xalign, 0.1)
-setproperty!(windPatternLabel, :xalign, 0.1)
-setproperty!(musicLabel, :xalign, 0.1)
+windPatternLabel = Label("Wind Pattern", xalign=0.0, margin_start=8)
+musicLabel = Label("Music", xalign=0.0, margin_start=8)
 
 roomCreationButton = Button("Create Room")
 

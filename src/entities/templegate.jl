@@ -1,22 +1,47 @@
 module TempleGate
 
-placements = Dict{String, Main.EntityPlacement}()
+placements = Dict{String, Main.EntityPlacement}(
+    "Temple Gate (Theo, Holding Theo)" => Main.EntityPlacement(
+        Main.Maple.TempleGate,
+        "point",
+        Dict{String, Any}(
+            "sprite" => "theo",
+            "type" => "HoldingTheo"
+        )
+    ),
+
+    "Temple Gate (Default, Close Behind)" => Main.EntityPlacement(
+        Main.Maple.TempleGate,
+        "point",
+        Dict{String, Any}(
+            "sprite" => "default",
+            "type" => "CloseBehindPlayer",
+        )
+    ),
+    "Temple Gate (Default, Close Behind)" => Main.EntityPlacement(
+        Main.Maple.TempleGate,
+        "point",
+        Dict{String, Any}(
+            "sprite" => "mirror",
+            "type" => "CloseBehindPlayer",
+        )
+    ),
+)
 
 textures = ["default", "mirror", "theo"]
 modes = Main.Maple.temple_gate_modes
 
+# One per texture of NearestSwitch
 for texture in textures
-    for mode in modes
-        key = "Temple Gate ($(titlecase(texture)), $mode)"
-        placements[key] = Main.EntityPlacement(
-            Main.Maple.TempleGate,
-            "point",
-            Dict{String, Any}(
-                "sprite" => texture,
-                "type" => mode
-            )
+    key = "Temple Gate ($(titlecase(texture)), Nearest Switch)"
+    placements[key] = Main.EntityPlacement(
+        Main.Maple.TempleGate,
+        "point",
+        Dict{String, Any}(
+            "sprite" => texture,
+            "type" => "NearestSwitch"
         )
-    end
+    )
 end
 
 function editingOptions(entity::Main.Maple.Entity)

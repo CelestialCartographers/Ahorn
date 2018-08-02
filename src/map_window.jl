@@ -1,6 +1,3 @@
-using Gtk, Gtk.ShortNames
-using Maple
-
 function createNewMap(widget)
     button, name = input_dialog("Enter package name for new map", "11-Example", (("Cancel", 0), ("Create Map", 1)), window)
 
@@ -10,6 +7,11 @@ function createNewMap(widget)
         loadedState.room = nothing
 
         loadedState.map = Map(name)
+        loadedState.side = Side(loadedState.map, Dict{String, Any}(
+            "meta" => Dict{String, Any}(
+                "Name" => name
+            )
+        ))
         
         updateTreeView!(roomList, getTreeData(loadedState.map))
         

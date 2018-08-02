@@ -30,8 +30,32 @@ function setEntryText!(entry::Gtk.GtkEntryLeaf, value::Any; updatePlaceholder::B
     end
 end
 
+function hasExt(fn::String, ext::String, ignorecase::Bool=true)
+    path, fnext = splitext(fn)
+
+    if ignorecase
+        return lowercase(fnext) == lowercase(ext)
+
+    else
+        return fnext == ext
+    end
+end
+
 function humanizeVariableName(s::String) 
     text = replace(s, "_", " ")
 
-    return titlecase(join([isupper(c)? " $c" : c for c in text]))
+    prevUpper = false
+    res = Char[]
+    for c in text
+        thisUpper = isupper(c)
+        if thisUpper && !prevUpper
+            push!(res, ' ')
+        end
+
+        prevUpper = thisUpper
+
+        push!(res, c)
+    end
+
+    return titlecase(strip(join(res)))
 end
