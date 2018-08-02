@@ -11,7 +11,6 @@ end
 using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Cairo
 using Maple
-using ZipFile
 
 macro abs_str(path)
     :($(normpath(joinpath(@__DIR__, path))))

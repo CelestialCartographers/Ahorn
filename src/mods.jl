@@ -1,3 +1,14 @@
+zipFilesSupported = true
+try
+    using ZipFile
+
+catch e
+    # Module not installed, not vital for the program
+    # Pkg2 bug, this package might not be installed
+    
+    zipFilesSupported = false
+end
+
 function getAhornModDirs()
     if !get(config, "load_plugins_ahorn", true)
         return String[]
@@ -18,7 +29,7 @@ function getAhornModDirs()
 end
 
 function getAhornModZips()
-    if !get(config, "load_plugins_ahorn_zip", true)
+    if !zipFilesSupported || !get(config, "load_plugins_ahorn_zip", true)
         return String[]
     end
 
@@ -58,7 +69,7 @@ function getCelesteModDirs()
 end
 
 function getCelesteModZips()
-    if !get(config, "load_plugins_celeste_zip", true)
+    if !zipFilesSupported || !get(config, "load_plugins_celeste_zip", true)
         return String[]
     end
 

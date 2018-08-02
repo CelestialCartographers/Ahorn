@@ -6,6 +6,9 @@ function do_ask_dialog(text::String; no::String="Cancel", yes::String="Update")
     if ask_dialog(text, no, yes, Main.window)
         Pkg.update("Maple")
         Pkg.update("Ahorn")
+        # Did you know that Pkg2 resolves the REQUIRE file before updating, and not after?
+        Pkg.update("Maple")
+        Pkg.update("Ahorn")
         exit()
     end
 end
