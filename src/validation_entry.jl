@@ -2,7 +2,7 @@ guessValidationFunction(v::Number) = isNumber
 guessValidationFunction(v::Any) = (v) -> true
 
 validationPassedIcon = ""
-validationFailedIcon = "edit-delete"
+validationFailedIcon = "edit-delete-symbolic"
 
 function ValidationEntry(value::Any, validation::Function=guessValidationFunction(value), placeholder::String=string(value); setPlaceholder::Bool=true)
     text = string(value)
@@ -13,13 +13,13 @@ function ValidationEntry(value::Any, validation::Function=guessValidationFunctio
     end
 
     icon = validation(text)? validationPassedIcon : validationFailedIcon
-    setproperty!(entry, :primary_icon_name, icon)
+    setproperty!(entry, :secondary_icon_name, icon)
 
     @guarded signal_connect(entry, "changed") do widget
         text = getproperty(widget, :text, String)
         icon = validation(text)? validationPassedIcon : validationFailedIcon
 
-        setproperty!(widget, :primary_icon_name, icon)
+        setproperty!(widget, :secondary_icon_name, icon)
     end
 
     return entry

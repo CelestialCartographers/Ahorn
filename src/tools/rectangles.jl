@@ -97,6 +97,16 @@ function layersChanged(layers::Array{Main.Layer, 1})
     global targetLayer = Main.selectLayer!(layers, wantedLayer, "fgTiles")
 end
 
+function leftClick(x::Number, y::Number)
+    roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
+    applyRectangle!(selection, roomTiles, material, filled)
+
+    global selection = nothing
+
+    Main.redrawLayer!(toolsLayer)
+    Main.redrawLayer!(targetLayer)
+end
+
 function middleClick(x::Number, y::Number)
     tiles = Main.roomTiles(targetLayer, Main.loadedState.room)
     tileNames = Main.tileNames(targetLayer)
@@ -106,6 +116,19 @@ function middleClick(x::Number, y::Number)
     layerName = Main.layerName(targetLayer)
     Main.persistence["brushes_material_$(layerName)"] = material
     Main.selectMaterialList!(tileNames[target])
+end
+
+function mouseMotion(x::Number, y::Number)
+    # Only make a preview square if we aren't dragging
+    if !Main.mouseButtonHeld(0x1)
+        newRect = Main.Rectangle(x, y, 1, 1)
+        
+        if newRect != selection
+            global selection = newRect
+    
+            Main.redrawLayer!(toolsLayer)
+        end
+    end
 end
 
 function selectionMotion(rect::Main.Rectangle)

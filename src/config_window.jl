@@ -107,6 +107,10 @@ function addOptions!(window::Gtk.GtkWindowLeaf, grid::Gtk.GtkGridLeaf, options::
             scrollableWindow = ScrolledWindow(vexpand=true, hscrollbar_policy=Gtk.GtkPolicyType.NEVER)
             push!(scrollableWindow, container.tree)
 
+            if !isempty(data)
+                select!(container, 1)
+            end
+
             if option.editable
                 addButton = Button("Add row")
                 removeButton = Button("Delete row")

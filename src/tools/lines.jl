@@ -84,6 +84,16 @@ function layersChanged(layers::Array{Main.Layer, 1})
     global targetLayer = Main.selectLayer!(layers, wantedLayer, "fgTiles")
 end
 
+function leftClick(x::Number, y::Number)
+    roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
+    applyLine!(line, roomTiles, material)
+
+    global line = nothing
+
+    Main.redrawLayer!(toolsLayer)
+    Main.redrawLayer!(targetLayer)
+end
+
 function middleClick(x::Number, y::Number)
     tiles = Main.roomTiles(targetLayer, Main.loadedState.room)
     tileNames = Main.tileNames(targetLayer)
@@ -93,6 +103,19 @@ function middleClick(x::Number, y::Number)
     layerName = Main.layerName(targetLayer)
     Main.persistence["brushes_material_$(layerName)"] = material
     Main.selectMaterialList!(tileNames[target])
+end
+
+function mouseMotion(x::Number, y::Number)
+    # Only make a preview square if we aren't dragging
+    if !Main.mouseButtonHeld(0x1)
+        newLine = Main.Line(x, y, x, y)
+        
+        if newLine != line
+            global line = newLine
+    
+            Main.redrawLayer!(toolsLayer)
+        end
+    end
 end
 
 function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)

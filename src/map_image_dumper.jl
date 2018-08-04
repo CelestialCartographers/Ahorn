@@ -74,7 +74,7 @@ function dumpMapImageDialog(w)
             warn_dialog("Not enough memory to save image.", Main.window)
         end
 
-        fn = hasExt(filename, ".png")? filename : filename * ".png"
+        fn = Main.hasExt(filename, ".png")? filename : filename * ".png"
         open(io -> write_to_png(surface, io), fn, "w")
 
         Cairo.destroy(ctx)

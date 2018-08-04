@@ -52,7 +52,7 @@ function reloadTriggers!()
     return true
 end
 
-function redrawAllRooms!(map::Main.Maple.Map=Main.loadedState.map)
+function clearMapDrawingCache!(map::Main.Maple.Map=Main.loadedState.map)
     # Make sure to destroy all surfaces properly
     rooms = Main.getDrawableRooms(map)
     for room in rooms
@@ -64,6 +64,18 @@ function redrawAllRooms!(map::Main.Maple.Map=Main.loadedState.map)
     Main.draw(Main.canvas)
 
     return true
+end
+
+function forceDrawWholeMap!(map::Main.Maple.Map=Main.loadedState.map)
+    ctx = Main.Gtk.getgc(Main.canvas)
+
+    for room in map.rooms
+        dr = Main.getDrawableRoom(map, room)
+
+        Main.drawRoom(ctx, Main.camera, dr, alpha=1.0)
+    end
+
+    Main.draw(Main.canvas)
 end
 
 end

@@ -189,11 +189,23 @@ function subToolSelected(list::Main.ListContainer, selected::String)
 end
 
 function keyboard(event::Main.eventKey)
+    shouldRedraw = false
+
     if event.keyval == Main.keyval("l")
         selectedBrush.rotation = mod(selectedBrush.rotation + 1, 4)
 
+        shouldRedraw |= true
+
     elseif event.keyval == Main.keyval("r")
         selectedBrush.rotation = mod(selectedBrush.rotation - 1, 4)
+
+        shouldRedraw |= true
+    end
+
+    if shouldRedraw && hoveringBrush !== nothing
+        global hoveringBrush = (hoveringBrush[1], hoveringBrush[2], deepcopy(selectedBrush))
+
+        Main.redrawLayer!(toolsLayer)
     end
 end
 

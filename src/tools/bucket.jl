@@ -54,19 +54,20 @@ end
 function drawBucket(layer::Main.Layer, room::Main.Room)
     if bucketPosition != nothing
         x, y = bucketPosition
-
         tiles = Main.roomTiles(targetLayer, room)
+
         drawFill(x, y, tiles, layer)
     end
 end
 
 function applyFill!(x::Number, y::Number, layer::Main.Layer, material::Char)
-    layer = Main.layerName(targetLayer)
-    Main.History.addSnapshot!(Main.History.RoomSnapshot("Bucket ($material)", Main.loadedState.room))
+    if bucketBrush !== nothing
+        Main.History.addSnapshot!(Main.History.RoomSnapshot("Bucket ($material)", Main.loadedState.room))
 
-    tiles = layer == "fgTiles"? Main.loadedState.room.fgTiles : Main.loadedState.room.bgTiles
+        tiles = Main.roomTiles(layer, Main.loadedState.room)
 
-    Main.applyBrush!(bucketBrush, tiles, material, 1, 1)
+        Main.applyBrush!(bucketBrush, tiles, material, 1, 1)
+    end
 end
 
 function cleanup()
@@ -120,10 +121,17 @@ function layersChanged(layers::Array{Main.Layer, 1})
 end
 
 function mouseMotion(x::Number, y::Number)
+    tiles = Main.roomTiles(targetLayer, Main.loadedState.room)
+    h, w = size(tiles.data)
+
     if bucketBrush === nothing || !get(bucketBrush.pixels, (y - bucketBrush.offset[2] + 1, x - bucketBrush.offset[1] + 1), false)
         global bucketPosition = (x, y)
 
         Main.redrawLayer!(toolsLayer)
+    end
+
+    if x < 1 || x > w || y < 1 || y > h
+        global bucketBrush = nothing
     end
 end
 

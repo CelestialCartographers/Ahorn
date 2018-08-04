@@ -16,5 +16,7 @@ function createNewMap(widget)
         updateTreeView!(roomList, getTreeData(loadedState.map))
         
         setproperty!(window, :title, "$baseTitle - $name")
+
+        draw(canvas)
     end
 end

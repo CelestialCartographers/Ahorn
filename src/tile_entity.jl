@@ -16,8 +16,16 @@ function createFakeTiles(room::Maple.Room, x::Integer, y::Integer, width::Intege
     return fakeTiles
 end
 
+function materialTileTypeKey(entity::Maple.Entity)
+    if entity.name == "exitBlock" || entity.name == "conditionBlock"
+        return "tileType"
+
+    else
+        return "tiletype"
+    end
+end
+
 # Not the most efficient, but renders correctly
-# exitBlock for some reason is named differently than its 4 other siblings
 function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple.Entity; material::Union{Char, Void}=nothing, alpha::Number=getGlobalAlpha(), blendIn::Bool=false)
     x = Int(get(entity.data, "x", 0))
     y = Int(get(entity.data, "y", 0))
@@ -28,7 +36,7 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
     blendIn = get(entity.data, "blendin", blendIn)
 
     if material === nothing
-        key = entity.name == "exitBlock"? "tileType" : "tiletype"
+        key = materialTileTypeKey(entity)
         tile = get(entity.data, key, "3")
         material = isa(tile, Number)? string(tile) : tile
     end
@@ -77,9 +85,9 @@ function drawFakeTiles(ctx::Cairo.CairoContext, room::Maple.Room, tiles::Array{C
 end
 
 function tileEntityFinalizer(entity::Maple.Entity)
-    key = entity.name == "exitBlock"? "tileType" : "tiletype"
+    key = materialTileTypeKey(entity)
     defaultTile = string(Main.Maple.tile_fg_names["Snow"])
     tile = string(get(Main.persistence, "brushes_material_fgTiles", defaultTile))
-    tile = tile == "0"? defaultTile : tile
+    tile = tile[1] in Maple.tile_entity_legal_tiles? tile : defaultTile
     entity.data[key] = tile
 end

@@ -8,6 +8,12 @@ if !isdefined(:TEST_RUNNING)
     end
 end
 
+# Fixes theme issues on Windows
+if is_windows()
+    ENV["GTK_THEME"] = get(ENV, "GTK_THEME", "win32")
+    ENV["GTK_CSD"] = get(ENV, "GTK_CSD", "0")
+end
+
 using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Cairo
 using Maple
@@ -125,7 +131,8 @@ add_events(canvas,
     GConstants.GdkEventMask.BUTTON_PRESS |
     GConstants.GdkEventMask.BUTTON_RELEASE |
     GConstants.GdkEventMask.BUTTON1_MOTION |
-    GConstants.GdkEventMask.BUTTON3_MOTION
+    GConstants.GdkEventMask.BUTTON3_MOTION |
+    GConstants.GdkEventMask.LEAVE_NOTIFY
 )
 
 signal_connect(ExitWindow.exitAhorn, window, "delete_event")
@@ -149,6 +156,7 @@ signal_connect(scroll_event, canvas, "scroll-event")
 signal_connect(motion_notify_event, canvas, "motion-notify-event")
 signal_connect(button_press_event, canvas, "button-press-event")
 signal_connect(button_release_event, canvas, "button-release-event")
+signal_connect(leave_notify_event, canvas, "leave-notify-event")
 
 hotkeys = Hotkey[
     Hotkey(
@@ -249,7 +257,8 @@ if get(debug.config, "DEBUG_MENU_DROPDOWN", false)
         ("Reload Entities", (w) -> debug.reloadEntities!()),
         ("Reload Triggers", (w) -> debug.reloadTriggers!()),
         ("Reload External Sprites", (w) -> loadExternalSprites!()),
-        ("Redraw All Rooms", (w) -> debug.redrawAllRooms!())
+        ("Clear Map Render Cache", (w) -> debug.clearMapDrawingCache!()),
+        ("Force Draw All Rooms", (w) -> debug.forceDrawWholeMap!()),
     ])
 end
 

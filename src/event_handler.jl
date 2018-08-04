@@ -6,7 +6,7 @@ lastSelection = false
 const dragButton = 0x3
 const clickThreshold = 4
 
-eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion}
+eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion, Gtk.GdkEventCrossing}
 eventKey = Gtk.GdkEventKey
 
 mouseHandlers = Dict{Integer, String}(
@@ -146,13 +146,32 @@ function button_release_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventButton)
             handleClicks(event, camera)
 
         elseif buttonActive && event.button == 0x1
-            handleSelectionFinish(buttonEvent, buttonCamera, event)
+            handleSelectionFinish(buttonEvent, buttonCamera, event, camera)
         end
     end
     
     mousePressed[event.button] = (event, false, deepcopy(camera))
 
 	return true
+end
+
+# Manually release all active drags
+# We can't pass the event to button_release_event as that has a few side effects
+function leave_notify_event(canvas::Gtk.GtkCanvas, event::Gtk.GdkEventCrossing)
+    for (button, status) in mousePressed
+        buttonEvent, buttonActive, buttonCamera = status
+
+        if buttonActive
+            if shouldHandle()
+                # As we can't trigger clicks from here, treat all instances as draging
+                if buttonEvent.button == 0x1
+                    handleSelectionFinish(buttonEvent, buttonCamera, event, camera)
+                end
+
+                mousePressed[buttonEvent.button] = (buttonEvent, false, deepcopy(camera))
+            end
+        end
+    end
 end
 
 function key_press_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)

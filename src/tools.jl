@@ -188,14 +188,14 @@ function handleSelectionMotion(start::eventMouse, startCamera::Camera, current::
     eventToModule(currentTool, "selectionMotionAbs", ax1, ay1, ax2, ay2)
 end
 
-function handleSelectionFinish(start::eventMouse, startCamera::Camera, current::eventMouse)
+function handleSelectionFinish(start::eventMouse, startCamera::Camera, current::eventMouse, currentCamera::Camera)
     room = loadedState.room
     
     mx1, my1 = getMapCoordinates(startCamera, start.x, start.y)
-    mx2, my2 = getMapCoordinates(camera, current.x, current.y)
+    mx2, my2 = getMapCoordinates(currentCamera, current.x, current.y)
 
     max1, may1 = getMapCoordinatesAbs(startCamera, start.x, start.y)
-    max2, may2 = getMapCoordinatesAbs(camera, current.x, current.y)
+    max2, may2 = getMapCoordinatesAbs(currentCamera, current.x, current.y)
 
     x1, y1 = mapToRoomCoordinates(mx1, my1, room)
     x2, y2 = mapToRoomCoordinates(mx2, my2, room)
@@ -290,7 +290,7 @@ end
 debugKeys = Dict{Number, Tuple{String, Function}}(
     Gtk.GdkKeySyms.F1 => ("Reloading tools", debug.reloadTools!),
     Gtk.GdkKeySyms.F2 => ("Reloading entities and triggers", () -> debug.reloadEntities!() && debug.reloadTriggers!()),
-    Gtk.GdkKeySyms.F3 => ("Deleting room render caches", debug.redrawAllRooms!),
+    Gtk.GdkKeySyms.F3 => ("Deleting room render caches", debug.clearMapDrawingCache!),
 )
 
 function handleDebugKeys(event::eventKey)
