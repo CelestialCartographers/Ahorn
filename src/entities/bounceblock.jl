@@ -48,22 +48,22 @@ function renderBounceBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, 
     Ahorn.clip(ctx)
 
     for i in 0:ceil(Int, tilesWidth / 6)
-        Ahorn.drawImage(ctx, frame, i * 48 + 8, 0, 8, 0, 48, 8)
+        Ahorn.drawImage(ctx, frameResource, i * 48 + 8, 0, 8, 0, 48, 8)
 
         for j in 0:ceil(Int, tilesHeight / 6)
-            Ahorn.drawImage(ctx, frame, i * 48 + 8, j * 48 + 8, 8, 8, 48, 48)
+            Ahorn.drawImage(ctx, frameResource, i * 48 + 8, j * 48 + 8, 8, 8, 48, 48)
 
-            Ahorn.drawImage(ctx, frame, 0, j * 48 + 8, 0, 8, 8, 48)
-            Ahorn.drawImage(ctx, frame, width - 8, j * 48 + 8, 56, 8, 8, 48)
+            Ahorn.drawImage(ctx, frameResource, 0, j * 48 + 8, 0, 8, 8, 48)
+            Ahorn.drawImage(ctx, frameResource, width - 8, j * 48 + 8, 56, 8, 8, 48)
         end
 
-        Ahorn.drawImage(ctx, frame, i * 48 + 8, height - 8, 8, 56, 48, 8)
+        Ahorn.drawImage(ctx, frameResource, i * 48 + 8, height - 8, 8, 56, 48, 8)
     end
 
-    Ahorn.drawImage(ctx, frame, 0, 0, 0, 0, 8, 8)
-    Ahorn.drawImage(ctx, frame, width - 8, 0, 56, 0, 8, 8)
-    Ahorn.drawImage(ctx, frame, 0, height - 8, 0, 56, 8, 8)
-    Ahorn.drawImage(ctx, frame, width - 8, height - 8, 56, 56, 8, 8)
+    Ahorn.drawImage(ctx, frameResource, 0, 0, 0, 0, 8, 8)
+    Ahorn.drawImage(ctx, frameResource, width - 8, 0, 56, 0, 8, 8)
+    Ahorn.drawImage(ctx, frameResource, 0, height - 8, 0, 56, 8, 8)
+    Ahorn.drawImage(ctx, frameResource, width - 8, height - 8, 56, 56, 8, 8)
     
     Ahorn.drawImage(ctx, crystalSprite, div(width - crystalSprite.width, 2), div(height - crystalSprite.height, 2))
 
