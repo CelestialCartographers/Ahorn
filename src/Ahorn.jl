@@ -1,3 +1,4 @@
+__precompile__(false)
 module Ahorn
 
 using Gtk, Gtk.ShortNames, Gtk.GConstants
