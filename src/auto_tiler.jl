@@ -94,8 +94,8 @@ end
 
 TilerMeta(s::String) = TilerMeta(loadTilesetXML(s)...)
 
-fgTilerMeta = TilerMeta(joinpath(storageDirectory, "ForegroundTiles.xml"))
-bgTilerMeta = TilerMeta(joinpath(storageDirectory, "BackgroundTiles.xml"))
+fgTilerMeta = nothing
+bgTilerMeta = nothing
 
 function getTile(tiles::Tiles, x::Integer, y::Integer)
     return get(tiles.data, (y, x), ' ')

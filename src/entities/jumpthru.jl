@@ -1,9 +1,11 @@
 module JumpThru
 
+using ..Ahorn, Maple
+
 textures = ["wood", "dream", "temple", "core"]
-placements = Dict{String, Main.EntityPlacement}(
-    "Platform ($(titlecase(texture)))" => Main.EntityPlacement(
-        Main.Maple.JumpThru,
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Platform ($(titlecase(texture)))" => Ahorn.EntityPlacement(
+        Maple.JumpThru,
         "rectangle",
         Dict{String, Any}(
             "texture" => texture
@@ -16,7 +18,7 @@ quads = Tuple{Integer, Integer, Integer, Integer}[
     (0, 8, 8, 5) (8, 8, 8, 5) (16, 8, 8, 5)
 ]
 
-function editingOptions(entity::Main.Maple.Entity)
+function editingOptions(entity::Maple.Entity)
     if entity.name == "jumpThru"
         return true, Dict{String, Any}(
             "texture" => textures
@@ -24,29 +26,29 @@ function editingOptions(entity::Main.Maple.Entity)
     end
 end
 
-function minimumSize(entity::Main.Maple.Entity)
+function minimumSize(entity::Maple.Entity)
     if entity.name == "jumpThru"
         return true, 8, 0
     end
 end
 
-function resizable(entity::Main.Maple.Entity)
+function resizable(entity::Maple.Entity)
     if entity.name == "jumpThru"
         return true, true, false
     end
 end
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "jumpThru"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
         width = Int(get(entity.data, "width", 8))
 
-        return true, Main.Rectangle(x, y, width, 8)
+        return true, Ahorn.Rectangle(x, y, width, 8)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "jumpThru"
         texture = get(entity.data, "texture", "wood")
         texture = texture == "default"? "wood" : texture
@@ -75,7 +77,7 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
             end
 
             quad = quads[2 - connected, qx]
-            Main.drawImage(ctx, "objects/jumpthru/$(texture)", 8 * i, 0, quad...)
+            Ahorn.drawImage(ctx, "objects/jumpthru/$(texture)", 8 * i, 0, quad...)
         end
 
         return true

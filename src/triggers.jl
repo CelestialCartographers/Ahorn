@@ -25,7 +25,7 @@ function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::
     for node in nodes
         nx, ny = Int.(node)
 
-        Main.drawArrow(ctx, x + offsetCenterX, y + offsetCenterY, nx + offsetCenterX, ny + offsetCenterY, Main.colors.selection_selected_fc, headLength=6)
+        drawArrow(ctx, x + offsetCenterX, y + offsetCenterY, nx + offsetCenterX, ny + offsetCenterY, colors.selection_selected_fc, headLength=6)
 
         Cairo.save(ctx)
 
@@ -39,7 +39,7 @@ function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::
     end
 end
 
-function minimumSize(trigger::Main.Maple.Trigger)
+function minimumSize(trigger::Maple.Trigger)
     if get(debug.config, "IGNORE_MINIMUM_SIZE", false)
         return 0, 0
     end
@@ -47,8 +47,8 @@ function minimumSize(trigger::Main.Maple.Trigger)
     return 8, 8
 end
 
-function nodeLimits(trigger::Main.Maple.Trigger)
-    selectionRes = Main.eventToModules(Main.loadedTriggers, "nodeLimits", trigger)
+function nodeLimits(trigger::Maple.Trigger)
+    selectionRes = eventToModules(loadedTriggers, "nodeLimits", trigger)
     
     if isa(selectionRes, Tuple)
         success, least, most = selectionRes
@@ -62,7 +62,7 @@ function nodeLimits(trigger::Main.Maple.Trigger)
 end
 
 function editingOptions(trigger::Maple.Trigger)
-    selectionRes = Main.eventToModules(Main.loadedTriggers, "editingOptions", trigger)
+    selectionRes = eventToModules(loadedTriggers, "editingOptions", trigger)
     
     if isa(selectionRes, Tuple)
         success, options = selectionRes
@@ -75,14 +75,10 @@ function editingOptions(trigger::Maple.Trigger)
     return false, Dict{String, Any}()
 end
 
-function canResize(trigger::Main.Maple.Trigger)
+function canResize(trigger::Maple.Trigger)
     return true, true
 end
 
-loadedTriggers = joinpath.("triggers", readdir(abs"triggers"))
-append!(loadedTriggers, findExternalModules("triggers"))
+loadedTriggers = joinpath.(abs"triggers", readdir(abs"triggers"))
 loadModule.(loadedTriggers)
-loadExternalModules!(loadedModules, loadedTriggers, "triggers")
-
 triggerPlacements = Dict{String, EntityPlacement}()
-registerPlacements!(triggerPlacements, loadedTriggers)

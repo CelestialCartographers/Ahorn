@@ -22,7 +22,7 @@ function loadModule(fn::String)
 end
 
 hasModuleField(modul::Module, funcname::String) = isdefined(modul, Symbol(funcname))
-hasModuleField(modul::String, funcname::String) = isdefined(loadedModules[modul], Symbol(funcname))
+hasModuleField(modul::String, funcname::String) = haskey(loadedModules, modul) && isdefined(loadedModules[modul], Symbol(funcname))
 
 getModuleField(modul::Module, funcname::String) = getfield(modul, Symbol(funcname))
 getModuleField(modul::String, funcname::String) = getfield(loadedModules[modul], Symbol(funcname))

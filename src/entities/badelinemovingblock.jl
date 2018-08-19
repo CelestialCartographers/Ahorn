@@ -1,8 +1,10 @@
 module BadelineMovingBlock
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Badeline Boss Moving Block" => Main.EntityPlacement(
-        Main.Maple.BadelineMovingBlock,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Badeline Boss Moving Block" => Ahorn.EntityPlacement(
+        Maple.BadelineMovingBlock,
         "rectangle",
         Dict{String, Any}(),
         function(entity)
@@ -11,39 +13,39 @@ placements = Dict{String, Main.EntityPlacement}(
     )
 )
 
-function nodeLimits(entity::Main.Maple.Entity)
+function nodeLimits(entity::Maple.Entity)
     if entity.name == "finalBossMovingBlock"
         return true, 1, 1
     end
 end
 
-function minimumSize(entity::Main.Maple.Entity)
+function minimumSize(entity::Maple.Entity)
     if entity.name == "finalBossMovingBlock"
         return true, 8, 8
     end
 end
 
-function resizable(entity::Main.Maple.Entity)
+function resizable(entity::Maple.Entity)
     if entity.name == "finalBossMovingBlock"
         return true, true, true
     end
 end
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "finalBossMovingBlock"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
         nx, ny = Int.(entity.data["nodes"][1])
 
         width = Int(get(entity.data, "width", 8))
         height = Int(get(entity.data, "height", 8))
 
-        return true, [Main.Rectangle(x, y, width, height), Main.Rectangle(nx, ny, width, height)]
+        return true, [Ahorn.Rectangle(x, y, width, height), Ahorn.Rectangle(nx, ny, width, height)]
     end
 end
 
-function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "finalBossMovingBlock"
-        Main.drawTileEntity(ctx, room, entity, material='g', blendIn=false)
+        Ahorn.drawTileEntity(ctx, room, entity, material='g', blendIn=false)
 
         return true
     end
@@ -51,9 +53,9 @@ function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room
     return false
 end
 
-function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "finalBossMovingBlock"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
         nodes = get(entity.data, "nodes", ())
 
         width = Int(get(entity.data, "width", 8))
@@ -65,9 +67,9 @@ function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Enti
             cox, coy = floor(Int, width / 2), floor(Int, height / 2)
 
             # Use 'G' instead of 'g', as that is the highlight color of the block (the active color)
-            fakeTiles = Main.createFakeTiles(room, nx, ny, width, height, 'G', blendIn=false)
-            Main.drawFakeTiles(ctx, room, fakeTiles, true, nx, ny, clipEdges=true)
-            Main.drawArrow(ctx, x + cox, y + coy, nx + cox, ny + coy, Main.colors.selection_selected_fc, headLength=6)
+            fakeTiles = Ahorn.createFakeTiles(room, nx, ny, width, height, 'G', blendIn=false)
+            Ahorn.drawFakeTiles(ctx, room, fakeTiles, true, nx, ny, clipEdges=true)
+            Ahorn.drawArrow(ctx, x + cox, y + coy, nx + cox, ny + coy, Ahorn.colors.selection_selected_fc, headLength=6)
         end
     end
 end

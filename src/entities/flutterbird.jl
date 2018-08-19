@@ -1,23 +1,25 @@
 module FlutterBird
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Flutterbird" => Main.EntityPlacement(
-        Main.Maple.Flutterbird
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Flutterbird" => Ahorn.EntityPlacement(
+        Maple.Flutterbird
     ),
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "flutterbird"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 4, y - 8, 8, 8)
+        return true, Ahorn.Rectangle(x - 4, y - 8, 8, 8)
     end
 end
 
 # TODO - Tint later when possible
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "flutterbird"
-        Main.drawSprite(ctx, "scenery/flutterbird/idle00.png", 0, -5)
+        Ahorn.drawSprite(ctx, "scenery/flutterbird/idle00.png", 0, -5)
 
         return true
     end

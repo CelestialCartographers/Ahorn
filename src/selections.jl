@@ -191,8 +191,8 @@ function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}
     return unselected, newlySelected
 end
 
-function fixSelections(room::Maple.Room, selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
-    res = Set{Tuple{String, Main.Rectangle, Any, Number}}()
+function fixSelections(room::Maple.Room, selections::Set{Tuple{String, Rectangle, Any, Number}})
+    res = Set{Tuple{String, Rectangle, Any, Number}}()
 
     for selection in selections
         layer, box, target, node = selection

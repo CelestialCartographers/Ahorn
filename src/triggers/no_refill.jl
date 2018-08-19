@@ -1,15 +1,17 @@
 module NoRefillTrigger
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Refills (Disabled)" => Main.EntityPlacement(
-        Main.Maple.NoRefillTrigger,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Refills (Disabled)" => Ahorn.EntityPlacement(
+        Maple.NoRefillTrigger,
         "rectangle",
         Dict{String, Any}(
             "state" => true
         )
     ),
-    "Refills (Enabled)" => Main.EntityPlacement(
-        Main.Maple.NoRefillTrigger,
+    "Refills (Enabled)" => Ahorn.EntityPlacement(
+        Maple.NoRefillTrigger,
         "rectangle",
         Dict{String, Any}(
             "state" => false

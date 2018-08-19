@@ -1,6 +1,7 @@
 module ConfigWindow
 
 using Gtk, Gtk.ShortNames, Gtk.GConstants
+using ..Ahorn
 
 struct Option{T}
     name::String
@@ -49,39 +50,39 @@ end
 
 function columnEditCallback(store, col, row, value)
     if typeof(store[row, col]) <: Number
-        store[row, col] = Main.parseNumber(value)
+        if Ahorn.isNumber(value)
+            store[row, col] = Ahorn.parseNumber(value)
+        end
 
     else
         store[row, col] = value
     end
 end
 
-function addListRow(container::Main.ListContainer, option::Option, window::Gtk.GtkWindowLeaf)
+function setListButtonSensitivity(container::Ahorn.ListContainer, option::Option, addButton::Gtk.GtkButtonLeaf, removeButton::Gtk.GtkButtonLeaf)
+    minRows, maxRows = option.rowCount
     rows, cols = size(container.store)
 
-    if rows + 1 > option.rowCount[2] && option.rowCount[2] != -1
-        info_dialog("Adding a new row would result in too many rows", window)
+    setproperty!(addButton, :sensitive, rows < maxRows || maxRows == -1)
+    setproperty!(removeButton, :sensitive, rows > minRows)
+end
 
-        return false
-    end
+function addListRow(container::Ahorn.ListContainer, option::Option, window::Gtk.GtkWindowLeaf, addButton::Gtk.GtkButtonLeaf, removeButton::Gtk.GtkButtonLeaf)
+    rows, cols = size(container.store)
 
     push!(container.store, tuple([typ == String? "0" : zero(typ) for typ in eltype(container.data).parameters]...))
     select!(container, rows + 1)
+
+    setListButtonSensitivity(container, option, addButton, removeButton)
 end
 
-function deleteListRow(container::Main.ListContainer, option::Option, window::Gtk.GtkWindowLeaf)
-    rows, cols = size(container.store)
-
-    if rows - 1 < option.rowCount[1]
-        info_dialog("Deleting this row would result in too few rows", window)
-
-        return false
-    end
-
+function deleteListRow(container::Ahorn.ListContainer, option::Option, window::Gtk.GtkWindowLeaf, addButton::Gtk.GtkButtonLeaf, removeButton::Gtk.GtkButtonLeaf)
     if hasselection(container.selection)
         row = selected(container.selection)
         deleteat!(container.store, row)
     end
+
+    setListButtonSensitivity(container, option, addButton, removeButton)
 end
 
 function addOptions!(window::Gtk.GtkWindowLeaf, grid::Gtk.GtkGridLeaf, options::Array{Option, 1}, cols::Integer, index::Integer=0)
@@ -103,7 +104,7 @@ function addOptions!(window::Gtk.GtkWindowLeaf, grid::Gtk.GtkGridLeaf, options::
             headers = tuple(split(option.name, ';')...)
             data = option.startValue
 
-            container = Main.generateTreeView(headers, data, sortable=false, editable=fill(option.editable, length(headers)), callbacks=fill(columnEditCallback, length(headers)))
+            container = Ahorn.generateTreeView(headers, data, sortable=false, editable=fill(option.editable, length(headers)), callbacks=fill(columnEditCallback, length(headers)))
             scrollableWindow = ScrolledWindow(vexpand=true, hscrollbar_policy=Gtk.GtkPolicyType.NEVER)
             push!(scrollableWindow, container.tree)
 
@@ -120,8 +121,10 @@ function addOptions!(window::Gtk.GtkWindowLeaf, grid::Gtk.GtkGridLeaf, options::
                 grid[0:buttonWidth - 1, row + 2] = addButton
                 grid[buttonWidth:cols - 1, row + 2] = removeButton
 
-                signal_connect(w -> addListRow(container, option, window), addButton, "clicked")
-                signal_connect(w -> deleteListRow(container, option, window), removeButton, "clicked")
+                signal_connect(w -> addListRow(container, option, window, addButton, removeButton), addButton, "clicked")
+                signal_connect(w -> deleteListRow(container, option, window, addButton, removeButton), removeButton, "clicked")
+
+                setListButtonSensitivity(container, option, addButton, removeButton)
             end
 
             grid[0:cols - 1, row + 1] = scrollableWindow
@@ -138,7 +141,7 @@ function addOptions!(window::Gtk.GtkWindowLeaf, grid::Gtk.GtkGridLeaf, options::
 
             if isa(option.options, Void) || isempty(option.options)
                 startValue = option.startValue
-                entry = Main.ValidationEntry(startValue)
+                entry = Ahorn.ValidationEntry(startValue)
 
                 grid[ecol, erow] = entry
                 push!(widgets, (option, entry))
@@ -167,7 +170,7 @@ end
 
 function setDataAttr!(data::Dict{String, Any}, option::Option, value::String)
     if option.dataType <: Number
-        data[option.dataName] = Main.parseNumber(value)
+        data[option.dataName] = Ahorn.parseNumber(value)
 
     elseif option.dataType === Char
         # TODO - Error if string is > 1 char
@@ -178,8 +181,8 @@ function setDataAttr!(data::Dict{String, Any}, option::Option, value::String)
     end
 end
 
-function setDataAttr!(data::Dict{String, Any}, option::Option, value::Main.ListContainer)
-    data[option.dataName] = Main.getListData(value)
+function setDataAttr!(data::Dict{String, Any}, option::Option, value::Ahorn.ListContainer)
+    data[option.dataName] = Ahorn.getListData(value)
 end
 
 function getData(widgets)
@@ -195,7 +198,7 @@ function getData(widgets)
         elseif isa(widget, Gtk.GtkComboBoxTextLeaf)
             setDataAttr!(res, option, Gtk.bytestring(Gtk.GAccessor.active_text(widget)))
 
-        elseif isa(widget, Main.ListContainer)
+        elseif isa(widget, Ahorn.ListContainer)
             setDataAttr!(res, option, widget)
         end
     end
@@ -226,7 +229,7 @@ function addSectionWidgets!(window::Gtk.GtkWindowLeaf, section::Section; grid::G
 end
 
 function createWindow(title::String, sections::Array{Section, 1}, callback::Function; sortOptions::Bool=true, cols::Integer=4, alignCols::Bool=true)
-    window = Window(title, -1, -1, false, icon=Main.windowIcon, gravity=GdkGravity.GDK_GRAVITY_CENTER) |> (Frame() |> (box = Box(:v)))
+    window = Window(title, -1, -1, false, icon=Ahorn.windowIcon, gravity=GdkGravity.GDK_GRAVITY_CENTER) |> (Frame() |> (box = Box(:v)))
     grid = Grid()
     index = 0
 
@@ -280,7 +283,7 @@ function createWindow(title::String, sections::Array{Section, 1}, callback::Func
     # height() lies about the height, but should be fine if there actually are scrollables
     scrollableCount = 0
     for (name, widgets) in sectionWidgets
-        scrollableCount += sum([isa(w, Main.ListContainer) for (o, w) in widgets])
+        scrollableCount += sum([isa(w, Ahorn.ListContainer) for (o, w) in widgets])
     end
 
     if scrollableCount > 0

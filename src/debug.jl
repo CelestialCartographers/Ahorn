@@ -1,7 +1,12 @@
 module debug
 
-configFilename = joinpath(Main.storageDirectory, "debug.json")
-config = Main.loadConfig(configFilename, 0)
+using ..Ahorn
+
+config = Dict{String, Any}()
+
+function setConfig(fn::String, buffertime::Int=0)
+    global config = Ahorn.loadConfig(fn, buffertime)
+end
 
 function log(s::String, shouldPrint::Bool)
     if shouldPrint
@@ -16,66 +21,61 @@ function log(s::String, key::String)
 end
 
 function reloadTools!()
-    Main.loadModule.(Main.loadedTools)
-    Main.loadExternalModules!(Main.loadedModules, Main.loadedTools, "tools")
-    Main.changeTool!(Main.loadedTools[1])
-    Main.select!(Main.roomList, row -> row[1] == Main.loadedState.roomName)
+    Ahorn.loadModule.(Ahorn.loadedTools)
+    Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedTools, "tools")
+    Ahorn.changeTool!(Ahorn.loadedTools[1])
+    Ahorn.select!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
 
     return true
 end
 
 function reloadEntities!()
-    dr = Main.getDrawableRoom(Main.loadedState.map, Main.loadedState.room)
+    dr = Ahorn.getDrawableRoom(Ahorn.loadedState.map, Ahorn.loadedState.room)
 
-    Main.loadModule.(Main.loadedEntities)
-    Main.loadExternalModules!(Main.loadedModules, Main.loadedEntities, "entities")
-    Main.registerPlacements!(Main.entityPlacements, Main.loadedEntities)
+    Ahorn.loadModule.(Ahorn.loadedEntities)
+    Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedEntities, "entities")
+    Ahorn.registerPlacements!(Ahorn.entityPlacements, Ahorn.loadedEntities)
 
-    Main.getLayerByName(dr.layers, "entities").redraw = true
-    Main.select!(Main.roomList, row -> row[1] == Main.loadedState.roomName)
+    Ahorn.getLayerByName(dr.layers, "entities").redraw = true
+    Ahorn.select!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
 
-    empty!(Main.entityNameLookup)
+    empty!(Ahorn.entityNameLookup)
 
     return true
 end
 
 function reloadTriggers!()
-    dr = Main.getDrawableRoom(Main.loadedState.map, Main.loadedState.room)
+    dr = Ahorn.getDrawableRoom(Ahorn.loadedState.map, Ahorn.loadedState.room)
 
-    Main.loadModule.(Main.loadedTriggers)
-    Main.loadExternalModules!(Main.loadedModules, Main.loadedTriggers, "triggers")
-    Main.registerPlacements!(Main.triggerPlacements, Main.loadedTriggers)
+    Ahorn.loadModule.(Ahorn.loadedTriggers)
+    Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedTriggers, "triggers")
+    Ahorn.registerPlacements!(Ahorn.triggerPlacements, Ahorn.loadedTriggers)
 
-    Main.getLayerByName(dr.layers, "triggers").redraw = true
-    Main.select!(Main.roomList, row -> row[1] == Main.loadedState.roomName)
-
-    return true
-end
-
-function clearMapDrawingCache!(map::Main.Maple.Map=Main.loadedState.map)
-    # Make sure to destroy all surfaces properly
-    rooms = Main.getDrawableRooms(map)
-    for room in rooms
-        Main.destroy(room)
-    end
-
-    delete!(Main.drawableRooms, map)
-
-    Main.draw(Main.canvas)
+    Ahorn.getLayerByName(dr.layers, "triggers").redraw = true
+    Ahorn.select!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
 
     return true
 end
 
-function forceDrawWholeMap!(map::Main.Maple.Map=Main.loadedState.map)
-    ctx = Main.Gtk.getgc(Main.canvas)
+function clearMapDrawingCache!(map::Ahorn.Maple.Map=Ahorn.loadedState.map)
+    Ahorn.deleteDrawableRoomCache(map)
+    Ahorn.draw(Ahorn.canvas)
+
+    return true
+end
+
+function forceDrawWholeMap!(map::Ahorn.Maple.Map=Ahorn.loadedState.map)
+    ctx = Ahorn.Gtk.getgc(Ahorn.canvas)
 
     for room in map.rooms
-        dr = Main.getDrawableRoom(map, room)
+        dr = Ahorn.getDrawableRoom(map, room)
 
-        Main.drawRoom(ctx, Main.camera, dr, alpha=1.0)
+        Ahorn.drawRoom(ctx, Ahorn.camera, dr, alpha=1.0)
     end
 
-    Main.draw(Main.canvas)
+    Ahorn.draw(Ahorn.canvas)
+
+    return true
 end
 
 end

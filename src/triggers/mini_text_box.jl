@@ -1,16 +1,18 @@
 module MiniTextBoxTrigger
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Mini Textbox" => Main.EntityPlacement(
-        Main.Maple.MiniTextBoxTrigger,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Mini Textbox" => Ahorn.EntityPlacement(
+        Maple.MiniTextBoxTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Main.Maple.Trigger)
+function editingOptions(trigger::Maple.Trigger)
     if trigger.name == "minitextboxTrigger"
         return true, Dict{String, Any}(
-            "mode" => Main.Maple.mini_textbox_trigger_modes
+            "mode" => Maple.mini_textbox_trigger_modes
         )
     end
 end

@@ -1,22 +1,24 @@
 module Refill
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Refill" => Main.EntityPlacement(
-        Main.Maple.Refill
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Refill" => Ahorn.EntityPlacement(
+        Maple.Refill
     )
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "refill"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 6, y - 6, 12, 12)
+        return true, Ahorn.Rectangle(x - 6, y - 6, 12, 12)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "refill"
-        Main.drawSprite(ctx, "objects/refill/idle00.png", 0, 0)
+        Ahorn.drawSprite(ctx, "objects/refill/idle00.png", 0, 0)
 
         return true
     end

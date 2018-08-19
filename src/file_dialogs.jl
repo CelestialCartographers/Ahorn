@@ -12,9 +12,14 @@ function showFileOpenDialog(leaf::Gtk.GtkMenuItemLeaf=MenuItem())
     # Did we actually select a file?
     if filename != ""
         dialogText = "You might have unsaved changes in your map.\nPlease confirm that you want to load '$filename'."
-        res = isequal(Main.loadedState.lastSavedMap, Main.loadedState.map) || ask_dialog(dialogText, Main.window)
+        res = isequal(loadedState.lastSavedMap, loadedState.map) || ask_dialog(dialogText, window)
 
         if res
+            # Clear render cache from last map
+            if loadedState.map !== nothing && get(config, "clear_render_cache_on_map_load", true)
+                deleteDrawableRoomCache(loadedState.map)
+            end
+
             loadedState.filename = filename
             loadedState.side = loadSide(filename)
             loadedState.map = loadedState.side.map

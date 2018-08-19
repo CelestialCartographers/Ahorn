@@ -10,12 +10,12 @@ function spawnPropertyWindow(title::String, options::Array{ConfigWindow.Option, 
     winX, winY = 0, 0
     winScreen = nothing
 
-    window = ConfigWindow.createWindow(title, options, callback, lockedPositions=lockedPositions)
-    signal_connect(window, :destroy) do widget
+    propertyWindow = ConfigWindow.createWindow(title, options, callback, lockedPositions=lockedPositions)
+    signal_connect(propertyWindow, :destroy) do widget
         global lastPropertyWindowDestroyed = true
     end
 
-    visible(window, false)
+    visible(propertyWindow, false)
 
     if keepPreviousPosition && isa(lastPropertyWindow, Gtk.GtkWindowLeaf) && !lastPropertyWindowDestroyed
         winX, winY = GAccessor.position(lastPropertyWindow)
@@ -25,21 +25,21 @@ function spawnPropertyWindow(title::String, options::Array{ConfigWindow.Option, 
         GAccessor.screen(window, winScreen)
     end
 
-    GAccessor.transient_for(window, Main.window)
-    GAccessor.keep_above(window, alwaysOnTop)
+    GAccessor.transient_for(propertyWindow, window)
+    GAccessor.keep_above(propertyWindow, alwaysOnTop)
 
-    showall(window)
-    visible(window, true)
+    showall(propertyWindow)
+    visible(propertyWindow, true)
 
     if destroyPrevious && isa(lastPropertyWindow, Gtk.GtkWindowLeaf)
         Gtk.destroy(lastPropertyWindow)
     end
 
-    global lastPropertyWindow = window
+    global lastPropertyWindow = propertyWindow
     global lastPropertyWindowDestroyed = false
 end
 
-function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::Layer)
+function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, toolsLayer::Layer)
     rect = Rectangle(x, y, 1, 1)
     selection = bestSelection(getSelected(room, targetLayer, rect))
 
@@ -49,12 +49,12 @@ function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::
             function callback(data::Dict{String, Any})
                 updateTarget = true
 
-                minWidth, minHeight = Main.minimumSize(target)
+                minWidth, minHeight = minimumSize(target)
                 hasWidth, hasHeight = haskey(target.data, "width"), haskey(target.data, "height")
                 width, height = Int(get(data, "width", minWidth)), Int(get(data, "width", minHeight))
 
                 if hasWidth && width < minWidth || hasHeight && height < minHeight
-                    updateTarget = ask_dialog("The size specified is smaller than the recommended minimum size ($minWidth, $minHeight)\nDo you want to keep this size regardless?", Main.window)
+                    updateTarget = ask_dialog("The size specified is smaller than the recommended minimum size ($minWidth, $minHeight)\nDo you want to keep this size regardless?", window)
                 end
 
                 if updateTarget
@@ -62,6 +62,7 @@ function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::
                     target.data = deepcopy(data)
 
                     redrawLayer!(targetLayer)
+                    redrawLayer!(toolsLayer)
                 end
             end
 

@@ -1,46 +1,48 @@
 module CoreToggle
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Core Mode Toggle (Fire)" => Main.EntityPlacement(
-        Main.Maple.CoreFlag,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Core Mode Toggle (Fire)" => Ahorn.EntityPlacement(
+        Maple.CoreFlag,
         "point",
         Dict{String, Any}(
             "onlyFire" => true
         )
     ),
-    "Core Mode Toggle (Ice)" => Main.EntityPlacement(
-        Main.Maple.CoreFlag,
+    "Core Mode Toggle (Ice)" => Ahorn.EntityPlacement(
+        Maple.CoreFlag,
         "point",
         Dict{String, Any}(
             "onlyIce" => true
         )
     ),
-    "Core Mode Toggle (Both)" => Main.EntityPlacement(
-        Main.Maple.CoreFlag
+    "Core Mode Toggle (Both)" => Ahorn.EntityPlacement(
+        Maple.CoreFlag
     ),
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "coreModeToggle"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 8, y - 6, 16, 20)
+        return true, Ahorn.Rectangle(x - 8, y - 6, 16, 20)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "coreModeToggle"
         onlyIce = get(entity.data, "onlyIce", false)
         onlyFire = get(entity.data, "onlyFire", false)
         
         if onlyIce
-            Main.drawSprite(ctx, "objects/coreFlipSwitch/switch13.png", 0, 0)
+            Ahorn.drawSprite(ctx, "objects/coreFlipSwitch/switch13.png", 0, 0)
 
         elseif onlyFire
-            Main.drawSprite(ctx, "objects/coreFlipSwitch/switch15.png", 0, 0)
+            Ahorn.drawSprite(ctx, "objects/coreFlipSwitch/switch15.png", 0, 0)
 
         else
-            Main.drawSprite(ctx, "objects/coreFlipSwitch/switch01.png", 0, 0)
+            Ahorn.drawSprite(ctx, "objects/coreFlipSwitch/switch01.png", 0, 0)
         end
 
         return true

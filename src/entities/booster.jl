@@ -1,31 +1,33 @@
 module Booster
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Booster (Green)" => Main.EntityPlacement(
-        Main.Maple.GreenBooster
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Booster (Green)" => Ahorn.EntityPlacement(
+        Maple.GreenBooster
     ),
-    "Booster (Red)" => Main.EntityPlacement(
-        Main.Maple.RedBooster
+    "Booster (Red)" => Ahorn.EntityPlacement(
+        Maple.RedBooster
     )
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "booster"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 8, y - 8, 16, 16)
+        return true, Ahorn.Rectangle(x - 8, y - 8, 16, 16)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "booster"
         red = get(entity.data, "red", false)
 
         if red
-            Main.drawSprite(ctx, "objects/booster/boosterRed00.png", 0, 0)
+            Ahorn.drawSprite(ctx, "objects/booster/boosterRed00.png", 0, 0)
 
         else
-            Main.drawSprite(ctx, "objects/booster/booster00.png", 0, 0)
+            Ahorn.drawSprite(ctx, "objects/booster/booster00.png", 0, 0)
         end
 
         return true

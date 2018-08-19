@@ -18,22 +18,22 @@ mouseHandlers = Dict{Integer, String}(
 )
 
 moveDirections = Dict{Integer, Tuple{Number, Number}}(
-    Main.Gtk.GdkKeySyms.Left => (-1, 0),
-    Main.Gtk.GdkKeySyms.Right => (1, 0),
-    Main.Gtk.GdkKeySyms.Down => (0, 1),
-    Main.Gtk.GdkKeySyms.Up => (0, -1)
+    Gtk.GdkKeySyms.Left => (-1, 0),
+    Gtk.GdkKeySyms.Right => (1, 0),
+    Gtk.GdkKeySyms.Down => (0, 1),
+    Gtk.GdkKeySyms.Up => (0, -1)
 )
 
 mouseButtonHeld(n::Integer) = get(mousePressed, n, (false, false, false))[2]
 keyHeld(n::Integer) = get(keyPressed, n, (false, false))[2]
 
 # Saner way to get modifier keys in tools
-modifierControl() = keyHeld(Gtk.GdkKeySyms.Control_L) || Main.keyHeld(Main.Gtk.GdkKeySyms.Control_R)
-modifierShift() = keyHeld(Gtk.GdkKeySyms.Shift_L) || Main.keyHeld(Main.Gtk.GdkKeySyms.Shift_R)
-modifierMeta() = keyHeld(Gtk.GdkKeySyms.Meta_L) || Main.keyHeld(Main.Gtk.GdkKeySyms.Meta_R)
-modifierAlt() = keyHeld(Gtk.GdkKeySyms.Alt_L) || Main.keyHeld(Main.Gtk.GdkKeySyms.Alt_R)
-modifierSuper() = keyHeld(Gtk.GdkKeySyms.Super_L) || Main.keyHeld(Main.Gtk.GdkKeySyms.Super_R)
-modifierHyper() = keyHeld(Gtk.GdkKeySyms.Hyper_L) || Main.keyHeld(Main.Gtk.GdkKeySyms.Hyper_R)
+modifierControl() = keyHeld(Gtk.GdkKeySyms.Control_L) || keyHeld(Gtk.GdkKeySyms.Control_R)
+modifierShift() = keyHeld(Gtk.GdkKeySyms.Shift_L) || keyHeld(Gtk.GdkKeySyms.Shift_R)
+modifierMeta() = keyHeld(Gtk.GdkKeySyms.Meta_L) || keyHeld(Gtk.GdkKeySyms.Meta_R)
+modifierAlt() = keyHeld(Gtk.GdkKeySyms.Alt_L) || keyHeld(Gtk.GdkKeySyms.Alt_R)
+modifierSuper() = keyHeld(Gtk.GdkKeySyms.Super_L) || keyHeld(Gtk.GdkKeySyms.Super_R)
+modifierHyper() = keyHeld(Gtk.GdkKeySyms.Hyper_L) || keyHeld(Gtk.GdkKeySyms.Hyper_R)
 
 # Event -> Map coordinates
 getMapCoordinates(camera::Camera, mouseX::Number, mouseY::Number) = (floor(Int, (mouseX + camera.x) / camera.scale / 8) + 1, floor(Int, (mouseY + camera.y) / camera.scale / 8) + 1)

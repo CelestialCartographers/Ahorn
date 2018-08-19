@@ -1,30 +1,34 @@
 module Lamp
 
-sprite = Main.sprites["scenery/lamp"]
-width = floor(Int, sprite.width / 2)
-height = sprite.height
+using ..Ahorn, Maple
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Lamp" => Main.EntityPlacement(
-        Main.Maple.Lamp
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Lamp" => Ahorn.EntityPlacement(
+        Maple.Lamp
     ),
-    "Lamp (Broken)" => Main.EntityPlacement(
-        Main.Maple.BrokenLamp
+    "Lamp (Broken)" => Ahorn.EntityPlacement(
+        Maple.BrokenLamp
     ), 
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "lamp"
-        x, y = Main.entityTranslation(entity)
+        sprite = Ahorn.sprites["scenery/lamp"]
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - floor(Int, width / 2), y - height, width, height)
+        return true, Ahorn.Rectangle(x - floor(Int, sprite.width / 4), y - sprite.height, floor(Int, sprite.width / 2), sprite.height)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "lamp"
+        sprite = Ahorn.sprites["scenery/lamp"]
+
+        width = floor(Int, sprite.width / 2)
+        height = sprite.height
+        
         broken = get(entity.data, "broken", false)
-        Main.drawImage(ctx, sprite, -floor(Int, width / 2), -height, width * broken, 0, width, height)
+        Ahorn.drawImage(ctx, sprite, -floor(Int, width / 2), -height, width * broken, 0, width, height)
 
         return true
     end

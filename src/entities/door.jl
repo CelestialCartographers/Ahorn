@@ -1,9 +1,11 @@
 module Door
 
+using ..Ahorn, Maple
+
 textures = ["wood", "metal"]
-placements = Dict{String, Main.EntityPlacement}(
-    "Door ($(titlecase(texture)))" => Main.EntityPlacement(
-        Main.Maple.Door,
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Door ($(titlecase(texture)))" => Ahorn.EntityPlacement(
+        Maple.Door,
         "point",
         Dict{String, Any}(
             "type" => texture
@@ -11,7 +13,7 @@ placements = Dict{String, Main.EntityPlacement}(
     ) for texture in textures
 )
 
-function editingOptions(entity::Main.Maple.Entity)
+function editingOptions(entity::Maple.Entity)
     if entity.name == "door"
         return true, Dict{String, Any}(
             "type" => textures
@@ -19,23 +21,23 @@ function editingOptions(entity::Main.Maple.Entity)
     end
 end
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "door"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 2, y - 24, 4, 24)
+        return true, Ahorn.Rectangle(x - 2, y - 24, 4, 24)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "door"
         variant = get(entity.data, "type", "wood")
 
         if variant == "wood"
-            Main.drawSprite(ctx, "objects/door/door00.png", 0, -12)
+            Ahorn.drawSprite(ctx, "objects/door/door00.png", 0, -12)
 
         else
-            Main.drawSprite(ctx, "objects/door/metaldoor00.png", 0, -12)
+            Ahorn.drawSprite(ctx, "objects/door/metaldoor00.png", 0, -12)
         end
 
         return true

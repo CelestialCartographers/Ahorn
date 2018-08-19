@@ -1,22 +1,24 @@
 module WhiteBlock
 
-placements = Dict{String, Main.EntityPlacement}(
-    "White Block" => Main.EntityPlacement(
-        Main.Maple.WhiteBlock
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "White Block" => Ahorn.EntityPlacement(
+        Maple.WhiteBlock
     )
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "whiteblock"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x, y, 48, 24)
+        return true, Ahorn.Rectangle(x, y, 48, 24)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "whiteblock"
-        Main.drawSprite(ctx, "objects/whiteblock.png", 24, 12)
+        Ahorn.drawSprite(ctx, "objects/whiteblock.png", 24, 12)
 
         return true
     end

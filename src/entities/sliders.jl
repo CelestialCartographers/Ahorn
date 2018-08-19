@@ -1,8 +1,10 @@
 module Slider
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Slider (Clockwise)" => Main.EntityPlacement(
-        Main.Maple.Slider,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Slider (Clockwise)" => Ahorn.EntityPlacement(
+        Maple.Slider,
         "point",
         Dict{String, Any}(
             "clockwise" => true
@@ -10,15 +12,15 @@ placements = Dict{String, Main.EntityPlacement}(
     )
 )
 
-function editingOptions(entity::Main.Maple.Entity)
+function editingOptions(entity::Maple.Entity)
     if entity.name == "slider"
         return true, Dict{String, Any}(
-            "surface" => Main.Maple.slider_surfaces
+            "surface" => Maple.slider_surfaces
         )
     end
 end
 
-function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "slider"
         clockwise = get(entity.data, "clockwise", false)
         dir = clockwise? 1 : -1
@@ -26,8 +28,8 @@ function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Enti
         x, y = Int(entity.data["x"]), Int(entity.data["y"])
         radius = 12
 
-        Main.drawArrow(ctx, x + radius, y, x + radius, y + 0.001 * dir, Main.colors.selection_selected_fc, headLength=6)
-        Main.drawArrow(ctx, x - radius, y, x - radius, y + 0.001 * -dir, Main.colors.selection_selected_fc, headLength=6)
+        Ahorn.drawArrow(ctx, x + radius, y, x + radius, y + 0.001 * dir, Ahorn.colors.selection_selected_fc, headLength=6)
+        Ahorn.drawArrow(ctx, x - radius, y, x - radius, y + 0.001 * -dir, Ahorn.colors.selection_selected_fc, headLength=6)
 
         return true
     end
@@ -35,17 +37,17 @@ function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Enti
     return false
 end
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "slider"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 12, y - 12, 24, 24)
+        return true, Ahorn.Rectangle(x - 12, y - 12, 24, 24)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "slider"
-        Main.drawCircle(ctx, 0, 0, 12, (1.0, 0.0, 0.0, 1.0))
+        Ahorn.drawCircle(ctx, 0, 0, 12, (1.0, 0.0, 0.0, 1.0))
 
         return true
     end

@@ -1,8 +1,10 @@
 module CameraTargetTrigger
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Camera Target" => Main.EntityPlacement(
-        Main.Maple.CameraTargetTrigger,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Camera Target" => Ahorn.EntityPlacement(
+        Maple.CameraTargetTrigger,
         "rectangle",
         Dict{String, Any}(),
         function(trigger)
@@ -11,15 +13,15 @@ placements = Dict{String, Main.EntityPlacement}(
     )
 )
 
-function editingOptions(trigger::Main.Maple.Trigger)
+function editingOptions(trigger::Maple.Trigger)
     if trigger.name == "cameraTargetTrigger"
         return true, Dict{String, Any}(
-            "positionMode" => Main.Maple.trigger_position_modes
+            "positionMode" => Maple.trigger_position_modes
         )
     end
 end
 
-function nodeLimits(trigger::Main.Maple.Trigger)
+function nodeLimits(trigger::Maple.Trigger)
     if trigger.name == "cameraTargetTrigger"
         return true, 1, 1
     end

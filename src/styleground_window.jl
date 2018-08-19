@@ -2,6 +2,7 @@ module StylegroundWindow
 
 using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Maple
+using ..Ahorn
 
 stylegroundWindow = nothing
 
@@ -24,7 +25,7 @@ function setupComboBoxes!()
     empty!(backdropCombo)
 
     empty!(backdropChoices)
-    push!(backdropChoices, spritesToBackgroundTextures(Main.sprites)...)
+    push!(backdropChoices, spritesToBackgroundTextures(Ahorn.sprites)...)
     sort!(backdropChoices)
 
     initComboBox!(effectCombo, effectChoices)
@@ -53,7 +54,7 @@ function hideStylegroundWindow(widget=nothing, event=nothing)
     return true
 end
 
-function getParallaxData(p::Main.Parallax, fg::Bool)
+function getParallaxData(p::Maple.Parallax, fg::Bool)
     return (
         get(p.data, "texture", ""),
         fg,
@@ -64,7 +65,7 @@ function getParallaxData(p::Main.Parallax, fg::Bool)
     )
 end
 
-function getEffectData(e::Main.Effect, fg::Bool)
+function getEffectData(e::Maple.Effect, fg::Bool)
     return (
         e.typ,
         fg,
@@ -82,17 +83,17 @@ targetEffect = nothing
 # Expand Apply types into parallaxes
 # Easier to use for both coding and user perspective
 # Can be unexpanded later, save some filespace
-function expandApply!(styles::Main.Maple.Styleground)
+function expandApply!(styles::Ahorn.Maple.Styleground)
     res = []
 
     for style in styles.children
-        if isa(style, Main.Maple.Apply)
+        if isa(style, Ahorn.Maple.Apply)
             for p in style.parallax
-                if isa(p, Main.Maple.Parallax)
-                    push!(res, Main.Maple.Parallax(merge(style.data, p.data)))
+                if isa(p, Ahorn.Maple.Parallax)
+                    push!(res, Ahorn.Maple.Parallax(merge(style.data, p.data)))
 
-                elseif isa(p, Main.Maple.Effect)
-                    push!(res, Main.Maple.Effect(p.typ, merge(style.data, p.data)))
+                elseif isa(p, Ahorn.Maple.Effect)
+                    push!(res, Ahorn.Maple.Effect(p.typ, merge(style.data, p.data)))
                 end
             end
 
@@ -105,7 +106,7 @@ function expandApply!(styles::Main.Maple.Styleground)
     push!(styles.children, res...)
 end
 
-function spritesToBackgroundTextures(sprites::Dict{String, Main.Sprite})
+function spritesToBackgroundTextures(sprites::Dict{String, Ahorn.Sprite})
     res = String[]
 
     for (path, sprite) in sprites
@@ -122,16 +123,16 @@ function spritesToBackgroundTextures(sprites::Dict{String, Main.Sprite})
     return res
 end
 
-function setFieldsFromEffect!(effect::Maple.Effect, fg::Bool=true, simple::Bool=get(Main.config, "use_simple_room_values", true))
-    Main.setEntryText!(onlyEffectEntry, get(effect.data, "only", "*"))
-    Main.setEntryText!(excludeEffectEntry, get(effect.data, "exclude", ""))
+function setFieldsFromEffect!(effect::Maple.Effect, fg::Bool=true, simple::Bool=get(Ahorn.config, "use_simple_room_values", true))
+    Ahorn.setEntryText!(onlyEffectEntry, get(effect.data, "only", "*"))
+    Ahorn.setEntryText!(excludeEffectEntry, get(effect.data, "exclude", ""))
 
     Gtk.GLib.@sigatom setComboIndex!(effectCombo, effectChoices, lowercase(effect.typ))
 
     setproperty!(foregroundEffectCheckbox, :active, fg)
 end
 
-function setEffectFromFields!(effect::Maple.Effect, simple::Bool=get(Main.config, "use_simple_room_values", true))
+function setEffectFromFields!(effect::Maple.Effect, simple::Bool=get(Ahorn.config, "use_simple_room_values", true))
     try
         effect.data["only"] = getproperty(onlyEffectEntry, :text, String)
         effect.data["exclude"] = getproperty(excludeEffectEntry, :text, String)
@@ -149,19 +150,19 @@ function setEffectFromFields!(effect::Maple.Effect, simple::Bool=get(Main.config
 end
 
 function setFieldsFromParallax!(parallax::Maple.Parallax, fg::Bool=true)
-    Main.setEntryText!(posXEntry, round(Int, get(parallax.data, "x", 0)))
-    Main.setEntryText!(posYEntry, round(Int, get(parallax.data, "y", 0)))
+    Ahorn.setEntryText!(posXEntry, round(Int, get(parallax.data, "x", 0)))
+    Ahorn.setEntryText!(posYEntry, round(Int, get(parallax.data, "y", 0)))
 
-    Main.setEntryText!(scrollXEntry, get(parallax.data, "scrollx", 1))
-    Main.setEntryText!(scrollYEntry, get(parallax.data, "scrolly", 1))
-    Main.setEntryText!(speedXEntry, get(parallax.data, "speedx", 0))
-    Main.setEntryText!(speedYEntry, get(parallax.data, "speedy", 0))
+    Ahorn.setEntryText!(scrollXEntry, get(parallax.data, "scrollx", 1))
+    Ahorn.setEntryText!(scrollYEntry, get(parallax.data, "scrolly", 1))
+    Ahorn.setEntryText!(speedXEntry, get(parallax.data, "speedx", 0))
+    Ahorn.setEntryText!(speedYEntry, get(parallax.data, "speedy", 0))
 
-    Main.setEntryText!(alphaEntry, get(parallax.data, "alpha", 1))
-    Main.setEntryText!(colorEntry, get(parallax.data, "color", "ffffff"))
+    Ahorn.setEntryText!(alphaEntry, get(parallax.data, "alpha", 1))
+    Ahorn.setEntryText!(colorEntry, get(parallax.data, "color", "ffffff"))
 
-    Main.setEntryText!(onlyEntry, get(parallax.data, "only", "*"))
-    Main.setEntryText!(excludeEntry, get(parallax.data, "exclude", ""))
+    Ahorn.setEntryText!(onlyEntry, get(parallax.data, "only", "*"))
+    Ahorn.setEntryText!(excludeEntry, get(parallax.data, "exclude", ""))
 
     Gtk.GLib.@sigatom setComboIndex!(backdropCombo, backdropChoices, get(parallax.data, "texture", ""))
 
@@ -180,15 +181,15 @@ end
 
 function setParallaxFromFields!(parallax::Maple.Parallax)
     try
-        parallax.data["x"] = Main.parseNumber(getproperty(posXEntry, :text, String))
-        parallax.data["y"] = Main.parseNumber(getproperty(posYEntry, :text, String))
+        parallax.data["x"] = Ahorn.parseNumber(getproperty(posXEntry, :text, String))
+        parallax.data["y"] = Ahorn.parseNumber(getproperty(posYEntry, :text, String))
         
-        parallax.data["scrollx"] = Main.parseNumber(getproperty(scrollXEntry, :text, String))
-        parallax.data["scrolly"] = Main.parseNumber(getproperty(scrollYEntry, :text, String))
-        parallax.data["speedx"] = Main.parseNumber(getproperty(speedXEntry, :text, String))
-        parallax.data["speedy"] = Main.parseNumber(getproperty(speedYEntry, :text, String))
+        parallax.data["scrollx"] = Ahorn.parseNumber(getproperty(scrollXEntry, :text, String))
+        parallax.data["scrolly"] = Ahorn.parseNumber(getproperty(scrollYEntry, :text, String))
+        parallax.data["speedx"] = Ahorn.parseNumber(getproperty(speedXEntry, :text, String))
+        parallax.data["speedy"] = Ahorn.parseNumber(getproperty(speedYEntry, :text, String))
 
-        parallax.data["alpha"] = Main.parseNumber(getproperty(alphaEntry, :text, String))
+        parallax.data["alpha"] = Ahorn.parseNumber(getproperty(alphaEntry, :text, String))
         parallax.data["color"] = getproperty(colorEntry, :text, String)
 
         parallax.data["only"] = getproperty(onlyEntry, :text, String)
@@ -227,26 +228,26 @@ dataTuples = Dict{Type, Type}(
 )
 
 function selectParallax(row::parallaxDataType, fg::Bool, parallax::Union{Void, Maple.Parallax})
-    parallax != nothing &&
-    row[1] == get(parallax.data, "texture", "") &&
-    row[2] == fg &&
-    row[3] == get(parallax.data, "x", 0) &&
-    row[4] == get(parallax.data, "y", 0) &&
-    row[5] == get(parallax.data, "only", "*") &&
-    row[6] == get(parallax.data, "exclude", "")
+    return parallax != nothing &&
+        row[1] == get(parallax.data, "texture", "") &&
+        row[2] == fg &&
+        row[3] == get(parallax.data, "x", 0) &&
+        row[4] == get(parallax.data, "y", 0) &&
+        row[5] == get(parallax.data, "only", "*") &&
+        row[6] == get(parallax.data, "exclude", "")
 end
 
 function selectEffect(row::effectDataType, fg::Bool, effect::Union{Void, Maple.Effect})
-    effect != nothing &&
-    row[1] == effect.typ &&
-    row[2] == fg &&
-    row[3] == get(effect.data, "only", "*") &&
-    row[4] == get(effect.data, "exclude", "")
+    return effect != nothing &&
+        row[1] == effect.typ &&
+        row[2] == fg &&
+        row[3] == get(effect.data, "only", "*") &&
+        row[4] == get(effect.data, "exclude", "")
 end
 
-function updateLists!(container::Main.ListContainer, typ::Type, f::Union{Void, Function}=nothing)
-    fgStyles = Main.loadedState.map.style.foregrounds
-    bgStyles = Main.loadedState.map.style.backgrounds
+function updateLists!(container::Ahorn.ListContainer, typ::Type, f::Union{Void, Function}=nothing)
+    fgStyles = Ahorn.loadedState.map.style.foregrounds
+    bgStyles = Ahorn.loadedState.map.style.backgrounds
 
     data = dataTuples[typ][]
 
@@ -264,12 +265,12 @@ function updateLists!(container::Main.ListContainer, typ::Type, f::Union{Void, F
     sort!(data, by=row -> row[2])
 
     selectAfter = isa(f, Function)? f : 1
-    Main.updateTreeView!(container, data, selectAfter)
+    Ahorn.updateTreeView!(container, data, selectAfter)
 end
 
 function findInStyles(style::Union{Maple.Parallax, Maple.Effect})
-    fgStyles = Main.loadedState.map.style.foregrounds.children
-    bgStyles = Main.loadedState.map.style.backgrounds.children
+    fgStyles = Ahorn.loadedState.map.style.foregrounds.children
+    bgStyles = Ahorn.loadedState.map.style.backgrounds.children
 
     indexFg = findfirst(s -> s == style, fgStyles)
     indexBg = findfirst(s -> s == style, bgStyles)
@@ -286,8 +287,8 @@ function findInStyles(style::Union{Maple.Parallax, Maple.Effect})
 end
 
 function removeFromStyles(style::Union{Maple.Parallax, Maple.Effect})
-    fgStyles = Main.loadedState.map.style.foregrounds.children
-    bgStyles = Main.loadedState.map.style.backgrounds.children
+    fgStyles = Ahorn.loadedState.map.style.foregrounds.children
+    bgStyles = Ahorn.loadedState.map.style.backgrounds.children
 
     fg, index = findInStyles(style)
     target = fg? fgStyles : bgStyles
@@ -301,8 +302,8 @@ end
 
 function removeSelectedParallax(widget)
     if hasselection(parallaxList.selection)
-        fgStyles = Main.loadedState.map.style.foregrounds
-        bgStyles = Main.loadedState.map.style.backgrounds
+        fgStyles = Ahorn.loadedState.map.style.foregrounds
+        bgStyles = Ahorn.loadedState.map.style.backgrounds
     
         texture, fg, x, y, only, exclude = parallaxList.store[selected(parallaxList.selection)]
         styles = fg? fgStyles.children : bgStyles.children
@@ -320,8 +321,8 @@ function addParallax(widget)
     success, fg = setParallaxFromFields!(parallax)
 
     if success
-        fgStyles = Main.loadedState.map.style.foregrounds
-        bgStyles = Main.loadedState.map.style.backgrounds
+        fgStyles = Ahorn.loadedState.map.style.foregrounds
+        bgStyles = Ahorn.loadedState.map.style.backgrounds
     
         styles = fg? fgStyles.children : bgStyles.children
         push!(styles, parallax)
@@ -341,8 +342,8 @@ function editParallax(widget)
         success, fg = setParallaxFromFields!(targetParallax)
 
         if success
-            fgStyles = Main.loadedState.map.style.foregrounds
-            bgStyles = Main.loadedState.map.style.backgrounds
+            fgStyles = Ahorn.loadedState.map.style.foregrounds
+            bgStyles = Ahorn.loadedState.map.style.backgrounds
         
             existingFg, index = removeFromStyles(targetParallax)
 
@@ -360,8 +361,8 @@ function editParallax(widget)
 end
 
 function moveParallax(style::Union{Maple.Parallax, Maple.Effect}, fg::Bool, from::Number, to::Number)
-    fgStyles = Main.loadedState.map.style.foregrounds
-    bgStyles = Main.loadedState.map.style.backgrounds
+    fgStyles = Ahorn.loadedState.map.style.foregrounds
+    bgStyles = Ahorn.loadedState.map.style.backgrounds
 
     styles = fg? fgStyles.children : bgStyles.children
 
@@ -389,8 +390,8 @@ end
 
 function removeSelectedEffect(widget)
     if hasselection(effectList.selection)
-        fgStyles = Main.loadedState.map.style.foregrounds
-        bgStyles = Main.loadedState.map.style.backgrounds
+        fgStyles = Ahorn.loadedState.map.style.foregrounds
+        bgStyles = Ahorn.loadedState.map.style.backgrounds
     
         typ, fg, only, exclude = effectList.store[selected(effectList.selection)]
         styles = fg? fgStyles.children : bgStyles.children
@@ -408,8 +409,8 @@ function addEffect(widget)
     success, fg = setEffectFromFields!(effect)
 
     if success
-        fgStyles = Main.loadedState.map.style.foregrounds
-        bgStyles = Main.loadedState.map.style.backgrounds
+        fgStyles = Ahorn.loadedState.map.style.foregrounds
+        bgStyles = Ahorn.loadedState.map.style.backgrounds
     
         styles = fg? fgStyles.children : bgStyles.children
         push!(styles, effect)
@@ -428,8 +429,8 @@ function editEffect(widget)
         success, fg = setEffectFromFields!(targetEffect)
 
         if success
-            fgStyles = Main.loadedState.map.style.foregrounds
-            bgStyles = Main.loadedState.map.style.backgrounds
+            fgStyles = Ahorn.loadedState.map.style.foregrounds
+            bgStyles = Ahorn.loadedState.map.style.backgrounds
         
             existingFg, index = removeFromStyles(targetEffect)
 
@@ -447,13 +448,13 @@ function editEffect(widget)
 end
 
 function editStylegrounds(widget::Gtk.GtkMenuItemLeaf=MenuItem())
-    Main.loadExternalSprites!()
+    Ahorn.loadExternalSprites!()
     Gtk.GLib.@sigatom setupComboBoxes!()
 
     showStylegroundWindow()
 
-    if Main.loadedState.map === nothing
-        info_dialog("No map is currently loaded.", Main.window)
+    if Ahorn.loadedState.map === nothing
+        info_dialog("No map is currently loaded.", Ahorn.window)
 
     else
         spawnWindowIfAbsent!()
@@ -470,7 +471,7 @@ effectChoices = String[
 ]
 sort!(effectChoices)
 
-backdropChoices = spritesToBackgroundTextures(Main.sprites)
+backdropChoices = spritesToBackgroundTextures(Ahorn.sprites)
 sort!(backdropChoices)
 
 # Gtk Widgets
@@ -483,22 +484,22 @@ backdropPreview = Canvas(320, 180)
 @guarded draw(backdropPreview) do widget
     ctx = Gtk.getgc(backdropPreview)
     texture = Gtk.bytestring(Gtk.GAccessor.active_text(backdropCombo))
-    sprite = Main.getSprite(texture)
+    sprite = Ahorn.getSprite(texture)
 
     if sprite.width > 0 && sprite.height > 0
-        Main.clearSurface(ctx)
-        Main.drawImage(ctx, sprite, -sprite.offsetX, -sprite.offsetY)
+        Ahorn.clearSurface(ctx)
+        Ahorn.drawImage(ctx, sprite, -sprite.offsetX, -sprite.offsetY)
 
     else
-        Main.clearSurface(ctx)
-        Main.centeredText(ctx, "Unable to preview backdrop.", 160, 90, fontsize=16)
+        Ahorn.clearSurface(ctx)
+        Ahorn.centeredText(ctx, "Unable to preview backdrop.", 160, 90, fontsize=16)
     end
 end
 
-parallaxList = Main.generateTreeView(("Backdrop", "Foreground", "X", "Y", "Rooms", "Exclude"), parallaxDataType[], sortable=false)
-Main.connectChanged(parallaxList, function(list::Main.ListContainer, row)
-    fgStyles = Main.loadedState.map.style.foregrounds
-    bgStyles = Main.loadedState.map.style.backgrounds
+parallaxList = Ahorn.generateTreeView(("Backdrop", "Foreground", "X", "Y", "Rooms", "Exclude"), parallaxDataType[], sortable=false)
+Ahorn.connectChanged(parallaxList, function(list::Ahorn.ListContainer, row)
+    fgStyles = Ahorn.loadedState.map.style.foregrounds
+    bgStyles = Ahorn.loadedState.map.style.backgrounds
 
     texture, fg, x, y, only, exclude = row
     styles = fg? fgStyles.children : bgStyles.children
@@ -516,10 +517,10 @@ Main.connectChanged(parallaxList, function(list::Main.ListContainer, row)
     end
 end)
 
-effectList = Main.generateTreeView(("Effect", "Foreground", "Rooms", "Exclude"), effectDataType[], sortable=false)
-Main.connectChanged(effectList, function(list::Main.ListContainer, row)
-    fgStyles = Main.loadedState.map.style.foregrounds
-    bgStyles = Main.loadedState.map.style.backgrounds
+effectList = Ahorn.generateTreeView(("Effect", "Foreground", "Rooms", "Exclude"), effectDataType[], sortable=false)
+Ahorn.connectChanged(effectList, function(list::Ahorn.ListContainer, row)
+    fgStyles = Ahorn.loadedState.map.style.foregrounds
+    bgStyles = Ahorn.loadedState.map.style.backgrounds
 
     effect, fg, only, exclude = row
     styles = fg? fgStyles.children : bgStyles.children
@@ -547,19 +548,19 @@ push!(scrollableEffectList, effectList.tree)
 
 backdropCombo = ComboBoxText(true)
 
-posXEntry = Main.ValidationEntry(0)
-posYEntry = Main.ValidationEntry(0)
+posXEntry = Ahorn.ValidationEntry(0)
+posYEntry = Ahorn.ValidationEntry(0)
 
-scrollXEntry = Main.ValidationEntry(1)
-scrollYEntry = Main.ValidationEntry(1)
-speedXEntry = Main.ValidationEntry(0)
-speedYEntry = Main.ValidationEntry(0)
+scrollXEntry = Ahorn.ValidationEntry(1)
+scrollYEntry = Ahorn.ValidationEntry(1)
+speedXEntry = Ahorn.ValidationEntry(0)
+speedYEntry = Ahorn.ValidationEntry(0)
 
-alphaEntry = Main.ValidationEntry(1)
-colorEntry = Main.ValidationEntry("ffffff", colorTintingValidator)
+alphaEntry = Ahorn.ValidationEntry(1)
+colorEntry = Ahorn.ValidationEntry("ffffff", colorTintingValidator)
 
-onlyEntry = Main.ValidationEntry("*")
-excludeEntry = Main.ValidationEntry("")
+onlyEntry = Ahorn.ValidationEntry("*")
+excludeEntry = Ahorn.ValidationEntry("")
 
 flipXCheckbox = CheckButton("Flip X")
 flipYCheckbox = CheckButton("Flip Y")
@@ -602,8 +603,8 @@ signal_connect(parallaxMoveDown, parallaxDown, "clicked")
 
 effectCombo = ComboBoxText(true)
 
-onlyEffectEntry = Main.ValidationEntry("*")
-excludeEffectEntry = Main.ValidationEntry("")
+onlyEffectEntry = Ahorn.ValidationEntry("*")
+excludeEffectEntry = Ahorn.ValidationEntry("")
 
 effectLabel = Label("Effect")
 onlyEffectLabel = Label("Only")
@@ -684,7 +685,7 @@ stylegroundGrid[4:8, 12] = effectUpdate
 stylegroundGrid[1:8, 20] = headsUpLabel
 
 function createWindow()
-    stylegroundWindow = Window("$(Main.baseTitle) - Edit stylegrounds", -1, -1, true, icon = Main.windowIcon, gravity = GdkGravity.GDK_GRAVITY_CENTER
+    stylegroundWindow = Window("$(Ahorn.baseTitle) - Edit stylegrounds", -1, -1, true, icon = Ahorn.windowIcon, gravity = GdkGravity.GDK_GRAVITY_CENTER
     ) |> (Frame() |> (stylegroundBox = Box(:v)))
 
     # Hide window instead of destroying it

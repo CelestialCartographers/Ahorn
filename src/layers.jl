@@ -16,9 +16,7 @@ Base.isequal(lhs::Layer, rhs::Layer) = lhs.name == rhs.name
 redrawingFuncs = Dict{String, Function}()
 
 function redrawCanvas!()
-    if isdefined(:canvas)
-        draw(canvas)
-    end
+    draw(canvas)
 end
 
 function getLayerByName(layers::Array{Layer, 1}, name::String, default::String="")

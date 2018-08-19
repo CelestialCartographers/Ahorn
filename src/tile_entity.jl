@@ -86,8 +86,8 @@ end
 
 function tileEntityFinalizer(entity::Maple.Entity)
     key = materialTileTypeKey(entity)
-    defaultTile = string(Main.Maple.tile_fg_names["Snow"])
-    tile = string(get(Main.persistence, "brushes_material_fgTiles", defaultTile))
+    defaultTile = string(Maple.tile_fg_names["Snow"])
+    tile = string(get(persistence, "brushes_material_fgTiles", defaultTile))
     tile = tile[1] in Maple.tile_entity_legal_tiles? tile : defaultTile
     entity.data[key] = tile
 end

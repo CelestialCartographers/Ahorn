@@ -1,8 +1,10 @@
 module CameraOffsetTrigger
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Camera Offset" => Main.EntityPlacement(
-        Main.Maple.CameraOffsetTrigger,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Camera Offset" => Ahorn.EntityPlacement(
+        Maple.CameraOffsetTrigger,
         "rectangle"
     )
 )

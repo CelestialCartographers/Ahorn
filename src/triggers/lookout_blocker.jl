@@ -1,8 +1,10 @@
 module LookoutBlocker
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Lookout Blocker" => Main.EntityPlacement(
-        Main.Maple.LookoutBlocker,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Lookout Blocker" => Ahorn.EntityPlacement(
+        Maple.LookoutBlocker,
         "rectangle"
     )
 )

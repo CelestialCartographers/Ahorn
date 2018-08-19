@@ -156,6 +156,15 @@ function getDrawableRoom(map::Map, room::Room)
     return drawableRooms[map][room]
 end
 
+function deleteDrawableRoomCache(map::Map)
+    rooms = getDrawableRooms(map)
+    for room in rooms
+        destroy(room)
+    end
+
+    delete!(drawableRooms, map)
+end
+
 function updateDrawingLayers!(map::Map, room::Room)
     global drawingLayers = getDrawableRoom(map, room).layers
 end

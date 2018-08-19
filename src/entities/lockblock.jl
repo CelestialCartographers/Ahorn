@@ -1,22 +1,24 @@
 module Lockblock
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Locked Door (Wood)" => Main.EntityPlacement(
-        Main.Maple.LockBlock,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Locked Door (Wood)" => Ahorn.EntityPlacement(
+        Maple.LockBlock,
         "point",
         Dict{String, Any}(
             "sprite" => "wood"
         )
     ),
-    "Locked Door (Temple A)" => Main.EntityPlacement(
-        Main.Maple.LockBlock,
+    "Locked Door (Temple A)" => Ahorn.EntityPlacement(
+        Maple.LockBlock,
         "point",
         Dict{String, Any}(
             "sprite" => "temple_a"
         )
     ),
-    "Locked Door (Temple B)" => Main.EntityPlacement(
-        Main.Maple.LockBlock,
+    "Locked Door (Temple B)" => Ahorn.EntityPlacement(
+        Maple.LockBlock,
         "point",
         Dict{String, Any}(
             "sprite" => "temple_b"
@@ -30,20 +32,20 @@ sprites = Dict{String, String}(
     "temple_b" => "objects/door/lockdoorTempleB00.png",
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "lockBlock"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x, y, 32, 32)
+        return true, Ahorn.Rectangle(x, y, 32, 32)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "lockBlock"
         sprite = get(entity.data, "sprite", "wood")
 
         if haskey(sprites, sprite)
-            Main.drawSprite(ctx, sprites[sprite], 16, 16)
+            Ahorn.drawSprite(ctx, sprites[sprite], 16, 16)
         end
 
         return true

@@ -1,35 +1,37 @@
 module CrumbleBlock
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Crumble Blocks" => Main.EntityPlacement(
-        Main.Maple.CrumbleBlock,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Crumble Blocks" => Ahorn.EntityPlacement(
+        Maple.CrumbleBlock,
         "rectangle",
     )
 )
 
-function minimumSize(entity::Main.Maple.Entity)
+function minimumSize(entity::Maple.Entity)
     if entity.name == "crumbleBlock"
         return true, 8, 0
     end
 end
 
-function resizable(entity::Main.Maple.Entity)
+function resizable(entity::Maple.Entity)
     if entity.name == "crumbleBlock"
         return true, true, false
     end
 end
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "crumbleBlock"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
         width = Int(get(entity.data, "width", 8))
 
-        return true, Main.Rectangle(x, y, width, 8)
+        return true, Ahorn.Rectangle(x, y, width, 8)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "crumbleBlock"
         texture = get(entity.data, "texture", "wood")
         texture = texture == "default"? "wood" : texture
@@ -41,16 +43,16 @@ function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::M
         width = Int(get(entity.data, "width", 8))
         tilesWidth = div(width, 8)
 
-        Main.Cairo.save(ctx)
+        Ahorn.Cairo.save(ctx)
 
-        Main.rectangle(ctx, 0, 0, width, 8)
-        Main.clip(ctx)
+        Ahorn.rectangle(ctx, 0, 0, width, 8)
+        Ahorn.clip(ctx)
 
         for i in 0:ceil(Int, tilesWidth / 4)
-            Main.drawImage(ctx, "objects/crumbleBlock/default", 32 * i, 0, 0, 0, 32, 8)
+            Ahorn.drawImage(ctx, "objects/crumbleBlock/default", 32 * i, 0, 0, 0, 32, 8)
         end
 
-        Main.restore(ctx)
+        Ahorn.restore(ctx)
 
         return true
     end

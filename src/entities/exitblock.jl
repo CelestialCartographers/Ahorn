@@ -1,48 +1,50 @@
 module ExitBlock
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Exit Block" => Main.EntityPlacement(
-        Main.Maple.ExitBlock,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Exit Block" => Ahorn.EntityPlacement(
+        Maple.ExitBlock,
         "rectangle",
         Dict{String, Any}(),
-        Main.tileEntityFinalizer
+        Ahorn.tileEntityFinalizer
     ),
 )
 
-function editingOptions(entity::Main.Maple.Entity)
+function editingOptions(entity::Maple.Entity)
     if entity.name == "exitBlock"
         return true, Dict{String, Any}(
-            "tileType" => string.(Main.Maple.tile_entity_legal_tiles)
+            "tileType" => string.(Maple.tile_entity_legal_tiles)
         )
     end
 end
 
-function minimumSize(entity::Main.Maple.Entity)
+function minimumSize(entity::Maple.Entity)
     if entity.name == "exitBlock"
         return true, 8, 8
     end
 end
 
-function resizable(entity::Main.Maple.Entity)
+function resizable(entity::Maple.Entity)
     if entity.name == "exitBlock"
         return true, true, true
     end
 end
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "exitBlock"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
         width = Int(get(entity.data, "width", 8))
         height = Int(get(entity.data, "height", 8))
 
-        return true, Main.Rectangle(x, y, width, height)
+        return true, Ahorn.Rectangle(x, y, width, height)
     end
 end
 
-function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "exitBlock"
-        Main.drawTileEntity(ctx, room, entity, alpha=0.5)
+        Ahorn.drawTileEntity(ctx, room, entity, alpha=0.5)
 
         return true
     end

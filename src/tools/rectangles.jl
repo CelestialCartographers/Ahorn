@@ -1,9 +1,11 @@
 module Rectangles
 
+using ..Ahorn
+
 displayName = "Rectangles"
 group = "Brushes"
 
-drawingLayers = Main.Layer[]
+drawingLayers = Ahorn.Layer[]
 
 toolsLayer = nothing
 targetLayer = nothing
@@ -14,139 +16,139 @@ filled = true
 selection = nothing
 rectangleBrush = nothing
 
-function drawRectangle(rect::Main.Rectangle, layer::Main.Layer, filled=filled)
-    ctx = Main.creategc(layer.surface)
+function drawRectangle(rect::Ahorn.Rectangle, layer::Ahorn.Layer, filled=filled)
+    ctx = Ahorn.creategc(layer.surface)
 
     pixels = fill(true, rect.h, rect.w)
     if !filled
         pixels[2:end - 1, 2:end - 1] = false
     end
 
-    global rectangleBrush = Main.Brush("Rectangle", pixels)
+    global rectangleBrush = Ahorn.Brush("Rectangle", pixels)
 
-    Main.drawBrush(rectangleBrush, layer, rect.x, rect.y)
+    Ahorn.drawBrush(rectangleBrush, layer, rect.x, rect.y)
 end
 
-function drawRectangles(layer::Main.Layer, room::Main.Room)
+function drawRectangles(layer::Ahorn.Layer, room::Ahorn.Room)
     if selection != nothing
         drawRectangle(selection, toolsLayer)
     end
 end
 
-function applyRectangle!(rect::Main.Rectangle, tiles::Main.Maple.Tiles, material::Char, filled)
-    layer = Main.layerName(targetLayer)
-    Main.History.addSnapshot!(Main.History.RoomSnapshot("Rectangle $(material)", Main.loadedState.room))
+function applyRectangle!(rect::Ahorn.Rectangle, tiles::Ahorn.Maple.Tiles, material::Char, filled)
+    layer = Ahorn.layerName(targetLayer)
+    Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Rectangle $(material)", Ahorn.loadedState.room))
 
-    Main.applyBrush!(rectangleBrush, tiles, material, rect.x, rect.y)
+    Ahorn.applyBrush!(rectangleBrush, tiles, material, rect.x, rect.y)
 end
 
 function cleanup()
     global selection = nothing
 
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function setMaterials!(layer::Main.Layer)
-    validTiles = Main.validTiles(layer)
-    tileNames = Main.tileNames(layer)
+function setMaterials!(layer::Ahorn.Layer)
+    validTiles = Ahorn.validTiles(layer)
+    tileNames = Ahorn.tileNames(layer)
 
-    Main.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
 end
 
-function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    layerName = Main.layerName(targetLayer)
-    tileNames = Main.tileNames(targetLayer)
-    global material = get(Main.persistence, "brushes_material_$(layerName)", tileNames["Air"])[1]
+function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)
+    layerName = Ahorn.layerName(targetLayer)
+    tileNames = Ahorn.tileNames(targetLayer)
+    global material = get(Ahorn.persistence, "brushes_material_$(layerName)", tileNames["Air"])[1]
 
-    wantedMode = get(Main.persistence, "brushes_rectangle_mode", "Filled")
-    Main.updateTreeView!(subTools, ["Filled", "Hollow"], row -> row[1] == wantedMode)
+    wantedMode = get(Ahorn.persistence, "brushes_rectangle_mode", "Filled")
+    Ahorn.updateTreeView!(subTools, ["Filled", "Hollow"], row -> row[1] == wantedMode)
 
-    wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
-    Main.updateLayerList!(["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
+    wantedLayer = get(Ahorn.persistence, "brushes_layer", "fgTiles")
+    Ahorn.updateLayerList!(["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
 
-    Main.redrawingFuncs["tools"] = drawRectangles
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawingFuncs["tools"] = drawRectangles
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, selected::String)
-    global targetLayer = Main.getLayerByName(drawingLayers, selected)
-    Main.persistence["brushes_layer"] = selected
+function layerSelected(list::Ahorn.ListContainer, materials::Ahorn.ListContainer, selected::String)
+    global targetLayer = Ahorn.getLayerByName(drawingLayers, selected)
+    Ahorn.persistence["brushes_layer"] = selected
 
-    tileNames = Main.tileNames(targetLayer)
-    global material = get(Main.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
+    tileNames = Ahorn.tileNames(targetLayer)
+    global material = get(Ahorn.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
     setMaterials!(targetLayer)
 end
 
-function subToolSelected(list::Main.ListContainer, selected::String)
-    Main.persistence["brushes_rectangle_mode"] = selected
+function subToolSelected(list::Ahorn.ListContainer, selected::String)
+    Ahorn.persistence["brushes_rectangle_mode"] = selected
     global filled = selected == "Filled"
 end
 
-function materialSelected(list::Main.ListContainer, selected::String)
-    tileNames = Main.tileNames(targetLayer)
-    layerName = Main.layerName(targetLayer)
-    Main.persistence["brushes_material_$(layerName)"] = tileNames[selected]
+function materialSelected(list::Ahorn.ListContainer, selected::String)
+    tileNames = Ahorn.tileNames(targetLayer)
+    layerName = Ahorn.layerName(targetLayer)
+    Ahorn.persistence["brushes_material_$(layerName)"] = tileNames[selected]
     global material = tileNames[selected]
 end
 
-function layersChanged(layers::Array{Main.Layer, 1})
-    wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
+function layersChanged(layers::Array{Ahorn.Layer, 1})
+    wantedLayer = get(Ahorn.persistence, "brushes_layer", "fgTiles")
 
     global drawingLayers = layers
-    global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.selectLayer!(layers, wantedLayer, "fgTiles")
+    global toolsLayer = Ahorn.getLayerByName(layers, "tools")
+    global targetLayer = Ahorn.selectLayer!(layers, wantedLayer, "fgTiles")
 end
 
 function leftClick(x::Number, y::Number)
-    roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
+    roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
     applyRectangle!(selection, roomTiles, material, filled)
 
     global selection = nothing
 
-    Main.redrawLayer!(toolsLayer)
-    Main.redrawLayer!(targetLayer)
+    Ahorn.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(targetLayer)
 end
 
 function middleClick(x::Number, y::Number)
-    tiles = Main.roomTiles(targetLayer, Main.loadedState.room)
-    tileNames = Main.tileNames(targetLayer)
+    tiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
+    tileNames = Ahorn.tileNames(targetLayer)
     target = get(tiles.data, (y, x), '0')
 
     global material = target
-    layerName = Main.layerName(targetLayer)
-    Main.persistence["brushes_material_$(layerName)"] = material
-    Main.selectMaterialList!(tileNames[target])
+    layerName = Ahorn.layerName(targetLayer)
+    Ahorn.persistence["brushes_material_$(layerName)"] = material
+    Ahorn.selectMaterialList!(tileNames[target])
 end
 
 function mouseMotion(x::Number, y::Number)
     # Only make a preview square if we aren't dragging
-    if !Main.mouseButtonHeld(0x1)
-        newRect = Main.Rectangle(x, y, 1, 1)
+    if !Ahorn.mouseButtonHeld(0x1)
+        newRect = Ahorn.Rectangle(x, y, 1, 1)
         
         if newRect != selection
             global selection = newRect
     
-            Main.redrawLayer!(toolsLayer)
+            Ahorn.redrawLayer!(toolsLayer)
         end
     end
 end
 
-function selectionMotion(rect::Main.Rectangle)
+function selectionMotion(rect::Ahorn.Rectangle)
     if rect != selection
         global selection = rect
 
-        Main.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(toolsLayer)
     end
 end
 
-function selectionFinish(rect::Main.Rectangle)
-    roomTiles = Main.roomTiles(targetLayer, Main.loadedState.room)
+function selectionFinish(rect::Ahorn.Rectangle)
+    roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
     applyRectangle!(selection, roomTiles, material, filled)
 
     global selection = nothing
 
-    Main.redrawLayer!(toolsLayer)
-    Main.redrawLayer!(targetLayer)
+    Ahorn.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(targetLayer)
 end
 
 end

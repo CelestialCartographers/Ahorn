@@ -1,29 +1,37 @@
-module Menubar
-using Gtk, Gtk.ShortNames
+menubarHeaders = ["File", "Edit", "Map", "Room", "Help", "Debug"]
+menubarItems = [
+    [
+        ("New", createNewMap),
+        ("Open", showFileOpenDialog),
+        ("Save", menuFileSave),
+        ("Save as", showFileSaveDialog),
+        ("Exit", ExitWindow.exitAhorn),
+    ],
+    [
+        ("Undo", History.undo!),
+        ("Redo", History.redo!) 
+    ],
+    [
+        ("Stylegrounds", StylegroundWindow.editStylegrounds),
+        ("Metadata", MetadataWindow.configureMetadata),
+        ("Save Map Image", MapImageDumper.dumpMapImageDialog)
+    ],
+    [
+        ("Add", RoomWindow.createRoom),
+        ("Configure", RoomWindow.configureRoom),
+    ],
+    [
+        ("Check for Updates", UpdateWindow.updateAhorn),
+        ("About", AboutWindow.showAboutWindow),
+    ],
+    [
+        ("Reload Tools", (w) -> debug.reloadTools!()),
+        ("Reload Entities", (w) -> debug.reloadEntities!()),
+        ("Reload Triggers", (w) -> debug.reloadTriggers!()),
+        ("Reload External Sprites", (w) -> loadExternalSprites!()),
+        ("Clear Map Render Cache", (w) -> debug.clearMapDrawingCache!()),
+        ("Force Draw All Rooms", (w) -> debug.forceDrawWholeMap!()),
+    ]
+]
 
-sampleMenuItemLeaf = Gtk.GtkMenuItemLeaf()
-
-function generateMenubar(headers::Array{String, 1}, items::Array{Array{Tuple{String, Function}, 1}, 1})
-    menubar = MenuBar()
-
-    for (i, header) in enumerate(headers)
-        headerItem = MenuItem(header)
-        headerSection = Menu(headerItem)
-
-        for data in items[i]
-            name, func = data
-
-            dataItem = MenuItem(name)
-            push!(headerSection, dataItem)
-            signal_connect(func, dataItem, :activate)
-        end
-
-        push!(menubar, headerItem)
-    end
-
-    return menubar
-end
-
-generateMenubar(headers::Tuple, items::Array{Array{Tuple{String, Function}, 1}, 1}) = generateMenubar(collect(headers), items)
-
-end
+menubar = Menubar.generateMenubar(menubarHeaders, menubarItems)

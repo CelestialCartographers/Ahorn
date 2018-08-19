@@ -1,16 +1,18 @@
 module Checkpoint
 
-function selection(entity::Main.Maple.Entity)
-    if entity.name == "checkpoint"
-        x, y = Main.entityTranslation(entity)
+using ..Ahorn, Maple
 
-        return true, Main.Rectangle(x - 11, y - 24, 18, 24)
+function selection(entity::Maple.Entity)
+    if entity.name == "checkpoint"
+        x, y = Ahorn.entityTranslation(entity)
+
+        return true, Ahorn.Rectangle(x - 11, y - 24, 18, 24)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "checkpoint"
-        Main.drawSprite(ctx, "objects/checkpoint/flag16.png", 0, -16)
+        Ahorn.drawSprite(ctx, "objects/checkpoint/flag16.png", 0, -16)
 
         return true
     end

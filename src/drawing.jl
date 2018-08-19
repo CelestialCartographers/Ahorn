@@ -1,9 +1,7 @@
 include("extract_sprites_meta.jl")
 
-sprites = loadSprites(joinpath(storageDirectory, "Gameplay.meta"), joinpath(storageDirectory, "Gameplay.png"))
-
+sprites = Dict{String, Sprite}()
 drawingAlpha = 1
-
 fileNotFoundSurface = CairoARGBSurface(0, 0)
 
 function getSpriteSurface(resource::String, filename::String)
@@ -189,17 +187,6 @@ end
 
 clearSurface(surface::Cairo.CairoSurface) = clearSurface(creategc(surface))
 
-# Without border
-function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number, h::Number, c::colorTupleType=(0.0, 0.0, 0.0))
-    Cairo.save(ctx)
-
-    setSourceColor(ctx, c)
-    rectangle(ctx, x, y, w, h)
-    fill(ctx)
-
-    restore(ctx)
-end
-
 # With border
 function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number, h::Number, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0))
     Cairo.save(ctx)
@@ -213,9 +200,7 @@ function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number,
     restore(ctx)
 end
 
-
 drawRectangle(ctx::Cairo.CairoContext, rect::Rectangle, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0)) = drawRectangle(ctx, rect.x, rect.y, rect.w, rect.h, fc, rc)
-drawRectangle(ctx::Cairo.CairoContext, rect::Rectangle, c::colorTupleType=(0.0, 0.0, 0.0)) = drawRectangle(ctx, rect.x, rect.y, rect.w, rect.h, c)
 
 function drawLines(ctx::Cairo.CairoContext, nodes::Array{T, 1}, sc::colorTupleType=(0.0, 0.0, 0.0); filled::Bool=false, fc::colorTupleType=sc) where T <: Tuple{Number, Number}
     if length(nodes) < 2

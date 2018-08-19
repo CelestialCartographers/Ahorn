@@ -1,24 +1,26 @@
 module Selection
 
+using ..Ahorn
+
 displayName = "Selection"
 group = "Placements"
 
-drawingLayers = Main.Layer[]
+drawingLayers = Ahorn.Layer[]
 
 toolsLayer = nothing
 targetLayer = nothing
 
 # Drag selection, track individually for easy replacement
-selectionRect = Main.Rectangle(0, 0, 0, 0)
-selections = Set{Tuple{String, Main.Rectangle, Any, Number}}()
+selectionRect = Ahorn.Rectangle(0, 0, 0, 0)
+selections = Set{Tuple{String, Ahorn.Rectangle, Any, Number}}()
 
 lastX, lastY = -1, -1
 shouldDrag = false
 
 decalScaleVals = (1.0, 2.0^4)
 
-relevantRoom = Main.loadedState.room
-selectionsClipboard = Set{Tuple{String, Main.Rectangle, Any, Number}}()
+relevantRoom = Ahorn.loadedState.room
+selectionsClipboard = Set{Tuple{String, Ahorn.Rectangle, Any, Number}}()
 
 function copySelections(cut::Bool=false)
     if isempty(selections)
@@ -34,7 +36,7 @@ function copySelections(cut::Bool=false)
     end
 
     redrawTargetLayer!(targetLayer, selectionsClipboard)
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(toolsLayer)
 
     return cut
 end
@@ -59,12 +61,12 @@ function pasteSelections()
             push!(room.bgDecals, target)
 
         elseif layer == "entities" && node == 0
-            target.id = Main.Maple.nextEntityId()
+            target.id = Ahorn.Maple.nextEntityId()
 
             push!(room.entities, target)
 
         elseif layer == "triggers" && node == 0
-            target.id = Main.Maple.nextTriggerId()
+            target.id = Ahorn.Maple.nextTriggerId()
 
             push!(room.triggers, target)
         end
@@ -75,41 +77,41 @@ function pasteSelections()
     union!(selections, newSelections)
 
     redrawTargetLayer!(targetLayer, selections)
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(toolsLayer)
 
     return true
 end
 
-hotkeys = Main.Hotkey[
-    Main.Hotkey(
+hotkeys = Ahorn.Hotkey[
+    Ahorn.Hotkey(
         'c',
         copySelections,
         Function[
-            Main.modifierControl
+            Ahorn.modifierControl
         ]
     ),
-    Main.Hotkey(
+    Ahorn.Hotkey(
         'x',
         cutSelections,
         Function[
-            Main.modifierControl
+            Ahorn.modifierControl
         ]
     ),
-    Main.Hotkey(
+    Ahorn.Hotkey(
         'v',
         pasteSelections,
         Function[
-            Main.modifierControl,
+            Ahorn.modifierControl,
         ]
     )
 ]
 
-function drawSelections(layer::Main.Layer, room::Main.Room)
+function drawSelections(layer::Ahorn.Layer, room::Ahorn.Room)
     drawnTargets = Set()
-    ctx = Main.creategc(toolsLayer.surface)
+    ctx = Ahorn.creategc(toolsLayer.surface)
 
     if selectionRect !== nothing && selectionRect.w > 0 && selectionRect.h > 0 && !shouldDrag
-        Main.drawRectangle(ctx, selectionRect, Main.colors.selection_selection_fc, Main.colors.selection_selection_bc)
+        Ahorn.drawRectangle(ctx, selectionRect, Ahorn.colors.selection_selection_fc, Ahorn.colors.selection_selection_bc)
     end
 
     # Make sure fgTiles render after the bgTiles
@@ -120,30 +122,30 @@ function drawSelections(layer::Main.Layer, room::Main.Room)
     for selection in selectionsArray
         layer, box, target, node = selection
 
-        if isa(target, Main.Maple.Entity) && !(target in drawnTargets)
-            Main.renderEntitySelection(ctx, toolsLayer, target, relevantRoom)
+        if isa(target, Ahorn.Maple.Entity) && !(target in drawnTargets)
+            Ahorn.renderEntitySelection(ctx, toolsLayer, target, relevantRoom)
 
             push!(drawnTargets, target)
         end
 
-        if isa(target, Main.Maple.Trigger) && !(target in drawnTargets)
-            Main.renderTriggerSelection(ctx, toolsLayer, target, relevantRoom)
+        if isa(target, Ahorn.Maple.Trigger) && !(target in drawnTargets)
+            Ahorn.renderTriggerSelection(ctx, toolsLayer, target, relevantRoom)
 
             push!(drawnTargets, target)
         end
 
-        if isa(target, Main.TileSelection)
-            Main.drawFakeTiles(ctx, relevantRoom, target.tiles, target.fg, target.selection.x, target.selection.y, clipEdges=true)
+        if isa(target, Ahorn.TileSelection)
+            Ahorn.drawFakeTiles(ctx, relevantRoom, target.tiles, target.fg, target.selection.x, target.selection.y, clipEdges=true)
         end
 
         # Get a new selection rectangle
         # This is easier than editing the existing rect
-        success, rect = Main.getSelection(target)
-        if isa(rect, Array{Main.Rectangle}) && length(rect) >= node + 1
-            Main.drawRectangle(ctx, rect[node + 1], Main.colors.selection_selected_fc, Main.colors.selection_selected_bc)
+        success, rect = Ahorn.getSelection(target)
+        if isa(rect, Array{Ahorn.Rectangle}) && length(rect) >= node + 1
+            Ahorn.drawRectangle(ctx, rect[node + 1], Ahorn.colors.selection_selected_fc, Ahorn.colors.selection_selected_bc)
 
         else
-            Main.drawRectangle(ctx, rect, Main.colors.selection_selected_fc, Main.colors.selection_selected_bc)
+            Ahorn.drawRectangle(ctx, rect, Ahorn.colors.selection_selected_fc, Ahorn.colors.selection_selected_bc)
         end
     end
 
@@ -161,58 +163,58 @@ function cleanup()
     empty!(selections)
 
     global selectionRect = nothing
-    global relevantRoom = Main.loadedState.room
+    global relevantRoom = Ahorn.loadedState.room
 
     clearDragging!()
 
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    global relevantRoom = Main.loadedState.room
+function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)
+    global relevantRoom = Ahorn.loadedState.room
     
-    wantedLayer = get(Main.persistence, "placements_layer", "entities")
-    Main.updateLayerList!(vcat(["all"], Main.selectableLayers), row -> row[1] == Main.layerName(targetLayer))
+    wantedLayer = get(Ahorn.persistence, "placements_layer", "entities")
+    Ahorn.updateLayerList!(vcat(["all"], Ahorn.selectableLayers), row -> row[1] == Ahorn.layerName(targetLayer))
 
-    Main.redrawingFuncs["tools"] = drawSelections
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawingFuncs["tools"] = drawSelections
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, selected::String)
-    global targetLayer = Main.getLayerByName(drawingLayers, selected)
-    Main.persistence["placements_layer"] = selected
+function layerSelected(list::Ahorn.ListContainer, materials::Ahorn.ListContainer, selected::String)
+    global targetLayer = Ahorn.getLayerByName(drawingLayers, selected)
+    Ahorn.persistence["placements_layer"] = selected
 end
 
-function selectionMotionAbs(rect::Main.Rectangle)
+function selectionMotionAbs(rect::Ahorn.Rectangle)
     if rect != selectionRect
         global selectionRect = rect
 
-        Main.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(toolsLayer)
     end
 end
 
 function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
     if lastX == -1 || lastY == -1
-        ctrl = Main.modifierControl()
+        ctrl = Ahorn.modifierControl()
 
         global lastX = ctrl? x1 : div(x1, 8) * 8
         global lastY = ctrl? y1 : div(y1, 8) * 8
 
         if !shouldDrag
-            success, target = Main.hasSelectionAt(selections, Main.Rectangle(x1, y1, 1, 1))
+            success, target = Ahorn.hasSelectionAt(selections, Ahorn.Rectangle(x1, y1, 1, 1))
             global shouldDrag = success
 
             if success
-                Main.History.addSnapshot!(Main.History.MultiSnapshot("Selections", Main.History.Snapshot[
-                    Main.History.RoomSnapshot("Selections", Main.loadedState.room),
-                    Main.History.SelectionSnapshot("Selections", relevantRoom, selections)
+                Ahorn.History.addSnapshot!(Ahorn.History.MultiSnapshot("Selections", Ahorn.History.Snapshot[
+                    Ahorn.History.RoomSnapshot("Selections", Ahorn.loadedState.room),
+                    Ahorn.History.SelectionSnapshot("Selections", relevantRoom, selections)
                 ]))
             end
         end
     end
 
     if shouldDrag
-        if !Main.modifierControl()
+        if !Ahorn.modifierControl()
             x1 = div(x1, 8) * 8
             y1 = div(y1, 8) * 8
 
@@ -236,14 +238,14 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
                 end
             end
 
-            Main.redrawLayer!(toolsLayer)
+            Ahorn.redrawLayer!(toolsLayer)
             redrawTargetLayer!(targetLayer, selections, String["fgTiles", "bgTiles"])
         end
     end
 end
 
-function properlyUpdateSelections!(rect::Main.Rectangle, selections::Set{Tuple{String, Main.Rectangle, Any, Number}}; best::Bool=false)
-    retain = Main.modifierShift()
+function properlyUpdateSelections!(rect::Ahorn.Rectangle, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}; best::Bool=false)
+    retain = Ahorn.modifierShift()
 
     # Do this before we get new selections
     # This way tiles are settled back into place before we select
@@ -251,27 +253,27 @@ function properlyUpdateSelections!(rect::Main.Rectangle, selections::Set{Tuple{S
         finalizeSelections!(selections)
     end
 
-    unselected, newlySelected = Main.updateSelections!(selections, relevantRoom, Main.layerName(targetLayer), rect, retain=retain, best=best)
+    unselected, newlySelected = Ahorn.updateSelections!(selections, relevantRoom, Ahorn.layerName(targetLayer), rect, retain=retain, best=best)
     initSelections!(newlySelected)
 end
 
-function getLayersSelected(selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
+function getLayersSelected(selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
     return unique([selection[1] for selection in selections])
 end
 
-function redrawTargetLayer!(layer::Main.Layer, selections::Set{Tuple{String, Main.Rectangle, Any, Number}}, ignore::Array{String, 1}=String[])
+function redrawTargetLayer!(layer::Ahorn.Layer, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}, ignore::Array{String, 1}=String[])
     redrawTargetLayer!(layer, getLayersSelected(selections), ignore)
 end
 
-function redrawTargetLayer!(layer::Main.Layer, layers::Array{String, 1}, ignore::Array{String, 1}=String[])
+function redrawTargetLayer!(layer::Ahorn.Layer, layers::Array{String, 1}, ignore::Array{String, 1}=String[])
     needsRedraw = filter(v -> !(v in ignore), layers)
 
     for layer in needsRedraw
-        Main.redrawLayer!(drawingLayers, layer)
+        Ahorn.redrawLayer!(drawingLayers, layer)
     end
 end
 
-function selectionFinishAbs(rect::Main.Rectangle)
+function selectionFinishAbs(rect::Ahorn.Rectangle)
     # If we are draging we are techically not making a new selection
     if !shouldDrag
         properlyUpdateSelections!(rect, selections)
@@ -279,60 +281,60 @@ function selectionFinishAbs(rect::Main.Rectangle)
 
     clearDragging!()
 
-    global selectionRect = Main.Rectangle(0, 0, 0, 0)
+    global selectionRect = Ahorn.Rectangle(0, 0, 0, 0)
 
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
 function leftClickAbs(x::Number, y::Number)
-    rect = Main.Rectangle(x, y, 1, 1)
+    rect = Ahorn.Rectangle(x, y, 1, 1)
     properlyUpdateSelections!(rect, selections, best=true)
 
     clearDragging!()
 
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
 function rightClickAbs(x::Number, y::Number)
-    Main.displayProperties(x, y, relevantRoom, targetLayer)
+    Ahorn.displayProperties(x, y, relevantRoom, targetLayer, toolsLayer)
 
     clearDragging!()
 
-    Main.redrawLayer!(toolsLayer)        
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function layersChanged(layers::Array{Main.Layer, 1})
-    wantedLayer = get(Main.persistence, "placements_layer", "entities")
+function layersChanged(layers::Array{Ahorn.Layer, 1})
+    wantedLayer = get(Ahorn.persistence, "placements_layer", "entities")
 
     global drawingLayers = layers
-    global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.selectLayer!(layers, wantedLayer, "entities")
+    global toolsLayer = Ahorn.getLayerByName(layers, "tools")
+    global targetLayer = Ahorn.selectLayer!(layers, wantedLayer, "entities")
 end
 
-function applyTileSelecitonBrush!(target::Main.TileSelection, clear::Bool=false)
+function applyTileSelecitonBrush!(target::Ahorn.TileSelection, clear::Bool=false)
     roomTiles = target.fg? relevantRoom.fgTiles : relevantRoom.bgTiles
     tiles = clear? fill('0', size(target.tiles)) : target.tiles
 
     x, y = floor(Int, target.selection.x / 8), floor(Int, target.selection.y / 8)
-    brush = Main.Brush(
+    brush = Ahorn.Brush(
         "Selection Finisher",
         clear? fill(1, size(tiles) .- 2) : tiles[2:end - 1, 2:end - 1] .!= '0'
     )
 
-    Main.applyBrush!(brush, roomTiles, tiles[2:end - 1, 2:end - 1], x + 1, y + 1)
+    Ahorn.applyBrush!(brush, roomTiles, tiles[2:end - 1, 2:end - 1], x + 1, y + 1)
 end
 
-function afterUndo(map::Main.Maple.Map)
-    global selections = Main.fixSelections(relevantRoom, selections)
-    Main.redrawLayer!(toolsLayer)
+function afterUndo(map::Ahorn.Maple.Map)
+    global selections = Ahorn.fixSelections(relevantRoom, selections)
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function afterRedo(map::Main.Maple.Map)
-    global selections = Main.fixSelections(relevantRoom, selections)
-    Main.redrawLayer!(toolsLayer)
+function afterRedo(map::Ahorn.Maple.Map)
+    global selections = Ahorn.fixSelections(relevantRoom, selections)
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function finalizeSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Number}})
+function finalizeSelections!(targets::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
     for selection in targets
         layer, box, target, node = selection
 
@@ -346,7 +348,7 @@ function finalizeSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Num
     end
 end
 
-function initSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Number}})
+function initSelections!(targets::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
     for selection in targets
         layer, box, target, node = selection
 
@@ -360,12 +362,12 @@ function initSelections!(targets::Set{Tuple{String, Main.Rectangle, Any, Number}
     end
 end
 
-function setSelections(map::Main.Maple.Map, room::Main.Maple.Room, newSelections::Set{Tuple{String, Main.Rectangle, Any, Number}})
+function setSelections(map::Ahorn.Maple.Map, room::Ahorn.Maple.Room, newSelections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
     if room.name == relevantRoom.name
         empty!(selections)
-        union!(selections, Main.fixSelections(relevantRoom, newSelections))
+        union!(selections, Ahorn.fixSelections(relevantRoom, newSelections))
 
-        Main.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(toolsLayer)
     end
 end
 
@@ -373,7 +375,7 @@ function getSelections()
     return true, selections
 end
 
-function applyMovement!(target::Union{Main.Maple.Entity, Main.Maple.Trigger}, ox::Number, oy::Number, node::Number=0)
+function applyMovement!(target::Union{Ahorn.Maple.Entity, Ahorn.Maple.Trigger}, ox::Number, oy::Number, node::Number=0)
     if node == 0
         target.data["x"] += ox
         target.data["y"] += oy
@@ -387,33 +389,33 @@ function applyMovement!(target::Union{Main.Maple.Entity, Main.Maple.Trigger}, ox
     end
 end
 
-function applyMovement!(decal::Main.Maple.Decal, ox::Number, oy::Number, node::Number=0)
+function applyMovement!(decal::Ahorn.Maple.Decal, ox::Number, oy::Number, node::Number=0)
     decal.x += ox
     decal.y += oy
 end
 
-function applyMovement!(target::Main.TileSelection, ox::Number, oy::Number, node::Number=0)
+function applyMovement!(target::Ahorn.TileSelection, ox::Number, oy::Number, node::Number=0)
     target.offsetX += ox
     target.offsetY += oy
 
-    target.selection = Main.Rectangle(target.startX + floor(target.offsetX / 8) * 8, target.startY + floor(target.offsetY / 8) * 8, target.selection.w, target.selection.h)
+    target.selection = Ahorn.Rectangle(target.startX + floor(target.offsetX / 8) * 8, target.startY + floor(target.offsetY / 8) * 8, target.selection.w, target.selection.h)
 end
 
-function notifyMovement!(entity::Main.Maple.Entity)
-    Main.eventToModules(Main.loadedEntities, "moved", entity)
-    Main.eventToModules(Main.loadedEntities, "moved", entity, relevantRoom)
+function notifyMovement!(entity::Ahorn.Maple.Entity)
+    Ahorn.eventToModules(Ahorn.loadedEntities, "moved", entity)
+    Ahorn.eventToModules(Ahorn.loadedEntities, "moved", entity, relevantRoom)
 end
 
-function notifyMovement!(trigger::Main.Maple.Trigger)
-    Main.eventToModules(Main.loadedTriggers, "moved", trigger)
-    Main.eventToModules(Main.loadedTriggers, "moved", trigger, relevantRoom)
+function notifyMovement!(trigger::Ahorn.Maple.Trigger)
+    Ahorn.eventToModules(Ahorn.loadedTriggers, "moved", trigger)
+    Ahorn.eventToModules(Ahorn.loadedTriggers, "moved", trigger, relevantRoom)
 end
 
-function notifyMovement!(decal::Main.Maple.Decal)
+function notifyMovement!(decal::Ahorn.Maple.Decal)
     # Decals doesn't care
 end
 
-function notifyMovement!(target::Main.TileSelection)
+function notifyMovement!(target::Ahorn.TileSelection)
     # Decals doesn't care
 end
 
@@ -439,13 +441,13 @@ scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
     Int('h') => (-1, 1),
 )
 
-function handleMovement(event::Main.eventKey)
+function handleMovement(event::Ahorn.eventKey)
     redraw = false
-    step = Main.modifierControl()? 1 : 8
+    step = Ahorn.modifierControl()? 1 : 8
 
     for selection in selections
         name, box, target, node = selection
-        ox, oy = Main.moveDirections[event.keyval] .* step
+        ox, oy = Ahorn.moveDirections[event.keyval] .* step
 
         if applicable(applyMovement!, target, ox, oy, node)
             applyMovement!(target, ox, oy, node)
@@ -458,17 +460,17 @@ function handleMovement(event::Main.eventKey)
     return redraw
 end
 
-function handleResize(event::Main.eventKey)
+function handleResize(event::Ahorn.eventKey)
     redraw = false
-    step = Main.modifierControl()? 1 : 8
+    step = Ahorn.modifierControl()? 1 : 8
 
     for selection in selections
         name, box, target, node = selection
         extraW, extraH = resizeModifiers[event.keyval] .* step
 
         if (name == "entities" || name == "triggers") && node == 0
-            horizontal, vertical = Main.canResize(target)
-            minWidth, minHeight = Main.minimumSize(target)
+            horizontal, vertical = Ahorn.canResize(target)
+            minWidth, minHeight = Ahorn.minimumSize(target)
 
             baseWidth = get(target.data, "width", minWidth)
             baseHeight = get(target.data, "height", minHeight)
@@ -496,13 +498,13 @@ function handleResize(event::Main.eventKey)
     return redraw
 end
 
-function handleScaling(event::Main.eventKey)
+function handleScaling(event::Ahorn.eventKey)
     redraw = false
     for selection in selections
         name, box, target, node = selection
         msx, msy = scaleMultipliers[event.keyval]
 
-        if isa(target, Main.Maple.Decal)
+        if isa(target, Ahorn.Maple.Decal)
             target.scaleX *= msx
             target.scaleY *= msy
 
@@ -513,14 +515,14 @@ function handleScaling(event::Main.eventKey)
     return redraw
 end
 
-function handleAddNodes(event::Main.eventKey)
+function handleAddNodes(event::Ahorn.eventKey)
     redraw = false
 
     for selection in selections
         name, box, target, node = selection
 
         if name == "entities" || name == "triggers"
-            least, most = Main.nodeLimits(target)
+            least, most = Ahorn.nodeLimits(target)
             nodes = get(target.data, "nodes", [])
 
             if most == -1 || length(nodes) + 1 <= most
@@ -541,7 +543,7 @@ function handleAddNodes(event::Main.eventKey)
     return redraw
 end
 
-function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Number}})
+function handleDeletion(selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
     res = !isempty(selections)
     selectionsArray = collect(selections)
 
@@ -556,7 +558,7 @@ function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Numbe
     # Deletion for entities and triggers
     for selection in entityTriggerSelections
         name, box, target, node = selection
-        targetList = Main.selectionTargets[name](relevantRoom)
+        targetList = Ahorn.selectionTargets[name](relevantRoom)
 
         index = findfirst(targetList, target)
         if index != 0 
@@ -564,7 +566,7 @@ function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Numbe
                 deleteat!(targetList, index)
 
             else
-                least, most = Main.nodeLimits(target)
+                least, most = Ahorn.nodeLimits(target)
                 nodes = get(target.data, "nodes", [])
 
                 # Delete the node if that doesn't result in too few nodes
@@ -582,7 +584,7 @@ function handleDeletion(selections::Set{Tuple{String, Main.Rectangle, Any, Numbe
     # Deletion for decals
     for selection in decalSelections    
         name, box, target, node = selection
-        targetList = Main.selectionTargets[name](relevantRoom)
+        targetList = Ahorn.selectionTargets[name](relevantRoom)
 
         index = findfirst(targetList, target)
         if index != 0 
@@ -601,21 +603,21 @@ end
 
 # Refactor and prettify code once we know how to handle tiles here,
 # this also includes the handle functions
-function keyboard(event::Main.eventKey)
+function keyboard(event::Ahorn.eventKey)
     needsRedraw = false
     layersSelected = getLayersSelected(selections)
-    snapshot = Main.History.MultiSnapshot("Selections", Main.History.Snapshot[
-        Main.History.RoomSnapshot("Selections", Main.loadedState.room),
-        Main.History.SelectionSnapshot("Selections", relevantRoom, selections)
+    snapshot = Ahorn.History.MultiSnapshot("Selections", Ahorn.History.Snapshot[
+        Ahorn.History.RoomSnapshot("Selections", Ahorn.loadedState.room),
+        Ahorn.History.SelectionSnapshot("Selections", relevantRoom, selections)
     ])
 
     for hotkey in hotkeys
-        if Main.active(hotkey, event)
-            needsRedraw |= Main.callback(hotkey)
+        if Ahorn.active(hotkey, event)
+            needsRedraw |= Ahorn.callback(hotkey)
         end
     end
 
-    if haskey(Main.moveDirections, event.keyval)
+    if haskey(Ahorn.moveDirections, event.keyval)
         needsRedraw |= handleMovement(event)
     end
 
@@ -623,21 +625,21 @@ function keyboard(event::Main.eventKey)
         needsRedraw |= handleResize(event)
     end
 
-    if haskey(scaleMultipliers, event.keyval) && !Main.modifierControl()
+    if haskey(scaleMultipliers, event.keyval) && !Ahorn.modifierControl()
         needsRedraw |= handleScaling(event)
     end
 
-    if event.keyval == addNodeKey && !Main.modifierControl()
+    if event.keyval == addNodeKey && !Ahorn.modifierControl()
         needsRedraw |= handleAddNodes(event)
     end
 
-    if event.keyval == Main.Gtk.GdkKeySyms.Delete && !Main.modifierControl()
+    if event.keyval == Ahorn.Gtk.GdkKeySyms.Delete && !Ahorn.modifierControl()
         needsRedraw |= handleDeletion(selections)
     end
 
     if needsRedraw
-        Main.History.addSnapshot!(snapshot)
-        Main.redrawLayer!(toolsLayer)
+        Ahorn.History.addSnapshot!(snapshot)
+        Ahorn.redrawLayer!(toolsLayer)
         redrawTargetLayer!(targetLayer, layersSelected)
     end
 

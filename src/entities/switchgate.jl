@@ -1,7 +1,9 @@
 module SwitchGate
 
+using ..Ahorn, Maple
+
 function gateFinalizer(entity)
-    x, y = Main.entityTranslation(entity)
+    x, y = Ahorn.entityTranslation(entity)
 
     width = Int(get(entity.data, "width", 8))
     height = Int(get(entity.data, "height", 8))
@@ -11,25 +13,25 @@ end
 
 textures = ["block", "mirror", "temple"]
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Switch Gate (Stone)" => Main.EntityPlacement(
-        Main.Maple.SwitchGate,
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Switch Gate (Stone)" => Ahorn.EntityPlacement(
+        Maple.SwitchGate,
         "rectangle",
         Dict{String, Any}(
             "sprite" => "block"
         ),
         gateFinalizer
     ),
-    "Switch Gate (Mirror)" => Main.EntityPlacement(
-        Main.Maple.SwitchGate,
+    "Switch Gate (Mirror)" => Ahorn.EntityPlacement(
+        Maple.SwitchGate,
         "rectangle",
         Dict{String, Any}(
             "sprite" => "mirror"
         ),
         gateFinalizer
     ),
-    "Switch Gate (Temple)" => Main.EntityPlacement(
-        Main.Maple.SwitchGate,
+    "Switch Gate (Temple)" => Ahorn.EntityPlacement(
+        Maple.SwitchGate,
         "rectangle",
         Dict{String, Any}(
             "sprite" => "temple"
@@ -37,12 +39,12 @@ placements = Dict{String, Main.EntityPlacement}(
         gateFinalizer
     ),
 
-    "Touch Switch" => Main.EntityPlacement(
-        Main.Maple.TouchSwitch
+    "Touch Switch" => Ahorn.EntityPlacement(
+        Maple.TouchSwitch
     )
 )
 
-function editingOptions(entity::Main.Maple.Entity)
+function editingOptions(entity::Maple.Entity)
     if entity.name == "switchGates"
         return true, Dict{String, Any}(
             "sprite" => textures
@@ -50,72 +52,74 @@ function editingOptions(entity::Main.Maple.Entity)
     end
 end
 
-function nodeLimits(entity::Main.Maple.Entity)
+function nodeLimits(entity::Maple.Entity)
     if entity.name == "switchGate"
         return true, 1, 1
     end
 end
 
-function minimumSize(entity::Main.Maple.Entity)
+function minimumSize(entity::Maple.Entity)
     if entity.name == "switchGate"
         return true, 16, 16
     end
 end
 
-function resizable(entity::Main.Maple.Entity)
+function resizable(entity::Maple.Entity)
     if entity.name == "switchGate"
         return true, true, true
     end
 end
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "switchGate"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
         stopX, stopY = Int.(entity.data["nodes"][1])
 
         width = Int(get(entity.data, "width", 8))
         height = Int(get(entity.data, "height", 8))
 
-        return true, [Main.Rectangle(x, y, width, height), Main.Rectangle(stopX, stopY, width, height)]
+        return true, [Ahorn.Rectangle(x, y, width, height), Ahorn.Rectangle(stopX, stopY, width, height)]
 
     elseif entity.name == "touchSwitch"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 7, y - 7, 14, 14)
+        return true, Ahorn.Rectangle(x - 7, y - 7, 14, 14)
     end
 end
 
-iconSprite = Main.sprites["objects/switchgate/icon00"]
+iconResource = "objects/switchgate/icon00"
 
-function renderGateSwitch(ctx::Main.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number, sprite::String)
+function renderGateSwitch(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number, sprite::String)
+    iconSprite = Ahorn.sprites[iconResource]
+    
     tilesWidth = div(width, 8)
     tilesHeight = div(height, 8)
 
     frame = "objects/switchgate/$sprite"
 
     for i in 2:tilesWidth - 1
-        Main.drawImage(ctx, frame, x + (i - 1) * 8, y, 8, 0, 8, 8)
-        Main.drawImage(ctx, frame, x + (i - 1) * 8, y + height - 8, 8, 16, 8, 8)
+        Ahorn.drawImage(ctx, frame, x + (i - 1) * 8, y, 8, 0, 8, 8)
+        Ahorn.drawImage(ctx, frame, x + (i - 1) * 8, y + height - 8, 8, 16, 8, 8)
     end
 
     for i in 2:tilesHeight - 1
-        Main.drawImage(ctx, frame, x, y + (i - 1) * 8, 0, 8, 8, 8)
-        Main.drawImage(ctx, frame, x + width - 8, y + (i - 1) * 8, 16, 8, 8, 8)
+        Ahorn.drawImage(ctx, frame, x, y + (i - 1) * 8, 0, 8, 8, 8)
+        Ahorn.drawImage(ctx, frame, x + width - 8, y + (i - 1) * 8, 16, 8, 8, 8)
     end
 
     for i in 2:tilesWidth - 1, j in 2:tilesHeight - 1
-        Main.drawImage(ctx, frame, x + (i - 1) * 8, y + (j - 1) * 8, 8, 8, 8, 8)
+        Ahorn.drawImage(ctx, frame, x + (i - 1) * 8, y + (j - 1) * 8, 8, 8, 8, 8)
     end
 
-    Main.drawImage(ctx, frame, x, y, 0, 0, 8, 8)
-    Main.drawImage(ctx, frame, x + width - 8, y, 16, 0, 8, 8)
-    Main.drawImage(ctx, frame, x, y + height - 8, 0, 16, 8, 8)
-    Main.drawImage(ctx, frame, x + width - 8, y + height - 8, 16, 16, 8, 8)
+    Ahorn.drawImage(ctx, frame, x, y, 0, 0, 8, 8)
+    Ahorn.drawImage(ctx, frame, x + width - 8, y, 16, 0, 8, 8)
+    Ahorn.drawImage(ctx, frame, x, y + height - 8, 0, 16, 8, 8)
+    Ahorn.drawImage(ctx, frame, x + width - 8, y + height - 8, 16, 16, 8, 8)
 
-    Main.drawImage(ctx, iconSprite, x + div(width - iconSprite.width, 2), y + div(height - iconSprite.height, 2))
+    Ahorn.drawImage(ctx, iconSprite, x + div(width - iconSprite.width, 2), y + div(height - iconSprite.height, 2))
 end
 
-function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "switchGate"
         sprite = get(entity.data, "sprite", "block")
         startX, startY = Int(entity.data["x"]), Int(entity.data["y"])
@@ -125,22 +129,22 @@ function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Enti
         height = Int(get(entity.data, "height", 32))
 
         renderGateSwitch(ctx, stopX, stopY, width, height, sprite)
-        Main.drawArrow(ctx, startX + width / 2, startY + height / 2, stopX + width / 2, stopY + height / 2, Main.colors.selection_selected_fc, headLength=6)
+        Ahorn.drawArrow(ctx, startX + width / 2, startY + height / 2, stopX + width / 2, stopY + height / 2, Ahorn.colors.selection_selected_fc, headLength=6)
 
         return true
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "touchSwitch"
-        Main.drawSprite(ctx, "objects/touchswitch/container.png", 0, 0)
-        Main.drawSprite(ctx, "objects/touchswitch/icon00.png", 0, 0)
+        Ahorn.drawSprite(ctx, "objects/touchswitch/container.png", 0, 0)
+        Ahorn.drawSprite(ctx, "objects/touchswitch/icon00.png", 0, 0)
         
         return true
     end
 end
 
-function renderAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "switchGate"
         sprite = get(entity.data, "sprite", "block")
 

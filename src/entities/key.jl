@@ -1,22 +1,24 @@
 module Key
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Key" => Main.EntityPlacement(
-        Main.Maple.Key
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Key" => Ahorn.EntityPlacement(
+        Maple.Key
     ),
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "key"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 8, y - 8, 16, 16)
+        return true, Ahorn.Rectangle(x - 8, y - 8, 16, 16)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "key"
-        Main.drawSprite(ctx, "collectables/key/idle00.png", 0, 0)
+        Ahorn.drawSprite(ctx, "collectables/key/idle00.png", 0, 0)
 
         return true
     end

@@ -1,22 +1,24 @@
 module Player
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Player" => Main.EntityPlacement(
-        Main.Maple.Player
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Player" => Ahorn.EntityPlacement(
+        Maple.Player
     )
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "player"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 7, y - 16, 12, 16)
+        return true, Ahorn.Rectangle(x - 7, y - 16, 12, 16)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
     if entity.name == "player"
-        Main.drawSprite(ctx, "characters/player/sitDown00.png", 0, -16)
+        Ahorn.drawSprite(ctx, "characters/player/sitDown00.png", 0, -16)
 
         return true
     end

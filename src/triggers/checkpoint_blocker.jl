@@ -1,8 +1,10 @@
 module CheckpointBlocker
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Checkpoint Blocker" => Main.EntityPlacement(
-        Main.Maple.CheckpointBlockerTrigger,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Checkpoint Blocker" => Ahorn.EntityPlacement(
+        Maple.CheckpointBlockerTrigger,
         "rectangle"
     )
 )

@@ -22,7 +22,7 @@ roomList = generateTreeView(
                 room = Maple.getRoomByName(loadedState.map, store[row, 1])
                 x, y = room.position
 
-                simple = get(Main.config, "use_simple_room_values", true)
+                simple = get(config, "use_simple_room_values", true)
                 multiplier = simple? 8 : 1
 
                 room.position = (newX * multiplier, y)
@@ -37,7 +37,7 @@ roomList = generateTreeView(
                 room = Maple.getRoomByName(loadedState.map, store[row, 1])
                 x, y = room.position
 
-                simple = get(Main.config, "use_simple_room_values", true)
+                simple = get(config, "use_simple_room_values", true)
                 multiplier = simple? 8 : 1
 
                 room.position = (x, newY * multiplier)
@@ -67,3 +67,13 @@ connectChanged(roomList, function(roomList, row)
         draw(canvas)
     end
 end)
+
+function selectLoadedRoom!(roomList::ListContainer)
+    # Select the specified room or the first one
+    if loadedState.room !== nothing
+        select!(roomList, r -> r[1] == loadedState.roomName)
+
+    else
+        select!(roomList)
+    end
+end

@@ -1,16 +1,18 @@
 module Clouds
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Cloud (Normal)" => Main.EntityPlacement(
-        Main.Maple.Cloud,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Cloud (Normal)" => Ahorn.EntityPlacement(
+        Maple.Cloud,
         "point",
         Dict{String, Any}(
             "fragile" => false,
             "small" => false
         )
     ),
-    "Cloud (Fragile)" => Main.EntityPlacement(
-        Main.Maple.Cloud,
+    "Cloud (Fragile)" => Ahorn.EntityPlacement(
+        Maple.Cloud,
         "point",
         Dict{String, Any}(
             "fragile" => true,
@@ -19,27 +21,27 @@ placements = Dict{String, Main.EntityPlacement}(
     ),
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "cloud"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 16, y - 6, 32, 16)
+        return true, Ahorn.Rectangle(x - 16, y - 6, 32, 16)
     end
 end
 
 normalScale = 1.0
 smallScale = 29 / 35
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "cloud"
         fragile = get(entity.data, "fragile", false)
         small = get(entity.data, "small", false)
 
         if fragile
-            Main.drawSprite(ctx, "objects/clouds/fragile00.png", 0, 0, sx=small? smallScale : normalScale)
+            Ahorn.drawSprite(ctx, "objects/clouds/fragile00.png", 0, 0, sx=small? smallScale : normalScale)
 
         else
-            Main.drawSprite(ctx, "objects/clouds/cloud00.png", 0, 0, sx=small? smallScale : normalScale)
+            Ahorn.drawSprite(ctx, "objects/clouds/cloud00.png", 0, 0, sx=small? smallScale : normalScale)
         end
 
         return true

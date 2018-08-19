@@ -1,16 +1,18 @@
 module AmbienceParamTrigger
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Ambience Param" => Main.EntityPlacement(
-        Main.Maple.AmbienceParamTrigger,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Ambience Param" => Ahorn.EntityPlacement(
+        Maple.AmbienceParamTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Main.Maple.Trigger)
+function editingOptions(trigger::Maple.Trigger)
     if trigger.name == "ambienceParamTrigger"
         return true, Dict{String, Any}(
-            "direction" => Main.Maple.trigger_position_modes
+            "direction" => Maple.trigger_position_modes
         )
     end
 end

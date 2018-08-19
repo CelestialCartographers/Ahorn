@@ -1,8 +1,10 @@
 module Cassette
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Cassette" => Main.EntityPlacement(
-        Main.Maple.Cassette,
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Cassette" => Ahorn.EntityPlacement(
+        Maple.Cassette,
         "point",
         Dict{String, Any}(),
         function(entity)
@@ -14,40 +16,40 @@ placements = Dict{String, Main.EntityPlacement}(
     ),
 )
 
-function nodeLimits(entity::Main.Maple.Entity)
+function nodeLimits(entity::Maple.Entity)
     if entity.name == "cassette"
         return true, 2, 2
     end
 end
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "cassette"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
         nx1, ny1 = Int.(entity.data["nodes"][1])
         nx2, ny2 = Int.(entity.data["nodes"][2])
 
-        return true, [Main.Rectangle(x - 12, y - 8, 24, 16), Main.Rectangle(nx1 - 12, ny1 - 8, 24, 16), Main.Rectangle(nx2 - 12, ny2 - 8, 24, 16)]
+        return true, [Ahorn.Rectangle(x - 12, y - 8, 24, 16), Ahorn.Rectangle(nx1 - 12, ny1 - 8, 24, 16), Ahorn.Rectangle(nx2 - 12, ny2 - 8, 24, 16)]
     end
 end
 
-function renderSelectedAbs(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity)
+function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
     if entity.name == "cassette"
-        px, py = Main.entityTranslation(entity)
+        px, py = Ahorn.entityTranslation(entity)
         nodes = entity.data["nodes"]
 
         for node in nodes
             nx, ny = Int.(node)
             theta = atan2(py - ny, px - nx)
-            Main.drawArrow(ctx, px, py, nx + cos(theta) * 8, ny + sin(theta) * 8, Main.colors.selection_selected_fc, headLength=6)
-            Main.drawSprite(ctx, "collectables/cassette/idle00.png", nx, ny)
+            Ahorn.drawArrow(ctx, px, py, nx + cos(theta) * 8, ny + sin(theta) * 8, Ahorn.colors.selection_selected_fc, headLength=6)
+            Ahorn.drawSprite(ctx, "collectables/cassette/idle00.png", nx, ny)
             px, py = nx, ny
         end
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "cassette"
-        Main.drawSprite(ctx, "collectables/cassette/idle00.png", 0, 0)
+        Ahorn.drawSprite(ctx, "collectables/cassette/idle00.png", 0, 0)
 
         return true
     end

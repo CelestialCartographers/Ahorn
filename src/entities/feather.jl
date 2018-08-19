@@ -1,11 +1,13 @@
 module Feather
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Feather" => Main.EntityPlacement(
-        Main.Maple.Feather
+using ..Ahorn, Maple
+
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Feather" => Ahorn.EntityPlacement(
+        Maple.Feather
     ),
-    "Feather (Shielded)" => Main.EntityPlacement(
-        Main.Maple.Feather,
+    "Feather (Shielded)" => Ahorn.EntityPlacement(
+        Maple.Feather,
         "point",
         Dict{String, Any}(
             "shielded" => true
@@ -13,28 +15,28 @@ placements = Dict{String, Main.EntityPlacement}(
     )
 )
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "infiniteStar"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
-        return true, Main.Rectangle(x - 8, y - 8, 16, 16)
+        return true, Ahorn.Rectangle(x - 8, y - 8, 16, 16)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "infiniteStar"
         if get(entity.data, "shielded", false)
-            Main.Cairo.save(ctx)
+            Ahorn.Cairo.save(ctx)
 
-            Main.set_antialias(ctx, 1)
-            Main.set_line_width(ctx, 1);
+            Ahorn.set_antialias(ctx, 1)
+            Ahorn.set_line_width(ctx, 1);
 
-            Main.drawCircle(ctx, 0, 0, 12, (1.0, 1.0, 1.0, 1.0))
+            Ahorn.drawCircle(ctx, 0, 0, 12, (1.0, 1.0, 1.0, 1.0))
 
-            Main.Cairo.restore(ctx)
+            Ahorn.Cairo.restore(ctx)
         end
 
-        Main.drawSprite(ctx, "objects/flyFeather/idle00.png", 0, 0)
+        Ahorn.drawSprite(ctx, "objects/flyFeather/idle00.png", 0, 0)
 
         return true
     end

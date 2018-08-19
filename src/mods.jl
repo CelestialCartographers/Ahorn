@@ -52,7 +52,7 @@ function getCelesteModDirs()
         return String[]
     end
 
-    celesteDir = config["celeste_dir"]
+    celesteDir = get(config, "celeste_dir", "")
     modsPath = joinpath(celesteDir, "Mods")
 
     targetFolders = String[]
@@ -73,7 +73,7 @@ function getCelesteModZips()
         return String[]
     end
 
-    celesteDir = config["celeste_dir"]
+    celesteDir = get(config, "celeste_dir", "")
     modsPath = joinpath(celesteDir, "Mods")
 
     targetZips = String[]
@@ -178,7 +178,9 @@ function findExternalModules(args::String...)
 end
 
 function loadExternalModules!(loadedModules::Dict{String, Module}, loadedNames::Array{String, 1}, args::String...)
+    # ZipFile uses linux paths 
     path = joinpath("Ahorn", args...)
+    path = replace(path, "\\", "/")
 
     targets = vcat(
         getCelesteModZips(),
@@ -196,10 +198,15 @@ function loadExternalModules!(loadedModules::Dict{String, Module}, loadedNames::
                 # Prevents hotswaping from trying to access invalid file
                 fakeFn = name * ".from_zip"
 
-                loadedModules[fakeFn] = eval(parse(readstring(file)))
+                try
+                    loadedModules[fakeFn] = eval(parse(readstring(file)))
 
-                if !(fakeFn in loadedNames)
-                    push!(loadedNames, fakeFn)
+                    if !(fakeFn in loadedNames)
+                        push!(loadedNames, fakeFn)
+                    end
+
+                catch
+                    println("! Failed to load \"$name\" from \"$target\"")
                 end
             end
         end

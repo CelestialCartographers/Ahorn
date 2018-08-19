@@ -23,6 +23,10 @@ function entityTranslation(entity::Maple.Entity)
 end
 
 function renderEvent(fn::String, func::String, args...)
+    if !haskey(loadedModules, fn)
+        return false
+    end
+
     res = eventToModule(fn, func, args...)
 
     return !isa(res, Void) && res
@@ -245,7 +249,7 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
     nodeRange = nodeLimits(entity)
 
     for (attr, value) in entity.data
-        keyOptions = haskey(options, attr)? options[attr] : nothing
+        keyOptions = get(options, attr, nothing)
 
         if !horizontalAllowed && attr == "width" || !verticalAllowed && attr == "height"
             continue
@@ -277,10 +281,6 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
     return res
 end
 
-loadedEntities = joinpath.("entities", readdir(abs"entities"))
-append!(loadedEntities, findExternalModules("entities"))
+loadedEntities = joinpath.(abs"entities", readdir(abs"entities"))
 loadModule.(loadedEntities)
-loadExternalModules!(loadedModules, loadedEntities, "entities")
-
 entityPlacements = Dict{String, EntityPlacement}()
-registerPlacements!(entityPlacements, loadedEntities)

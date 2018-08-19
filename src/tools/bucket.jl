@@ -1,9 +1,11 @@
 module Bucket
 
+using ..Ahorn
+
 displayName = "Bucket"
 group = "Brushes"
 
-drawingLayers = Main.Layer[]
+drawingLayers = Ahorn.Layer[]
 
 toolsLayer = nothing
 targetLayer = nothing
@@ -38,35 +40,35 @@ function findFill(tiles::Array{Char, 2}, x::Number, y::Number)
     return res
 end
 
-function drawFill(x::Number, y::Number, tiles::Main.Maple.Tiles, layer::Main.Layer)
+function drawFill(x::Number, y::Number, tiles::Ahorn.Maple.Tiles, layer::Ahorn.Layer)
     h, w = size(tiles.data)
 
     if 1 <=x <= w && 1 <= y <= h
-        ctx = Main.creategc(layer.surface)
+        ctx = Ahorn.creategc(layer.surface)
 
-        pixels, ox, oy = Main.shrinkMatrix(findFill(tiles.data, x, y))
-        global bucketBrush = Main.Brush("Bucket", pixels, (ox, oy))
+        pixels, ox, oy = Ahorn.shrinkMatrix(findFill(tiles.data, x, y))
+        global bucketBrush = Ahorn.Brush("Bucket", pixels, (ox, oy))
 
-        Main.drawBrush(bucketBrush, layer, 1, 1)
+        Ahorn.drawBrush(bucketBrush, layer, 1, 1)
     end
 end
 
-function drawBucket(layer::Main.Layer, room::Main.Room)
+function drawBucket(layer::Ahorn.Layer, room::Ahorn.Room)
     if bucketPosition != nothing
         x, y = bucketPosition
-        tiles = Main.roomTiles(targetLayer, room)
+        tiles = Ahorn.roomTiles(targetLayer, room)
 
         drawFill(x, y, tiles, layer)
     end
 end
 
-function applyFill!(x::Number, y::Number, layer::Main.Layer, material::Char)
+function applyFill!(x::Number, y::Number, layer::Ahorn.Layer, material::Char)
     if bucketBrush !== nothing
-        Main.History.addSnapshot!(Main.History.RoomSnapshot("Bucket ($material)", Main.loadedState.room))
+        Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Bucket ($material)", Ahorn.loadedState.room))
 
-        tiles = Main.roomTiles(layer, Main.loadedState.room)
+        tiles = Ahorn.roomTiles(layer, Ahorn.loadedState.room)
 
-        Main.applyBrush!(bucketBrush, tiles, material, 1, 1)
+        Ahorn.applyBrush!(bucketBrush, tiles, material, 1, 1)
     end
 end
 
@@ -74,60 +76,60 @@ function cleanup()
     global bucketPosition = nothing
     global bucketBrush = nothing
 
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function setMaterials!(layer::Main.Layer)
-    validTiles = Main.validTiles(layer)
-    tileNames = Main.tileNames(layer)
+function setMaterials!(layer::Ahorn.Layer)
+    validTiles = Ahorn.validTiles(layer)
+    tileNames = Ahorn.tileNames(layer)
 
-    Main.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
 end
 
-function toolSelected(subTools::Main.ListContainer, layers::Main.ListContainer, materials::Main.ListContainer)
-    layerName = Main.layerName(targetLayer)
-    tileNames = Main.tileNames(targetLayer)
-    global material = get(Main.persistence, "brushes_$(layerName)_material", tileNames["Air"])[1]
+function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)
+    layerName = Ahorn.layerName(targetLayer)
+    tileNames = Ahorn.tileNames(targetLayer)
+    global material = get(Ahorn.persistence, "brushes_$(layerName)_material", tileNames["Air"])[1]
 
-    wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
-    Main.updateLayerList!(["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
+    wantedLayer = get(Ahorn.persistence, "brushes_layer", "fgTiles")
+    Ahorn.updateLayerList!(["fgTiles", "bgTiles"], row -> row[1] == wantedLayer)
 
-    Main.redrawingFuncs["tools"] = drawBucket
-    Main.redrawLayer!(toolsLayer)
+    Ahorn.redrawingFuncs["tools"] = drawBucket
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
-function layerSelected(list::Main.ListContainer, materials::Main.ListContainer, selected::String)
-    global targetLayer = Main.getLayerByName(drawingLayers, selected)
-    Main.persistence["brushes_layer"] = selected
+function layerSelected(list::Ahorn.ListContainer, materials::Ahorn.ListContainer, selected::String)
+    global targetLayer = Ahorn.getLayerByName(drawingLayers, selected)
+    Ahorn.persistence["brushes_layer"] = selected
 
-    tileNames = Main.tileNames(targetLayer)
-    global material = get(Main.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
+    tileNames = Ahorn.tileNames(targetLayer)
+    global material = get(Ahorn.persistence, "brushes_material_$(selected)", tileNames["Air"])[1]
     setMaterials!(targetLayer)
 end
 
-function materialSelected(list::Main.ListContainer, selected::String)
-    tileNames = Main.tileNames(targetLayer)
-    layerName = Main.layerName(targetLayer)
-    Main.persistence["brushes_material_$(layerName)"] = tileNames[selected]
+function materialSelected(list::Ahorn.ListContainer, selected::String)
+    tileNames = Ahorn.tileNames(targetLayer)
+    layerName = Ahorn.layerName(targetLayer)
+    Ahorn.persistence["brushes_material_$(layerName)"] = tileNames[selected]
     global material = tileNames[selected]
 end
 
-function layersChanged(layers::Array{Main.Layer, 1})
-    wantedLayer = get(Main.persistence, "brushes_layer", "fgTiles")
+function layersChanged(layers::Array{Ahorn.Layer, 1})
+    wantedLayer = get(Ahorn.persistence, "brushes_layer", "fgTiles")
 
     global drawingLayers = layers
-    global toolsLayer = Main.getLayerByName(layers, "tools")
-    global targetLayer = Main.selectLayer!(layers, wantedLayer, "fgTiles")
+    global toolsLayer = Ahorn.getLayerByName(layers, "tools")
+    global targetLayer = Ahorn.selectLayer!(layers, wantedLayer, "fgTiles")
 end
 
 function mouseMotion(x::Number, y::Number)
-    tiles = Main.roomTiles(targetLayer, Main.loadedState.room)
+    tiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
     h, w = size(tiles.data)
 
     if bucketBrush === nothing || !get(bucketBrush.pixels, (y - bucketBrush.offset[2] + 1, x - bucketBrush.offset[1] + 1), false)
         global bucketPosition = (x, y)
 
-        Main.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(toolsLayer)
     end
 
     if x < 1 || x > w || y < 1 || y > h
@@ -136,20 +138,20 @@ function mouseMotion(x::Number, y::Number)
 end
 
 function middleClick(x::Number, y::Number)
-    tiles = Main.roomTiles(targetLayer, Main.loadedState.room)
-    tileNames = Main.tileNames(targetLayer)
+    tiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
+    tileNames = Ahorn.tileNames(targetLayer)
     target = get(tiles.data, (y, x), '0')
 
     global material = target
-    layerName = Main.layerName(targetLayer)
-    Main.persistence["brushes_material_$(layerName)"] = material
-    Main.selectMaterialList!(tileNames[target])
+    layerName = Ahorn.layerName(targetLayer)
+    Ahorn.persistence["brushes_material_$(layerName)"] = material
+    Ahorn.selectMaterialList!(tileNames[target])
 end
 
 function leftClick(x::Number, y::Number)
     applyFill!(x, y, targetLayer, material)
 
-    Main.redrawLayer!(targetLayer)
+    Ahorn.redrawLayer!(targetLayer)
 end
 
 end

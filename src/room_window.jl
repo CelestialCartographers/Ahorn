@@ -2,6 +2,7 @@ module RoomWindow
 
 using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Maple
+using ..Ahorn
 
 roomWindow = nothing
 templateRoom = Maple.Room(name="1")
@@ -9,12 +10,23 @@ templateRoom = Maple.Room(name="1")
 currentRoom = nothing
 
 songList = collect(keys(Maple.Songs.songs))
-windPatterns = Maple.windpatterns
-sort!(songList)
+windPatterns = deepcopy(Maple.wind_patterns)
 
-function initCombolBox!(widget, list)
-    push!.(widget, list)
+sort!(songList)
+sort!(windPatterns)
+
+function initCombolBox!(widget::Gtk.GtkComboBoxText, choices::Array{String, 1})
+    push!(widget, choices...)
     setproperty!(widget, :active, 0)
+end
+
+function setComboIndex!(widget::Gtk.GtkComboBoxText, choices::Array{String, 1}, item::String)
+    if !(item in choices)
+        push!(choices, item)
+        push!(widget, item)
+    end
+
+    setproperty!(widget, :active, findfirst(choices, item) - 1)
 end
 
 function createCheckpoint(room::Maple.Room)
@@ -29,9 +41,9 @@ function createCheckpoint(room::Maple.Room)
     return Maple.ChapterCheckpoint(Int.(room.size ./ 2)..., allowOrigin=true)
 end
 
-function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bool=false, simple::Bool=get(Main.config, "use_simple_room_values", true))
+function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bool=false, simple::Bool=get(Ahorn.config, "use_simple_room_values", true))
     try
-        if Main.loadedState.map != nothing
+        if Ahorn.loadedState.map != nothing
             multiplier = simple? 8 : 1
 
             roomName = getproperty(roomTextfield, :text, String)
@@ -71,6 +83,8 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
             room.musicLayer3 = getproperty(musicLayer3CheckBox, :active, Bool)
             room.musicLayer4 = getproperty(musicLayer4CheckBox, :active, Bool)
 
+            room.musicProgress = getproperty(musicProgressTextfield, :text, String)
+
             room.dark = getproperty(darkCheckBox, :active, Bool)
             room.space = getproperty(spaceCheckBox, :active, Bool)
             room.underwater = getproperty(underwaterCheckBox, :active, Bool)
@@ -104,20 +118,20 @@ function updateRoomFromFields!(map::Maple.Map, room::Maple.Room, configuring::Bo
     end
 end
 
-function setFieldsFromRoom(room::Maple.Room, simple::Bool=get(Main.config, "use_simple_room_values", true))
+function setFieldsFromRoom(room::Maple.Room, simple::Bool=get(Ahorn.config, "use_simple_room_values", true))
     multiplier = simple? 8 : 1
 
-    Main.setEntryText!(roomTextfield, room.name)
+    Ahorn.setEntryText!(roomTextfield, room.name)
 
     width, height = room.size
     displayWidth, displayHeight = string(round(Int, width / multiplier)), string(round(Int, height / multiplier))
-    Main.setEntryText!(widthTextfield, displayWidth)
-    Main.setEntryText!(heightTextfield, displayHeight)
+    Ahorn.setEntryText!(widthTextfield, displayWidth)
+    Ahorn.setEntryText!(heightTextfield, displayHeight)
 
     x, y = room.position
     displayX, displayY =string(round(Int, x / multiplier)), string(round(Int, y / multiplier))
-    Main.setEntryText!(posXTextfield, displayX)
-    Main.setEntryText!(posYTextfield, displayY)
+    Ahorn.setEntryText!(posXTextfield, displayX)
+    Ahorn.setEntryText!(posYTextfield, displayY)
 
     setproperty!(darkCheckBox, :active, room.dark)
     setproperty!(spaceCheckBox, :active, room.space)
@@ -129,27 +143,29 @@ function setFieldsFromRoom(room::Maple.Room, simple::Bool=get(Main.config, "use_
     setproperty!(musicLayer3CheckBox, :active, room.musicLayer3)
     setproperty!(musicLayer4CheckBox, :active, room.musicLayer4)
 
+    Ahorn.setEntryText!(musicProgressTextfield, room.musicProgress)
+
     hasCheckpoint = findfirst(e -> e.name == "checkpoint", room.entities)
     setproperty!(disableDownTransitionCheckBox, :active, room.disableDownTransition)
     setproperty!(checkpointCheckBox, :active, hasCheckpoint != 0)
 
-    setproperty!(windPatternCombo, :active, findfirst(windPatterns, room.windPattern) - 1)
-    setproperty!(musicCombo, :active, findfirst(songList, room.music) - 1)
+    setComboIndex!(windPatternCombo, windPatterns, room.windPattern)
+    setComboIndex!(musicCombo, songList, room.music)
 end
 
 function createRoomHandler(widget)
     room = Maple.Room()
-    success, reason = updateRoomFromFields!(Main.loadedState.map, room)
+    success, reason = updateRoomFromFields!(Ahorn.loadedState.map, room)
 
     if success
         # Set the last selected values as the new "defaults" for this session
         Maple.updateTileSize!(room, Maple.tile_fg_names["Air"], Maple.tile_fg_names["Stone"])
 
-        push!(Main.loadedState.map.rooms, room)
+        push!(Ahorn.loadedState.map.rooms, room)
 
-        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedState.map), row -> row[1] == room.name)
-        markForRedraw(room, Main.loadedState.map)
-        draw(Main.canvas)
+        Ahorn.updateTreeView!(Ahorn.roomList, Ahorn.getTreeData(Ahorn.loadedState.map), row -> row[1] == room.name)
+        markForRedraw(room, Ahorn.loadedState.map)
+        draw(Ahorn.canvas)
 
         visible(roomWindow, false)
 
@@ -167,7 +183,7 @@ function spawnWindowIfAbsent!()
 end
 
 function markForRedraw(room::Maple.Room, map::Maple.Map)
-    dr = Main.getDrawableRoom(map, room)
+    dr = Ahorn.getDrawableRoom(map, room)
 
     for layer in dr.layers
         layer.redraw = true
@@ -175,14 +191,14 @@ function markForRedraw(room::Maple.Room, map::Maple.Map)
 end
 
 function updateRoomHandler(widget)
-    success, reason = updateRoomFromFields!(Main.loadedState.map, currentRoom, true)
+    success, reason = updateRoomFromFields!(Ahorn.loadedState.map, currentRoom, true)
 
     if success
         Maple.updateTileSize!(currentRoom, Maple.tile_fg_names["Air"], Maple.tile_fg_names["Stone"])
 
-        Main.updateTreeView!(Main.roomList, Main.getTreeData(Main.loadedState.map), row -> row[1] == currentRoom.name)
-        markForRedraw(currentRoom, Main.loadedState.map)
-        draw(Main.canvas)
+        Ahorn.updateTreeView!(Ahorn.roomList, Ahorn.getTreeData(Ahorn.loadedState.map), row -> row[1] == currentRoom.name)
+        markForRedraw(currentRoom, Ahorn.loadedState.map)
+        draw(Ahorn.canvas)
 
         showRoomWindow()
 
@@ -210,23 +226,24 @@ function hideRoomWindow(widget=nothing, event=nothing)
 end
 
 function createRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
-    if Main.loadedState.map === nothing
-        info_dialog("No map is currently loaded.", Main.window)
+    if Ahorn.loadedState.map === nothing
+        info_dialog("No map is currently loaded.", Ahorn.window)
 
     else
         spawnWindowIfAbsent!()
 
-        global currentRoom = ""
-        setproperty!(roomWindow, :title, "$(Main.baseTitle) - Create Room")
+        setproperty!(roomWindow, :title, "$(Ahorn.baseTitle) - Create Room")
 
         signal_handler_disconnect(roomCreationButton, roomButtonSignal)
         setproperty!(roomCreationButton, :label, "Create Room")
         global roomButtonSignal = signal_connect(createRoomHandler, roomCreationButton, "clicked")
 
         # Copy all fields from the selected room
-        if Main.loadedState.map !== nothing && Main.loadedState.room !== nothing
-            global templateRoom = deepcopy(Main.loadedState.room)
+        if Ahorn.loadedState.map !== nothing && Ahorn.loadedState.room !== nothing
+            global templateRoom = deepcopy(Ahorn.loadedState.room)
         end
+
+        global currentRoom = templateRoom
 
         Gtk.GLib.@sigatom setFieldsFromRoom(templateRoom)
 
@@ -235,39 +252,41 @@ function createRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
 end
 
 function configureRoom(widget::Gtk.GtkMenuItemLeaf=MenuItem())
-    if Main.loadedState.map != nothing && Main.loadedState.room != nothing
+    if Ahorn.loadedState.map != nothing && Ahorn.loadedState.room != nothing
         spawnWindowIfAbsent!()
 
-        global currentRoom = Main.loadedState.room
-        setproperty!(roomWindow, :title, "$(Main.baseTitle) - $(currentRoom.name)")
+        global currentRoom = Ahorn.loadedState.room
+        setproperty!(roomWindow, :title, "$(Ahorn.baseTitle) - $(currentRoom.name)")
 
         signal_handler_disconnect(roomCreationButton, roomButtonSignal)
         setproperty!(roomCreationButton, :label, "Update Room")
         global roomButtonSignal = signal_connect(updateRoomHandler, roomCreationButton, "clicked")
 
-        Gtk.GLib.@sigatom setFieldsFromRoom(Main.loadedState.room)
+        Gtk.GLib.@sigatom setFieldsFromRoom(Ahorn.loadedState.room)
 
         showRoomWindow()
     end
 end
 
 function roomNameValidator(s::String)
-    if Main.loadedState.map === nothing || currentRoom === nothing
+    if Ahorn.loadedState.map === nothing || currentRoom === nothing
         return false
     end
 
-    room = Maple.getRoomByName(Main.loadedState.map, s)
+    room = Maple.getRoomByName(Ahorn.loadedState.map, s)
 
-    return s != "" && (s == currentRoom.name || !isa(room, Main.Maple.Room))
+    return s != "" && (s == currentRoom.name || !isa(room, Ahorn.Maple.Room))
 end
 
 # Create all the Gtk widgets
 roomGrid = Grid()
-roomTextfield = Main.ValidationEntry("1", roomNameValidator)
-widthTextfield = Main.ValidationEntry(320)
-heightTextfield = Main.ValidationEntry(184)
-posXTextfield = Main.ValidationEntry(0)
-posYTextfield = Main.ValidationEntry(0)
+roomTextfield = Ahorn.ValidationEntry("1", roomNameValidator)
+widthTextfield = Ahorn.ValidationEntry(320)
+heightTextfield = Ahorn.ValidationEntry(184)
+posXTextfield = Ahorn.ValidationEntry(0)
+posYTextfield = Ahorn.ValidationEntry(0)
+
+musicProgressTextfield = Ahorn.ValidationEntry("")
 
 darkCheckBox = CheckButton("Dark")
 spaceCheckBox = CheckButton("Space")
@@ -293,6 +312,7 @@ widthLabel = Label("Width", xalign=0.0, margin_start=8)
 heightLabel = Label("Height", xalign=0.0, margin_start=8)
 posXLabel = Label("X", xalign=0.0, margin_start=8)
 posYLabel = Label("Y", xalign=0.0, margin_start=8)
+musicProgressLabel = Label("Music Progress", xalign=0.0, margin_start=8)
 
 windPatternLabel = Label("Wind Pattern", xalign=0.0, margin_start=8)
 musicLabel = Label("Music", xalign=0.0, margin_start=8)
@@ -314,18 +334,20 @@ roomGrid[2, 3] = posXTextfield
 roomGrid[3, 3] = posYLabel
 roomGrid[4, 3] = posYTextfield
 
-roomGrid[1, 4] = darkCheckBox
-roomGrid[2, 4] = spaceCheckBox
+roomGrid[1, 4] = musicProgressLabel
+roomGrid[2, 4] = musicProgressTextfield
 roomGrid[3, 4] = underwaterCheckBox
-roomGrid[4, 4] = whisperCheckBox
+roomGrid[4, 4] = spaceCheckBox
 
-roomGrid[1, 5] = musicLayer1CheckBox
-roomGrid[2, 5] = musicLayer2CheckBox
-roomGrid[3, 5] = musicLayer3CheckBox
-roomGrid[4, 5] = musicLayer4CheckBox
+roomGrid[1, 5] = disableDownTransitionCheckBox
+roomGrid[2, 5] = checkpointCheckBox
+roomGrid[3, 5] = darkCheckBox
+roomGrid[4, 5] = whisperCheckBox
 
-roomGrid[1, 6] = disableDownTransitionCheckBox
-roomGrid[2, 6] = checkpointCheckBox
+roomGrid[1, 6] = musicLayer1CheckBox
+roomGrid[2, 6] = musicLayer2CheckBox
+roomGrid[3, 6] = musicLayer3CheckBox
+roomGrid[4, 6] = musicLayer4CheckBox
 
 roomGrid[1, 7] = musicLabel
 roomGrid[2, 7] = musicCombo
@@ -335,7 +357,7 @@ roomGrid[4, 7] = windPatternCombo
 roomGrid[1:4, 8] = roomCreationButton
 
 function createWindow()
-    roomWindow = Window("$(Main.baseTitle) - New Room", -1, -1, false, icon = Main.windowIcon, gravity = GdkGravity.GDK_GRAVITY_CENTER
+    roomWindow = Window("$(Ahorn.baseTitle) - New Room", -1, -1, false, icon = Ahorn.windowIcon, gravity = GdkGravity.GDK_GRAVITY_CENTER
     ) |> (Frame() |> (roomBox = Box(:v)))
 
     # Hide window instead of destroying it

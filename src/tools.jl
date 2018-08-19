@@ -1,10 +1,7 @@
 include("brush.jl")
 
-loadedTools = joinpath.("tools", readdir(abs"tools"))
-append!(loadedTools, findExternalModules("tools"))
+loadedTools = joinpath.(abs"tools", readdir(abs"tools"))
 loadModule.(loadedTools)
-loadExternalModules!(loadedModules, loadedTools, "tools")
-
 currentTool = nothing
 
 function getToolName(tool::String)
@@ -25,9 +22,12 @@ function getToolGroup(tool::String)
     end
 end
 
-toolDisplayNames = Dict{String, String}(
-    getToolName(tool) => tool for tool in loadedTools if haskey(loadedModules, tool)
-)
+toolDisplayNames = Dict{String, String}()
+function updateToolDisplayNames!(tools::Array{String, 1})
+    global toolDisplayNames = Dict{String, String}(
+        getToolName(tool) => tool for tool in loadedTools if haskey(loadedModules, tool)
+    )
+end
 
 subtoolList = generateTreeView("Mode", [], sortable=false)
 connectChanged(subtoolList, function(list::ListContainer, selected::String)
@@ -86,7 +86,11 @@ end
 function getSortedToolNames(tools::Array{String, 1})
     res = Tuple{String, String}[]
     for tool in tools
-        push!(res, (getToolGroup(tool), getToolName(tool)))
+        group, name = getToolGroup(tool), getToolName(tool)
+        
+        if group !== nothing && name !== nothing
+            push!(res, (group, name))
+        end
     end
     
     sort!(res)
@@ -94,12 +98,15 @@ function getSortedToolNames(tools::Array{String, 1})
     return String[r[2] for r in res]
 end
 
-sortedToolNames = getSortedToolNames(loadedTools)
-toolList = generateTreeView("Tool", sortedToolNames, sortable=false)
+toolList = generateTreeView("Tool", String[], sortable=false)
 connectChanged(toolList, function(list::ListContainer, selected::String)
     debug.log("Selected $selected", "TOOLS_SELECTED")
     changeTool!(selected)
 end)
+
+function updateToolList!(list::ListContainer)
+    updateTreeView!(list, getSortedToolNames(loadedTools), 1)
+end
 
 function selectionRectangle(x1::Number, y1::Number, x2::Number, y2::Number)
     drawX = min(x1, x2)
@@ -311,6 +318,7 @@ function handleHotkeyToolChange(event::eventKey)
         if Int('0') <= event.keyval <= Int('9')
             index = event.keyval == Int('0')? 10 : event.keyval - Int('0')
 
+            sortedToolNames = getSortedToolNames(loadedTools)
             if length(sortedToolNames) >= index
                 changeTool!(sortedToolNames[index])
                 select!(toolList, index)

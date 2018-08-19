@@ -1,9 +1,11 @@
 module Waterfall
 
-function getHeight(entity::Main.Maple.Entity, room::Main.Maple.Room)
+using ..Ahorn, Maple
+
+function getHeight(entity::Maple.Entity, room::Maple.Room)
     waterEntities = filter(e -> e.name == "water", room.entities)
     waterRects = [
-        Main.Rectangle(
+        Ahorn.Rectangle(
             Int(get(e.data, "x", 0)),
             Int(get(e.data, "y", 0)),
             Int(get(e.data, "width", 8)),
@@ -17,9 +19,9 @@ function getHeight(entity::Main.Maple.Entity, room::Main.Maple.Room)
 
     wantedHeight = 8 - y % 8
     while wantedHeight < height - y
-        rect = Main.Rectangle(x, y, 8, wantedHeight + 8)
+        rect = Ahorn.Rectangle(x, y, 8, wantedHeight + 8)
 
-        if any(Main.checkCollision.(waterRects, rect))
+        if any(Ahorn.checkCollision.(waterRects, rect))
             break
         end
 
@@ -34,33 +36,33 @@ function getHeight(entity::Main.Maple.Entity, room::Main.Maple.Room)
     return wantedHeight
 end
 
-placements = Dict{String, Main.EntityPlacement}(
-    "Waterfall" => Main.EntityPlacement(
-        Main.Maple.Waterfall
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "Waterfall" => Ahorn.EntityPlacement(
+        Maple.Waterfall
     )
 )
 
 waterfallColor = (135, 206, 250, 1) ./ (255, 255, 255, 1.0) .* (0.6, 0.6, 0.6, 0.95)
 
-function selection(entity::Main.Maple.Entity)
+function selection(entity::Maple.Entity)
     if entity.name == "waterfall"
-        x, y = Main.entityTranslation(entity)
+        x, y = Ahorn.entityTranslation(entity)
 
         # TODO - Handle room in selections better, this is bound to cause problems down the road
-        height = getHeight(entity, Main.loadedState.room)
+        height = getHeight(entity, Ahorn.loadedState.room)
 
-        return true, Main.Rectangle(x, y, 8, height)
+        return true, Ahorn.Rectangle(x, y, 8, height)
     end
 end
 
-function render(ctx::Main.Cairo.CairoContext, entity::Main.Maple.Entity, room::Main.Maple.Room)
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     if entity.name == "waterfall"
         x = Int(get(entity.data, "x", 0))
         y = Int(get(entity.data, "y", 0))
 
         height = getHeight(entity, room)
 
-        Main.drawRectangle(ctx, 0, 0, 8, height, waterfallColor, (0.0, 0.0, 0.0, 0.0))
+        Ahorn.drawRectangle(ctx, 0, 0, 8, height, waterfallColor, (0.0, 0.0, 0.0, 0.0))
 
         return true
     end
