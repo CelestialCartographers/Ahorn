@@ -179,7 +179,7 @@ end
 # Return a function that can compare the base target with all the other targets
 # Returning true if they are "same-ish"
 function getFilterFunction(name::String, strict::Bool=false)
-    if name == "entities" || name == "trigger"
+    if name == "entities" || name == "triggers"
         # Strict mode is all flags the same, excluding x, y and nodes
         # Normal mode is just name
 
