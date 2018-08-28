@@ -21,8 +21,8 @@ function spawnPropertyWindow(title::String, options::Array{ConfigWindow.Option, 
         winX, winY = GAccessor.position(lastPropertyWindow)
         winScreen = GAccessor.screen(lastPropertyWindow)
 
-        GAccessor.position(window, winX, winY)
-        GAccessor.screen(window, winScreen)
+        GAccessor.position(propertyWindow, winX, winY)
+        GAccessor.screen(propertyWindow, winScreen)
     end
 
     GAccessor.transient_for(propertyWindow, window)
@@ -39,13 +39,37 @@ function spawnPropertyWindow(title::String, options::Array{ConfigWindow.Option, 
     global lastPropertyWindowDestroyed = false
 end
 
-function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, toolsLayer::Layer)
+function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, toolsLayer::Layer, selections::Set{Tuple{String, Rectangle, Any, Number}}=Set{Tuple{String, Rectangle, Any, Number}}())
+    targets = Any[]
     rect = Rectangle(x, y, 1, 1)
-    selection = bestSelection(getSelected(room, targetLayer, rect))
 
-    if selection !== nothing
-        layer, box, target, node = selection
-        if layer == "entities" || layer == "triggers"
+    if isempty(selections)
+        selection = bestSelection(getSelected(room, targetLayer, rect))
+        if selection !== nothing
+            layer, box, target, node = selection
+            push!(targets, target)
+        end
+    
+    else
+        success, base = hasSelectionAt(selections, rect)
+        
+        if success && (isa(base, Entity) || isa(base, Trigger))
+            push!(targets, base)
+
+            for selection in selections
+                layer, box, target, node = selection
+
+                if isa(target, Entity) || isa(target, Trigger)
+                    if base.name == target.name && base.id != target.id
+                        push!(targets, target)
+                    end
+                end
+            end
+        end
+    end
+
+    if !isempty(targets)
+        if isa(target, Entity) || isa(target, Trigger)
             function callback(data::Dict{String, Any})
                 updateTarget = true
 
@@ -59,15 +83,24 @@ function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::
 
                 if updateTarget
                     History.addSnapshot!(History.RoomSnapshot("Properties", room))
-                    target.data = deepcopy(data)
+
+                    for target in targets
+                        merge!(target.data, deepcopy(data))
+                    end
 
                     redrawLayer!(targetLayer)
                     redrawLayer!(toolsLayer)
                 end
             end
 
-            options = entityConfigOptions(target)
-            spawnPropertyWindow("$(baseTitle) - Editing $(target.name):$(target.id)", options, callback, lockedEntityEditingFields)
+            baseTarget = targets[1]
+            ids = join([Int(t.id) for t in targets], ", ")
+            ignores = length(targets) > 1? String["x", "y", "nodes"] : String[]
+            options = entityConfigOptions(baseTarget, ignores)
+
+            if !isempty(options)
+                spawnPropertyWindow("$(baseTitle) - Editing '$(baseTarget.name)' - $ids", options, callback, lockedEntityEditingFields)
+            end
         end
     end
 end

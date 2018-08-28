@@ -219,9 +219,21 @@ function handleSelectionFinish(start::eventMouse, startCamera::Camera, current::
     eventToModule(currentTool, "selectionFinishAbs", ax1, ay1, ax2, ay2)
 end
 
-function handleClicks(event::eventMouse, camera::Camera)
+function getMouseEventName(event::eventMouse, downEvent::eventMouse)
+    prefix = get(mouseTypePrefix, downEvent.event_type, "")
+    handle = mouseHandlers[event.button]
+
+    if !isempty(prefix)
+        return prefix * titlecase(handle)
+    
+    else
+        return handle
+    end
+end
+
+function handleClicks(event::eventMouse, camera::Camera, downEvent::eventMouse)
     if haskey(mouseHandlers, event.button)
-        handle = mouseHandlers[event.button]
+        handle = getMouseEventName(event, downEvent)
         room = loadedState.room
 
         mx, my = getMapCoordinates(camera, event.x, event.y)
@@ -233,7 +245,7 @@ function handleClicks(event::eventMouse, camera::Camera)
         lock!(camera)
         if !updateSelectionByCoords!(loadedState.map, max, may)
             # Teleport to cursor 
-            if EverestRcon.loaded && event.button == 0x1 && modifierControl() && modifierShift()
+            if EverestRcon.loaded && event.button == 0x1 && modifierControl() && modifierAlt()
                 url = get(config, "everest_rcon", "http://localhost:32270")
                 room = loadedState.roomName
                 EverestRcon.reload(url, room)

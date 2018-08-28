@@ -29,7 +29,7 @@ scrollableWindowRoomList = nothing
 end
 
 function generateMainGrid()
-    grid = Grid()
+    grid = HelperGrid()
 
     global scrollableWindowRoomList = ScrolledWindow(vexpand=true, hscrollbar_policy=Gtk.GtkPolicyType.NEVER)
     push!(scrollableWindowRoomList, roomList.tree)

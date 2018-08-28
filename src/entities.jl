@@ -240,7 +240,7 @@ function generateEntity(map::Maple.Map, room::Room, ep::EntityPlacement, x::Inte
     return entity
 end
 
-function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
+function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger}, ignores::Array{String, 1}=String[])
     addedNodes = false
     res = ConfigWindow.Option[]
 
@@ -255,7 +255,12 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger})
             continue
         end
 
+        # Always ignore these, regardless of ignore argument
         if attr == "originX" || attr == "originY"
+            continue
+        end
+
+        if attr in ignores
             continue
         end
 

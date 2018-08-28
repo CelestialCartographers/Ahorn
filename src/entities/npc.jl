@@ -2,6 +2,20 @@ module NPC
 
 using ..Ahorn, Maple
 
+placements = Dict{String, Ahorn.EntityPlacement}(
+    "NPC" => Ahorn.EntityPlacement(
+        Maple.NPC
+    )
+)
+
+function editingOptions(entity::Maple.Entity)
+    if entity.name == "npc"
+        return true, Dict{String, Any}(
+            "npc" => Maple.npc_npcs
+        )
+    end
+end
+
 npcSprites = Dict{String, String}(
     "granny" => "characters/oldlady/idle00",
     "theo" => "characters/theo/theo00",

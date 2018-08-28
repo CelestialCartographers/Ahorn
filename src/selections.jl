@@ -135,6 +135,107 @@ end
 
 getSelected(room::Room, layer::Layer, selection::Rectangle) = getSelected(room, layerName(layer), selection)
 
+# Currently no support for tiles
+function getFilteredSelections(selections::Set{Tuple{String, Rectangle, Any, Number}}, rect::Rectangle, room::Room, name::String, func::Function)
+    res = Set{Tuple{String, Rectangle, Any, Number}}()
+
+    success, best = hasSelectionAt(selections, rect)
+    if !success
+        return res
+    end
+    
+    # Rectangular based selection - Triggers, Entities, Decals
+    if haskey(selectionTargets, name)
+        targets = selectionTargets[name](room)
+
+        for target in targets
+            success, rect = getSelection(target)
+
+            if success
+                if isa(rect, Rectangle)
+                    if func(best, target)
+                        push!(res, (name, rect, target, 0))
+                    end
+
+                elseif isa(rect, Array{Rectangle, 1})
+                    for (i, r) in enumerate(rect)
+                        if func(best, target)
+                            # The first rect is the main entity itself, followed by the nodes
+                            push!(res, (name, r, target, i - 1))
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return res
+end
+
+function getFilteredSelections(selections::Set{Tuple{String, Rectangle, Any, Number}}, rect::Rectangle, room::Room, layer::Layer, func::Function)
+    return getFilteredSelections(selections, rect, room, layerName(layer), func)
+end
+
+# Return a function that can compare the base target with all the other targets
+# Returning true if they are "same-ish"
+function getFilterFunction(name::String, strict::Bool=false)
+    if name == "entities" || name == "trigger"
+        # Strict mode is all flags the same, excluding x, y and nodes
+        # Normal mode is just name
+
+        if strict
+            return function(base::Union{Entity, Trigger}, target::Union{Entity, Trigger})
+                # Don't count nodes as a key
+                if (length(base.data) - haskey(base.data, "nodes")) != (length(target.data) - haskey(target.data, "nodes"))
+                    return false
+                end
+
+                if base.name != target.name
+                    return false
+                end
+
+                for (k, v) in base.data
+                    if k == "x" || k == "y" || k == "nodes"
+                        continue
+                    end
+
+                    if get(target.data, k, nothing) != v
+                        return false
+                    end
+                end
+
+                return true
+            end
+
+        else
+            return function(base::Union{Entity, Trigger}, target::Union{Entity, Trigger})
+                return base.name == target.name
+            end
+        end
+
+    elseif name == "bgDecals" || name == "fgDecals"
+        # Strict mode is same scales as well as texture
+        # Normal mode is just texture
+
+        if strict
+            return function(base::Decal, target::Decal)
+                return base.texture == target.texture && base.scaleX == target.scaleX && base.scaleY == target.scaleY
+            end
+
+        else
+            return function(base::Decal, target::Decal)
+                return base.texture == target.texture
+            end
+        end
+    end
+
+    return function(base, target)
+        return false
+    end
+end
+
+getFilterFunction(layer::Layer, strict::Bool=false) = getFilterFunction(layerName(layer), strict)
+
 function hasSelectionAt(selections::Set{Tuple{String, Rectangle, Any, Number}}, rect::Rectangle)
     for selection in selections
         layer, box, target, node = selection
@@ -155,7 +256,7 @@ function hasSelectionAt(selections::Set{Tuple{String, Rectangle, Any, Number}}, 
     return false, false
 end
 
-function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}}, room::Room, name::String, rect::Rectangle; retain::Bool=false, best::Bool=false)
+function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}}, room::Room, name::String, rect::Rectangle; retain::Bool=false, best::Bool=false, mass::Bool=false)
     # Return selections that are no longer selected
     unselected = Set{Tuple{String, Rectangle, Any, Number}}()
     newlySelected = Set{Tuple{String, Rectangle, Any, Number}}()
@@ -169,14 +270,26 @@ function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}
     validSelections = Set{Tuple{String, Rectangle, Any, Number}}()
     if name == "all"
         for n in selectableLayers
-            union!(validSelections, getSelected(room, n, rect))
+            if mass
+                func = getFilterFunction(n, best)
+                union!(validSelections, getFilteredSelections(retain? selections : unselected, rect, room, n, func))
+
+            else
+                union!(validSelections, getSelected(room, n, rect))
+            end
         end
 
     else
-        union!(validSelections, getSelected(room, name, rect))
+        if mass
+            func = getFilterFunction(name, best)
+            union!(validSelections, getFilteredSelections(retain? selections : unselected, rect, room, name, func))
+
+        else
+            union!(validSelections, getSelected(room, name, rect))
+        end
     end
 
-    if best
+    if best && !mass
         target = bestSelection(validSelections)
         if target !== nothing
             push!(selections, target)

@@ -45,7 +45,7 @@ placements = Dict{String, Ahorn.EntityPlacement}(
 )
 
 function editingOptions(entity::Maple.Entity)
-    if entity.name == "switchGates"
+    if entity.name == "switchGate"
         return true, Dict{String, Any}(
             "sprite" => textures
         )

@@ -18,7 +18,7 @@ An easy installer file is available for Windows users. [**Check `#mod_readme` on
 
 ### Cross-platform manual installation
 
-First, [install Julia if you haven't already](https://julialang.org/downloads/). You need at least Julia 0.6.
+First, [install Julia if you haven't already](https://julialang.org/downloads/). You need Julia 0.6.
 
 The easiest way to install Ahorn would be to download [the installer `install_ahorn.jl`](https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/install_ahorn.jl) (Right-click the link and press "Save as...") and run it with Julia. Just follow its instructions. Ahorn and Maple are installed using Julia's `Pkg` system. The installer will also download and install required dependencies, so grab yourself a glass of juice while you wait.
 ```sh
@@ -57,9 +57,11 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - alt + delete: delete room
  - double click layer name in selection menu: toggle visibility
  - right click entity / trigger with placements / selection tool: open properties menu
+ - double click with selections selects all similar targets
+ - holding ctrl when doing the above restricts it to targets in a more strict manner
 
  With Everest installed and Celeste running in debug mode, it supports some more:
- - ctrl + shift + leftclick on a room in Ahorn: teleport to that room in the game
+ - ctrl + alt + leftclick on a room in Ahorn: teleport to that room in the game
 
 If you are serious about making maps, it is highly recommended to use [Everest](https://github.com/EverestAPI/Everest) for the F5 (force map reload) and F6 (open map editor for the current map) features.
 

@@ -244,7 +244,7 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
     end
 end
 
-function properlyUpdateSelections!(rect::Ahorn.Rectangle, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}; best::Bool=false)
+function properlyUpdateSelections!(rect::Ahorn.Rectangle, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}; best::Bool=false, mass::Bool=false)
     retain = Ahorn.modifierShift()
 
     # Do this before we get new selections
@@ -253,7 +253,20 @@ function properlyUpdateSelections!(rect::Ahorn.Rectangle, selections::Set{Tuple{
         finalizeSelections!(selections)
     end
 
-    unselected, newlySelected = Ahorn.updateSelections!(selections, relevantRoom, Ahorn.layerName(targetLayer), rect, retain=retain, best=best)
+    unselected, newlySelected = Ahorn.updateSelections!(selections, relevantRoom, Ahorn.layerName(targetLayer), rect, retain=retain, best=best, mass=mass)
+    initSelections!(newlySelected)
+end
+
+function properlyMassSelection!(selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}, rect::Ahorn.Rectangle; strict::Bool=false)
+    retain = Ahorn.modifierShift()
+
+    # Do this before we get new selections
+    # This way tiles are settled back into place before we select
+    if !retain
+        finalizeSelections!(selections)
+    end
+
+    unselected, newlySelected = Ahorn.updateSelections!(selections, relevantRoom, Ahorn.layerName(targetLayer), rect, retain=retain, best=strict, mass=true)
     initSelections!(newlySelected)
 end
 
@@ -295,8 +308,18 @@ function leftClickAbs(x::Number, y::Number)
     Ahorn.redrawLayer!(toolsLayer)
 end
 
+function doubleLeftClickAbs(x::Number, y::Number)
+    strict = Ahorn.modifierControl()
+    rect = Ahorn.Rectangle(x, y, 1, 1)
+    properlyMassSelection!(selections, rect, strict=strict)
+
+    clearDragging!()
+
+    Ahorn.redrawLayer!(toolsLayer)
+end
+
 function rightClickAbs(x::Number, y::Number)
-    Ahorn.displayProperties(x, y, relevantRoom, targetLayer, toolsLayer)
+    Ahorn.displayProperties(x, y, relevantRoom, targetLayer, toolsLayer, selections)
 
     clearDragging!()
 

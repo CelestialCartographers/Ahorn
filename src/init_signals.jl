@@ -2,6 +2,7 @@ function initSignals(window::Gtk.GtkWindow, canvas::Gtk.GtkCanvas)
     add_events(canvas,
         GConstants.GdkEventMask.SCROLL |
         GConstants.GdkEventMask.BUTTON_PRESS |
+        GConstants.GdkEventType.DOUBLE_BUTTON_PRESS |
         GConstants.GdkEventMask.BUTTON_RELEASE |
         GConstants.GdkEventMask.BUTTON1_MOTION |
         GConstants.GdkEventMask.BUTTON3_MOTION |

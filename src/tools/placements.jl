@@ -234,7 +234,7 @@ function middleClickAbs(x::Number, y::Number)
                     Dict{String, Any}((k, v) for (k, v) in deepcopy(target.data) if !(k in blacklistedCloneAttrs)),
                     Dict{String, Any}("__x" => target.data["x"], "__y" => target.data["y"])
                 ),
-                function(entity) 
+                function(entity)
                     nodes = get(entity.data, "nodes", [])
                     if length(nodes) > 0
                         x, y = entity.data["x"], entity.data["y"]
@@ -247,10 +247,10 @@ function middleClickAbs(x::Number, y::Number)
                         end 
 
                         entity.data["nodes"] = newNodes
-
-                        delete!(entity.data, "__x")
-                        delete!(entity.data, "__y")
                     end
+
+                    delete!(entity.data, "__x")
+                    delete!(entity.data, "__y")
                 end
             )
         end

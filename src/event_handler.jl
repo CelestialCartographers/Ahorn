@@ -17,6 +17,12 @@ mouseHandlers = Dict{Integer, String}(
     5 => "forwardClick"
 )
 
+mouseTypePrefix = Dict{Integer, String}(
+    4 => "",
+    5 => "double",
+    6 => "tripple"
+)
+
 moveDirections = Dict{Integer, Tuple{Number, Number}}(
     Gtk.GdkKeySyms.Left => (-1, 0),
     Gtk.GdkKeySyms.Right => (1, 0),
@@ -143,7 +149,7 @@ function button_release_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventButton)
 
     if shouldHandle() 
         if !isa(buttonEvent, Bool) && isClick(event, buttonEvent)
-            handleClicks(event, camera)
+            handleClicks(event, camera, buttonEvent)
 
         elseif buttonActive && event.button == 0x1
             handleSelectionFinish(buttonEvent, buttonCamera, event, camera)
