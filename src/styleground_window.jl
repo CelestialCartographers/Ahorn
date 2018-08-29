@@ -475,7 +475,7 @@ backdropChoices = spritesToBackgroundTextures(Ahorn.sprites)
 sort!(backdropChoices)
 
 # Gtk Widgets
-stylegroundGrid = Ahorn.HelperGrid()
+stylegroundGrid = Ahorn.Grid()
 
 headsUpLabel = Label("All values here are in pixels and not tiles, as non multiples of 8 are commons for stylegrounds.\nAhorn will not render the stylegrounds for you.\nYou will need to test these ingame!")
 GAccessor.justify(headsUpLabel, GConstants.GtkJustification.CENTER)

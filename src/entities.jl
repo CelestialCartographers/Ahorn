@@ -279,7 +279,7 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger}, ignores
         end
     end
 
-    if !addedNodes && nodeRange[2] != 0
+    if !addedNodes && nodeRange[2] != 0 && !("nodes" in ignores)
         push!(res, ConfigWindow.Option("Node X;Node Y", Array{Tuple{Int64, Int64}, 1}, Tuple{Int, Int}[], dataName="nodes", rowCount=nodeRange))
     end
 

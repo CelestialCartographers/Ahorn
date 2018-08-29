@@ -279,7 +279,7 @@ function roomNameValidator(s::String)
 end
 
 # Create all the Gtk widgets
-roomGrid = Ahorn.HelperGrid()
+roomGrid = Ahorn.Grid()
 roomTextfield = Ahorn.ValidationEntry("1", roomNameValidator)
 widthTextfield = Ahorn.ValidationEntry(320)
 heightTextfield = Ahorn.ValidationEntry(184)

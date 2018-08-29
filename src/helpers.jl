@@ -59,15 +59,3 @@ function humanizeVariableName(s::String)
 
     return titlecase(strip(join(res)))
 end
-
-# The "standard" grid for any grid usage
-# Option to fix RTL issues on RTL locales
-function HelperGrid(forceLTR::Bool=get(config, "force_left_to_right_grid_direction", true))
-    grid = Grid()
-
-    if forceLTR
-        GAccessor.direction(grid, 1)
-    end
-
-    return grid
-end

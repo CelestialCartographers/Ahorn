@@ -9,6 +9,14 @@ macro abs_str(path)
     :($(normpath(joinpath(@__DIR__, path))))
 end
 
+function setDefaultDirection(direction::Integer)
+    ccall((:gtk_widget_set_default_direction, Gtk.libgtk), Ptr{}, (Cint,), direction)
+end
+
+# Force all widgets to be Left to Right
+# Program is not really useable in Right to Left mode, which Gtk respects on RTL languages for some reason
+Gtk.GLib.@sigatom setDefaultDirection(1)
+
 baseTitle = "Ahorn α"
 iconFile = abs"../docs/logo-256-a.png"
 logoFile = abs"../docs/logo-1024-a.png"

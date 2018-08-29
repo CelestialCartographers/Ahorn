@@ -206,7 +206,7 @@ function getData(widgets)
     return res
 end
 
-function addSectionWidgets!(window::Gtk.GtkWindowLeaf, section::Section; grid::Gtk.GtkGrid=HelperGrid(), index::Integer=0, cols::Integer=4, sortOptions::Bool=true)
+function addSectionWidgets!(window::Gtk.GtkWindowLeaf, section::Section; grid::Gtk.GtkGrid=Grid(), index::Integer=0, cols::Integer=4, sortOptions::Bool=true)
     index = ceil(Int, index / cols) * cols
 
     if !isempty(section.name)
@@ -230,13 +230,13 @@ end
 
 function createWindow(title::String, sections::Array{Section, 1}, callback::Function; sortOptions::Bool=true, cols::Integer=4, alignCols::Bool=true)
     window = Window(title, -1, -1, false, icon=Ahorn.windowIcon, gravity=GdkGravity.GDK_GRAVITY_CENTER) |> (Frame() |> (box = Box(:v)))
-    grid = Ahorn.HelperGrid()
+    grid = Ahorn.Grid()
     index = 0
 
     sectionWidgets = Dict{String, Array{Any, 1}}()
 
     for section in sections
-        sectionGrid, widgets, index = addSectionWidgets!(window, section, grid=alignCols? grid : Ahorn.HelperGrid(), index=index, cols=cols, sortOptions=sortOptions)
+        sectionGrid, widgets, index = addSectionWidgets!(window, section, grid=alignCols? grid : Ahorn.Grid(), index=index, cols=cols, sortOptions=sortOptions)
         sectionWidgets[section.dataName] = widgets
 
         if !alignCols
