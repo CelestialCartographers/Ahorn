@@ -18,8 +18,14 @@ placements = Dict{String, Ahorn.EntityPlacement}(
 function selection(entity::Maple.Entity)
     if entity.name == "infiniteStar"
         x, y = Ahorn.entityTranslation(entity)
+        shielded = get(entity.data, "shielded", false)
 
-        return true, Ahorn.Rectangle(x - 8, y - 8, 16, 16)
+        if shielded
+            return true, Ahorn.Rectangle(x - 12, y - 12, 24, 24)
+            
+        else
+            return true, Ahorn.Rectangle(x - 8, y - 8, 16, 16)
+        end
     end
 end
 
