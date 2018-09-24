@@ -5,12 +5,17 @@ end
 function findSteamInstallDir()
     if is_windows()
         try
-            # 64bit 
-            return querykey(WinReg.HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Valve\\Steam", "InstallPath")
+            try
+                # 64bit 
+                return querykey(WinReg.HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Valve\\Steam", "InstallPath")
 
-        catch e
-            # 32bit
-            return querykey(WinReg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Valve\\Steam", "InstallPath")
+            catch e
+                # 32bit
+                return querykey(WinReg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Valve\\Steam", "InstallPath")
+            end
+        catch
+            # No Steam installed
+            return nothing
         end
 
     elseif is_apple()
@@ -23,10 +28,13 @@ end
 
 function findCelesteDir()
     steam = findSteamInstallDir()
-    steamfn = joinpath(steam, "steamapps", "common", "Celeste", "Celeste.exe")
+    
+    if steam !== nothing
+        steamfn = joinpath(steam, "steamapps", "common", "Celeste", "Celeste.exe")
 
-    if isfile(steamfn)
-        return true, steamfn
+        if isfile(steamfn)
+            return true, steamfn
+        end
     end
 
     return false, ""
@@ -76,8 +84,8 @@ function extractGamedata(storage::String, force::Bool=false)
     backgroundTilesXML = joinpath(storage, "BackgroundTiles.xml")
 
     if !isfile(gameplaySprites) || force || filesize(gameplaySprites) == 0
-        include("extract_sprites_images.jl")
-        Base.invokelatest(dumpSprites, celesteAtlases, storage) # Making sure the method just loaded is used.
+        include(Ahorn.abs"extract_sprites_images.jl")
+        Base.invokelatest(Main.dumpSprites, celesteAtlases, storage) # Making sure the method just loaded is used.
     end
 
     if !isfile(gameplayMeta) || force

@@ -1,6 +1,8 @@
 #using Images
 #using Colors
 
+using Cairo
+
 struct Img
     path::String
     width::Int32

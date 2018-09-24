@@ -6,6 +6,15 @@ function displayMainWindow()
     end
 
     initConfigs()
+    initLoadedState()
+
+    windowTitle = baseTitle
+    if loadedState.map !== nothing
+        windowTitle = "$baseTitle - $(Maple.getSideName(loadedState.side))"
+    end
+
+    # Everything else should be ready, safe to make the window
+    global window = Window(windowTitle, 1280, 720, true, true, icon=windowIcon, gravity=GdkGravity.GDK_GRAVITY_CENTER)
     
     configured = configureCelesteDir()
     if !configured
@@ -17,7 +26,6 @@ function displayMainWindow()
     initSprites()
     initTilerMetas()
     initCamera()
-    initLoadedState()
 
     updateToolDisplayNames!(loadedTools)
     updateToolList!(toolList)
@@ -29,19 +37,12 @@ function displayMainWindow()
 
     selectLoadedRoom!(roomList)
 
-    windowTitle = baseTitle
-    if loadedState.map !== nothing
-        windowTitle = "$baseTitle - $(Maple.getSideName(loadedState.side))"
-    end
-
     hidden = get(debug.config, "DEBUG_MENU_DROPDOWN", false)? String[] : String["Debug"]
     global menubar = Menubar.generateMenubar(menubarHeaders, menubarItems, hidden)
 
     global box = Box(:v)
     global grid = generateMainGrid()
-    
-    # Everything else should be ready, safe to make the window
-    global window = Window(windowTitle, 1280, 720, true, true, icon=windowIcon, gravity=GdkGravity.GDK_GRAVITY_CENTER)
+
     push!(box, grid)
     push!(window, box)
 
