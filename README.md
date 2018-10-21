@@ -12,9 +12,9 @@ This project is an unofficial map maker and level editor, it is merely a fan pro
 
 ## Installation
 
-### Windows auto-installer
+<!--### Windows auto-installer
 
-An easy installer file is available for Windows users. [**Check `#mod_readme` on Discord**](https://discord.gg/PN9f3xh) for a link to the latest installer.
+An easy installer file is available for Windows users. [**Check `#mod_readme` on Discord**](https://discord.gg/PN9f3xh) for a link to the latest installer.-->
 
 ### Cross-platform manual installation
 
