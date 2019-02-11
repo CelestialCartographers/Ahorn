@@ -2,62 +2,48 @@ module BadelineBoost
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Badeline Boost" => Ahorn.EntityPlacement(
         Maple.BadelineBoost
     ),
 )
 
-function nodeLimits(entity::Maple.Entity)
-    if entity.name == "badelineBoost"
-        return true, 0, -1
-    end
-end
+Ahorn.nodeLimits(entity::Maple.BadelineBoost) = 0, -1
 
 sprite = "objects/badelineboost/idle00.png"
 
-function selection(entity::Maple.Entity)
-    if entity.name == "badelineBoost"
-        nodes = get(entity.data, "nodes", ())
-        x, y = Ahorn.entityTranslation(entity)
+function Ahorn.selection(entity::Maple.BadelineBoost)
+    nodes = get(entity.data, "nodes", ())
+    x, y = Ahorn.position(entity)
 
-        res = Ahorn.Rectangle[Ahorn.Rectangle(x - 8, y - 8, 16, 16)]
-        
-        for node in nodes
-            nx, ny = Int.(node)
+    res = Ahorn.Rectangle[Ahorn.getSpriteRectangle(sprite, x, y)]
+    
+    for node in nodes
+        nx, ny = Int.(node)
 
-            push!(res, Ahorn.Rectangle(nx - 6, ny - 6, 12, 12))
-        end
+        push!(res, Ahorn.getSpriteRectangle(sprite, nx, ny))
+    end
 
-        return true, res
+    return res
+end
+
+function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.BadelineBoost)
+    px, py = Ahorn.position(entity)
+
+    for node in get(entity.data, "nodes", ())
+        nx, ny = Int.(node)
+
+        theta = atan(py - ny, px - nx)
+        Ahorn.drawArrow(ctx, px, py, nx + cos(theta) * 8, ny + sin(theta) * 8, Ahorn.colors.selection_selected_fc, headLength=6)
+        Ahorn.drawSprite(ctx, sprite, nx, ny)
+
+        px, py = nx, ny
     end
 end
 
-function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
-    if entity.name == "badelineBoost"
-        px, py = Ahorn.entityTranslation(entity)
-
-        for node in get(entity.data, "nodes", ())
-            nx, ny = Int.(node)
-
-            theta = atan2(py - ny, px - nx)
-            Ahorn.drawArrow(ctx, px, py, nx + cos(theta) * 8, ny + sin(theta) * 8, Ahorn.colors.selection_selected_fc, headLength=6)
-            Ahorn.drawSprite(ctx, sprite, nx, ny)
-
-            px, py = nx, ny
-        end
-    end
-end
-
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "badelineBoost"
-        x, y = Ahorn.entityTranslation(entity)
-        Ahorn.drawSprite(ctx, sprite, x, y)
-
-        return true
-    end
-
-    return false
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.BadelineBoost, room::Maple.Room)
+    x, y = Ahorn.position(entity)
+    Ahorn.drawSprite(ctx, sprite, x, y)
 end
 
 end

@@ -2,19 +2,17 @@ module LightFadeTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Light Fade" => Ahorn.EntityPlacement(
         Maple.LightFadeTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "lightFadeTrigger"
-        return true, Dict{String, Any}(
-            "positionMode" => Maple.trigger_position_modes
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.LightFadeTrigger)
+    return Dict{String, Any}(
+        "positionMode" => Maple.trigger_position_modes
+    )
 end
 
 end

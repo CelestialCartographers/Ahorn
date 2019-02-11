@@ -30,6 +30,42 @@ function unlock!(camera::Camera)
     camera.locked = false
 end
 
-minimumZoom = get(config, "camera_minimum_zoom", 2.0^-2)
-maximumZoom = get(config, "camera_maximum_zoom", 2.0^4)
-defaultZoom = get(config, "camera_default_zoom", 4)
+function updateCameraZoomVariables()
+    global minimumZoom = 2.0^round(Int, log(2, get(config, "camera_minimum_zoom", minimumZoom)))
+    global maximumZoom = 2.0^round(Int, log(2, get(config, "camera_maximum_zoom", maximumZoom)))
+    global defaultZoom = 2.0^round(Int, log(2, get(config, "camera_default_zoom", defaultZoom)))
+end
+
+function zoomIn!(camera::Camera, event::Gtk.GdkEventScroll)
+    updateCameraZoomVariables()
+
+    if minimumZoom <= camera.scale * 2 <= maximumZoom
+        camera.scale = camera.scale * 2
+        camera.x = round(Int, camera.x * 2 + event.x)
+        camera.y = round(Int, camera.y * 2 + event.y)
+
+        draw(canvas)
+
+        return true
+    end
+
+    return false
+end
+
+function zoomOut!(camera::Camera, event::Gtk.GdkEventScroll)
+    updateCameraZoomVariables()
+
+    if minimumZoom <= camera.scale / 2 <= maximumZoom
+        camera.scale = camera.scale / 2
+        camera.x = round(Int, (camera.x - event.x) / 2)
+        camera.y = round(Int, (camera.y - event.y) / 2)
+
+        return true
+    end
+
+    return false
+end
+
+minimumZoom = 2.0^-6
+maximumZoom = 2.0^6
+defaultZoom = 4

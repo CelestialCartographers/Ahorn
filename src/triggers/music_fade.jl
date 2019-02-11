@@ -2,19 +2,17 @@ module MusicFadeTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Music Fade" => Ahorn.EntityPlacement(
         Maple.MusicFadeTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "musicFadeTrigger"
-        return true, Dict{String, Any}(
-            "direction" => Maple.music_fade_trigger_directions
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.MusicFadeTrigger)
+    return Dict{String, Any}(
+        "direction" => Maple.music_fade_trigger_directions
+    )
 end
 
 end

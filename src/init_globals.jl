@@ -1,10 +1,9 @@
 function initSprites()
-    global sprites = loadSprites(joinpath(storageDirectory, "Gameplay.meta"), joinpath(storageDirectory, "Gameplay.png"))
+    atlases["Gameplay"] = loadSprites(joinpath(storageDirectory, "Sprites", "Gameplay.meta"), joinpath(storageDirectory, "Sprites", "Gameplay.png"))
 end
 
 function initTilerMetas()
-    global fgTilerMeta = TilerMeta(joinpath(storageDirectory, "ForegroundTiles.xml"))
-    global bgTilerMeta = TilerMeta(joinpath(storageDirectory, "BackgroundTiles.xml"))
+    loadXMLMeta()
 end
 
 function initCamera()
@@ -13,6 +12,8 @@ function initCamera()
         get(persistence, "camera_position_y", 0),
         get(persistence, "camera_scale", get(config, "camera_default_zoom", 4))
     )
+
+    updateCameraZoomVariables()
 end
 
 function initLoadedState()
@@ -22,8 +23,18 @@ function initLoadedState()
     )
 end
 
+function initLangdata()
+    loadLangfile()
+end
+
 function initConfigs()
-    global storageDirectory = joinpath(homedir(), ".ahorn")
+    if Sys.iswindows()
+        global storageDirectory = joinpath(ENV["LOCALAPPDATA"], "Ahorn")
+        
+    else
+        global storageDirectory = joinpath(get(ENV, "XDG_CONFIG_HOME", joinpath(get(ENV, "HOME", ""), ".config")) , "Ahorn")
+    end
+
     global configFilename = joinpath(storageDirectory, "config.json")
     global persistenceFilename = joinpath(storageDirectory, "persistence.json")
 
@@ -32,4 +43,17 @@ function initConfigs()
 
     debugConfigFilename = joinpath(storageDirectory, "debug.json")
     debug.setConfig(debugConfigFilename, 0)
+end
+
+function initMenubar()
+    debugEnabled = get(debug.config, "DEBUG_MENU_DROPDOWN", false)
+    choices = menubarChoices
+
+    if debugEnabled
+        append!(choices, menubarDebugChoices)
+    end
+
+    append!(choices, menubarEndChoices)
+
+    global menubar = Menubar.generateMenubar(choices)
 end

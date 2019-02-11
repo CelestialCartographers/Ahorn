@@ -2,19 +2,17 @@ module EventTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Event" => Ahorn.EntityPlacement(
         Maple.EventTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "eventTrigger"
-        return true, Dict{String, Any}(
-            "event" => Maple.event_trigger_events
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.EventTrigger)
+    return Dict{String, Any}(
+        "event" => Maple.event_trigger_events
+    )
 end
 
 end

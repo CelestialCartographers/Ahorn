@@ -2,9 +2,44 @@ module Waterfall
 
 using ..Ahorn, Maple
 
-function getHeight(entity::Maple.Entity, room::Maple.Room)
+const fillColor = Ahorn.XNAColors.LightBlue .* 0.3
+const surfaceColor = Ahorn.XNAColors.LightBlue .* 0.8
+
+const waterSegmentMatrix = [
+    1 0 0 0 0 0 0 1 1 1;
+    1 0 0 0 0 0 0 1 1 1;
+    1 0 0 0 0 0 0 1 1 1;
+    1 0 0 0 0 0 0 1 1 1;
+    1 0 0 0 0 0 0 1 1 1;
+    1 0 0 0 0 0 0 1 1 1;
+    1 0 0 0 0 0 0 1 1 1;
+    1 0 0 0 0 0 0 1 1 1;
+    1 1 0 0 0 0 0 0 1 1;
+    1 1 0 0 0 0 0 0 1 1;
+    1 1 1 0 0 0 0 0 0 1;
+    1 1 1 0 0 0 0 0 0 1;
+    1 1 1 0 0 0 0 0 0 1;
+    1 1 1 0 0 0 0 0 0 1;
+    1 1 1 0 0 0 0 0 0 1;
+    1 1 1 0 0 0 0 0 0 1;
+    1 1 1 0 0 0 0 0 0 1;
+    1 1 1 0 0 0 0 0 0 1;
+    1 1 0 0 0 0 0 0 1 1;
+    1 1 0 0 0 0 0 0 1 1;
+    1 1 0 0 0 0 0 0 1 1;
+]
+
+const waterSegment = Ahorn.matrixToSurface(
+    waterSegmentMatrix,
+    [
+        fillColor,
+        surfaceColor
+    ]
+)
+
+function getHeight(entity::Maple.Waterfall, room::Maple.Room)
     waterEntities = filter(e -> e.name == "water", room.entities)
-    waterRects = [
+    waterRects = Ahorn.Rectangle[
         Ahorn.Rectangle(
             Int(get(e.data, "x", 0)),
             Int(get(e.data, "y", 0)),
@@ -19,9 +54,9 @@ function getHeight(entity::Maple.Entity, room::Maple.Room)
 
     wantedHeight = 8 - y % 8
     while wantedHeight < height - y
-        rect = Ahorn.Rectangle(x, y, 8, wantedHeight + 8)
+        rect = Ahorn.Rectangle(x, y + wantedHeight, 8, 8)
 
-        if any(Ahorn.checkCollision.(waterRects, rect))
+        if any(Ahorn.checkCollision.(waterRects, Ref(rect)))
             break
         end
 
@@ -36,38 +71,36 @@ function getHeight(entity::Maple.Entity, room::Maple.Room)
     return wantedHeight
 end
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Waterfall" => Ahorn.EntityPlacement(
         Maple.Waterfall
     )
 )
 
-waterfallColor = (135, 206, 250, 1) ./ (255, 255, 255, 1.0) .* (0.6, 0.6, 0.6, 0.95)
+function Ahorn.selection(entity::Maple.Waterfall, room::Maple.Room)
+    x, y = Ahorn.position(entity)
+    height = getHeight(entity, room)
 
-function selection(entity::Maple.Entity)
-    if entity.name == "waterfall"
-        x, y = Ahorn.entityTranslation(entity)
-
-        # TODO - Handle room in selections better, this is bound to cause problems down the road
-        height = getHeight(entity, Ahorn.loadedState.room)
-
-        return true, Ahorn.Rectangle(x, y, 8, height)
-    end
+    return Ahorn.Rectangle(x, y, size(waterSegmentMatrix, 2), height)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "waterfall"
-        x = Int(get(entity.data, "x", 0))
-        y = Int(get(entity.data, "y", 0))
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Waterfall, room::Maple.Room)
+    x = Int(get(entity.data, "x", 0))
+    y = Int(get(entity.data, "y", 0))
 
-        height = getHeight(entity, room)
+    height = getHeight(entity, room)
+    segmentHeight, segmentWidth = size(waterSegmentMatrix)
 
-        Ahorn.drawRectangle(ctx, 0, 0, 8, height, waterfallColor, (0.0, 0.0, 0.0, 0.0))
+    Ahorn.Cairo.save(ctx)
 
-        return true
+    Ahorn.rectangle(ctx, 0, 0, segmentWidth, height)
+    Ahorn.clip(ctx)
+
+    for i in 0:segmentHeight:ceil(Int, height / segmentHeight) * segmentHeight
+        Ahorn.drawImage(ctx, waterSegment, 0, i)
     end
-
-    return false
+    
+    Ahorn.restore(ctx)
 end
 
 end

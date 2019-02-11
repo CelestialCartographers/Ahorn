@@ -2,7 +2,7 @@ module DarkChaser
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Badeline Chaser" => Ahorn.EntityPlacement(
         Maple.DarkChaser
     ),
@@ -13,50 +13,34 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "darkChaserEnd"
-        return true, 8, 8
-    end
+Ahorn.minimumSize(entity::Maple.DarkChaserEnd) = 8, 8
+Ahorn.resizable(entity::Maple.DarkChaserEnd) = true, true
+
+# This sprite fits best, not perfect, thats why we have a offset here
+chaserSprite = "characters/badeline/sleep00.png"
+
+function Ahorn.selection(entity::Maple.DarkChaser)
+    x, y = Ahorn.position(entity)
+    
+    return Ahorn.getSpriteRectangle(chaserSprite, x + 4, y, jx=0.5, jy=1.0)
 end
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "darkChaserEnd"
-        return true, true, true
-    end
+function Ahorn.selection(entity::Maple.DarkChaserEnd)
+    x, y = Ahorn.position(entity)
+
+    width = Int(get(entity.data, "width", 8))
+    height = Int(get(entity.data, "height", 8))
+
+    return Ahorn.Rectangle(x, y, width, height)
 end
 
-function selection(entity::Maple.Entity)
-    if entity.name == "darkChaser"
-        x, y = Ahorn.entityTranslation(entity)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.DarkChaserEnd)
+    width = Int(get(entity.data, "width", 32))
+    height = Int(get(entity.data, "height", 32))
 
-        return true, Ahorn.Rectangle(x - 2, y - 16, 12, 16)
-        
-    elseif entity.name == "darkChaserEnd"
-        x, y = Ahorn.entityTranslation(entity)
-
-        width = Int(get(entity.data, "width", 8))
-        height = Int(get(entity.data, "height", 8))
-
-        return true, Ahorn.Rectangle(x, y, width, height)
-    end
+    Ahorn.drawRectangle(ctx, 0, 0, width, height, (0.4, 0.0, 0.4, 0.4), (0.4, 0.0, 0.4, 1.0))
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
-    if entity.name == "darkChaser"
-        Ahorn.drawSprite(ctx, "characters/badeline/sleep00.png", 4, -16)
-
-        return true
-
-    elseif entity.name == "darkChaserEnd"
-        width = Int(get(entity.data, "width", 32))
-        height = Int(get(entity.data, "height", 32))
-
-        Ahorn.drawRectangle(ctx, 0, 0, width, height, (0.4, 0.0, 0.4, 0.4), (0.4, 0.0, 0.4, 1.0))
-
-        return true
-    end
-
-    return false
-end
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.DarkChaser) = Ahorn.drawSprite(ctx, chaserSprite, 4, 0, jx=0.5, jy=1.0)
 
 end

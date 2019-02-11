@@ -2,45 +2,35 @@ module CliffsideFlag
 
 using ..Ahorn, Maple
 
-validFlagIndicdes = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10]
+validFlagIndicdes = collect(0:10)
 
-placements = Dict{String, Ahorn.EntityPlacement}(
-    "Cliffside Flag" => Ahorn.EntityPlacement(
+const placements = Ahorn.PlacementDict(
+    "Cliffside Big Flag" => Ahorn.EntityPlacement(
         Maple.CliffsideFlag,
-        "point"
     )
 )
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "cliffside_flag"
-        return true, Dict{String, Any}(
-            "index" => validFlagIndicdes
-        )
-    end
+Ahorn.editingOptions(entity::Maple.CliffsideFlag) = Dict{String, Any}(
+    "index" => validFlagIndicdes
+)
+
+function flagSprite(entity::Maple.CliffsideFlag)
+    index = Int(get(entity.data, "index", 0))
+    lookup = lpad(string(index), 2, "0")
+
+    return "scenery/cliffside/flag$(lookup)"
 end
 
-function selection(entity::Maple.Entity)
-    if entity.name == "cliffside_flag"
-        x, y = Ahorn.entityTranslation(entity)
+function Ahorn.selection(entity::Maple.CliffsideFlag)
+    x, y = Ahorn.position(entity)
+    sprite = flagSprite(entity)
 
-        index = Int(get(entity.data, "index", 0))
-        lookup = lpad(string(index), 2, "0")
-        sprite = Ahorn.sprites["scenery/cliffside/flag$(lookup)"]
-
-        return true, Ahorn.Rectangle(x, y, Int(sprite.width), Int(sprite.height))
-    end
+    return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.0, jy=0.0)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "cliffside_flag"
-        index = Int(get(entity.data, "index", 0))
-        lookup = lpad(string(index), 2, "0")
-        Ahorn.drawImage(ctx, "scenery/cliffside/flag$(lookup)", 0, 0)
-
-        return true
-    end
-
-    return false
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CliffsideFlag, room::Maple.Room)
+    sprite = flagSprite(entity)
+    Ahorn.drawSprite(ctx, sprite, 0, 0, jx=0.0, jy=0.0)
 end
 
 end

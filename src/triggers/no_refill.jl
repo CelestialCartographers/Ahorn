@@ -2,7 +2,7 @@ module NoRefillTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Refills (Disabled)" => Ahorn.EntityPlacement(
         Maple.NoRefillTrigger,
         "rectangle",

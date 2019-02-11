@@ -2,7 +2,7 @@ module ZipMover
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Zip Mover" => Ahorn.EntityPlacement(
         Maple.ZipMover,
         "rectangle",
@@ -13,34 +13,19 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function nodeLimits(entity::Maple.Entity)
-    if entity.name == "zipMover"
-        return true, 1, 1
-    end
-end
+Ahorn.nodeLimits(entity::Maple.ZipMover) = 1, 1
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "zipMover"
-        return true, 16, 16
-    end
-end
+Ahorn.minimumSize(entity::Maple.ZipMover) = 16, 16
+Ahorn.resizable(entity::Maple.ZipMover) = true, true
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "zipMover"
-        return true, true, true
-    end
-end
+function Ahorn.selection(entity::Maple.ZipMover)
+    x, y = Ahorn.position(entity)
+    nx, ny = Int.(entity.data["nodes"][1])
 
-function selection(entity::Maple.Entity)
-    if entity.name == "zipMover"
-        x, y = Ahorn.entityTranslation(entity)
-        nx, ny = Int.(entity.data["nodes"][1])
+    width = Int(get(entity.data, "width", 8))
+    height = Int(get(entity.data, "height", 8))
 
-        width = Int(get(entity.data, "width", 8))
-        height = Int(get(entity.data, "height", 8))
-
-        return true, [Ahorn.Rectangle(x, y, width, height), Ahorn.Rectangle(nx + floor(Int, width / 2) - 5, ny + floor(Int, height / 2) - 5, 10, 10)]
-    end
+    return [Ahorn.Rectangle(x, y, width, height), Ahorn.Rectangle(nx + floor(Int, width / 2) - 5, ny + floor(Int, height / 2) - 5, 10, 10)]
 end
 
 ropeColor = (102, 57, 49) ./ 255
@@ -48,7 +33,7 @@ frame = "objects/zipmover/block"
 light = "objects/zipmover/light01"
 
 function renderZipMover(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number, nx::Number, ny::Number)
-    lightSprite = Ahorn.sprites[light]
+    lightSprite = Ahorn.getSprite(light, "Gameplay")
 
     tilesWidth = div(width, 8)
     tilesHeight = div(height, 8)
@@ -57,7 +42,7 @@ function renderZipMover(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, wid
     cnx, cny = nx + width / 2, ny + height / 2
 
     length = sqrt((x - nx)^2 + (y - ny)^2)
-    theta = atan2(cny - cy, cnx - cx)
+    theta = atan(cny - cy, cnx - cx)
 
     Ahorn.Cairo.save(ctx)
 
@@ -100,20 +85,14 @@ function renderZipMover(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, wid
     Ahorn.drawImage(ctx, lightSprite, x + floor(Int, (width - lightSprite.width) / 2), y)
 end
 
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "zipMover"
-        x, y = Ahorn.entityTranslation(entity)
-        nx, ny = Int.(entity.data["nodes"][1])
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.ZipMover, room::Maple.Room)
+    x, y = Ahorn.position(entity)
+    nx, ny = Int.(entity.data["nodes"][1])
 
-        width = Int(get(entity.data, "width", 32))
-        height = Int(get(entity.data, "height", 32))
+    width = Int(get(entity.data, "width", 32))
+    height = Int(get(entity.data, "height", 32))
 
-        renderZipMover(ctx, x, y, width, height, nx, ny)
-
-        return true
-    end
-
-    return false
+    renderZipMover(ctx, x, y, width, height, nx, ny)
 end
 
 end

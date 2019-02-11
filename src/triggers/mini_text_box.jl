@@ -2,19 +2,17 @@ module MiniTextBoxTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Mini Textbox" => Ahorn.EntityPlacement(
         Maple.MiniTextBoxTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "minitextboxTrigger"
-        return true, Dict{String, Any}(
-            "mode" => Maple.mini_textbox_trigger_modes
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.MiniTextBoxTrigger)
+    return Dict{String, Any}(
+        "mode" => Maple.mini_textbox_trigger_modes
+    )
 end
 
 end

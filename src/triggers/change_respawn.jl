@@ -2,17 +2,15 @@ module ChangeRespawn
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Change Respawn" => Ahorn.EntityPlacement(
         Maple.ChangeRespawnTrigger,
         "rectangle"
     )
 )
 
-function nodeLimits(trigger::Maple.Trigger)
-    if trigger.name == "changeRespawnTrigger"
-        return true, 0, 1
-    end
+function Ahorn.nodeLimits(trigger::Maple.ChangeRespawnTrigger)
+    return 0, 1
 end
 
 end

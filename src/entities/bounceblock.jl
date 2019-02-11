@@ -2,42 +2,24 @@ module BounceBlock
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Bounce Block" => Ahorn.EntityPlacement(
         Maple.BounceBlock,
         "rectangle"
     ),
 )
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "bounceBlock"
-        return true, 16, 16
-    end
-end
+Ahorn.minimumSize(entity::Maple.BounceBlock) = 16, 16
+Ahorn.resizable(entity::Maple.BounceBlock) = true, true
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "bounceBlock"
-        return true, true, true
-    end
-end
-
-function selection(entity::Maple.Entity)
-    if entity.name == "bounceBlock"
-        x, y = Ahorn.entityTranslation(entity)
-
-        width = Int(get(entity.data, "width", 16))
-        height = Int(get(entity.data, "height", 16))
-
-        return true, Ahorn.Rectangle(x, y, width, height)
-    end
-end
+Ahorn.selection(entity::Maple.BounceBlock) = Ahorn.getEntityRectangle(entity)
 
 frameResource = "objects/BumpBlockNew/fire00"
 crystalResource = "objects/BumpBlockNew/fire_center00"
 
 # Not the prettiest code, but it works
 function renderBounceBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number)
-    crystalSprite = Ahorn.sprites[crystalResource]
+    crystalSprite = Ahorn.getSprite(crystalResource, "Gameplay")
     
     tilesWidth = div(width, 8)
     tilesHeight = div(height, 8)
@@ -70,20 +52,14 @@ function renderBounceBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, 
     Ahorn.restore(ctx)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "bounceBlock"
-        x = Int(get(entity.data, "x", 0))
-        y = Int(get(entity.data, "y", 0))
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.BounceBlock, room::Maple.Room)
+    x = Int(get(entity.data, "x", 0))
+    y = Int(get(entity.data, "y", 0))
 
-        width = Int(get(entity.data, "width", 32))
-        height = Int(get(entity.data, "height", 32))
+    width = Int(get(entity.data, "width", 32))
+    height = Int(get(entity.data, "height", 32))
 
-        renderBounceBlock(ctx, x, y, width, height)
-
-        return true
-    end
-
-    return false
+    renderBounceBlock(ctx, x, y, width, height)
 end
 
 end

@@ -2,26 +2,20 @@ module Player
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
-    "Player" => Ahorn.EntityPlacement(
+const placements = Ahorn.PlacementDict(
+    "Player (Spawn Point)" => Ahorn.EntityPlacement(
         Maple.Player
     )
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "player"
-        x, y = Ahorn.entityTranslation(entity)
+sprite = "characters/player/sitDown00.png"
 
-        return true, Ahorn.Rectangle(x - 7, y - 16, 12, 16)
-    end
+function Ahorn.selection(entity::Maple.Player)
+    x, y = Ahorn.position(entity)
+
+    return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=1.0)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
-    if entity.name == "player"
-        Ahorn.drawSprite(ctx, "characters/player/sitDown00.png", 0, -16)
-
-        return true
-    end
-end
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Player) = Ahorn.drawSprite(ctx, sprite, 0, 0, jx=0.5, jy=1.0)
 
 end

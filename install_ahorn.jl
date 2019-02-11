@@ -1,11 +1,29 @@
+# Ahorn's installation script. Connects to the internet using Pkg3 to install it.
+
+if VERSION < v"1.1"
+    println("""Ahorn, and thus this installer, require Julia version 1.1 or later to run.
+    The version you installed is $VERSION. Please update to a more recent version.
+    Press Enter to quit the installer.""")
+    readline()
+    exit()
+end
+
+using Pkg
+
 install_or_update(url::String, pkg::String) = try 
-    if Pkg.installed(pkg) !== nothing
+    if Pkg.installed()[pkg] !== nothing
         println("Updating $pkg...")
         Pkg.update(pkg)
     end
 catch err
     println("Installing $pkg...")
-    Pkg.clone(url, pkg)
+    Pkg.add(PackageSpec(url=url))
+end
+
+if Sys.iswindows()
+    installpath = joinpath(ENV["LOCALAPPDATA"], "Ahorn", "env")
+else
+    installpath = joinpath(get(ENV, "XDG_CONFIG_HOME", joinpath(get(ENV, "HOME", ""), ".config")) , "Ahorn", "env")
 end
 
 println("""
@@ -14,21 +32,12 @@ Hey, thanks for giving Ahorn a try! Ahorn is currently still in a very early sta
 ======================
 """)
 
-println("This installer is going to install or update Maple and Ahorn via the package manager as well as create two symbolic links in the same directory as this installer file, are you okay with that? [y/N]")
+println("This installer is going to install or update Maple and Ahorn via the package manager as well as create a file in the same directory as this installer file, are you okay with that? [y/N]")
 
-if !ismatch(r"^[Yy]", readline())
+if !occursin(r"^[Yy]", readline())
     println("Exiting installer.")
     exit()
 end
-
-println("""
-This installer can install the HTTP.jl library to enable integration with the Everest Mod Loader. If Everest is installed in Celeste and running in debug mode, you will be able to Ctrl+Shift+Click on a room in Ahorn while the game is running to teleport there in game.
-However, on older versions of Windows (e.g. Windows 7), installing HTTP might fail unless a certain update is installed.
-If you want to install it later, just run Pkg.add("HTTP") in Julia.
-Would you like to install the HTTP library? [y/N]""")
-
-
-installHTTP = ismatch(r"^[Yy]", readline())
 
 println("""
 
@@ -38,28 +47,14 @@ We will tell you when the installation process is done, any warnings (not errors
 ======================
 """)
 
+mkpath(installpath)
+
+println("Environment path: " * installpath)
+
+Pkg.activate(installpath)
+
 install_or_update("https://github.com/CelestialCartographers/Maple.git", "Maple")
 install_or_update("https://github.com/CelestialCartographers/Ahorn.git", "Ahorn")
-
-if installHTTP
-    Pkg.add("HTTP")
-end
-
-if is_windows()
-    #symlink(joinpath(Pkg.dir("Ahorn"), "ahorn.bat"), joinpath(@__DIR__, "ahorn.bat")
-else
-    symlink(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl"), joinpath(@__DIR__, "ahorn.jl"))
-    symlink(joinpath(Pkg.dir("Ahorn"), "ahorn"), joinpath(@__DIR__, "ahorn.sh"))
-end
-
-println("""
-
-======================
-Building dependencies, just in case. This may take a while, so it might be the right time to get yourself a slice of bread and some refreshing elderflower tea.
-======================
-""")
-
-Pkg.build("Ahorn")
 
 println("""
 
@@ -67,20 +62,43 @@ println("""
 Precompiling a few dependencies. This may take a while, so get yourself some cheese and a cup of fennel tea.
 ======================
 """)
-using Maple, Cairo, Gtk, YAML, LightXML
 
-if is_windows()
+sleep(1)
+Pkg.API.precompile()
+import Ahorn
+
+pkgdir = normpath(joinpath(dirname(pathof(Ahorn)), ".."))
+println("Package path: " * pkgdir)
+
+launchpath = nothing
+if Sys.iswindows()
+    launchpath = joinpath(@__DIR__, "ahorn.bat")
+    cp(joinpath(pkgdir, "ahorn.bat"), launchpath, force=true)
+else
+    #symlink(joinpath(pkgdir, "src", "run_ahorn.jl"), joinpath(@__DIR__, "ahorn.jl"))
+    launchpath = joinpath(@__DIR__, "ahorn.sh")
+    if isfile(launchpath)
+        println("Removing old ahorn.sh...")
+        rm(launchpath)
+    end
+    #symlink(joinpath(pkgdir, "ahorn"), launchpath)
+    cp(joinpath(pkgdir, "ahorn"), launchpath, force=true)
+end
+
+if Sys.iswindows()
     println("""
 
-Done! Ahorn should be installed now. Run $(joinpath(Pkg.dir("Ahorn"), "src", "run_ahorn.jl")) with Julia to launch it.
+Done! Ahorn should be installed now. Run $launchpath to launch it.
 Note that it will take quite a while to launch the first time as its dependencies compile, so please be patient.
 
 Thanks for giving Ahorn a try!
+
+Press Enter to quit the installer.
 """)
 else
     println("""
 
-Done! Ahorn should be installed now. Run ahorn.jl with Julia to launch it, or, if Julia is in your path, just run ./ahorn.
+Done! Ahorn should be installed now. If Julia is in your path, just run $launchpath to launch it.
 Note that it will take quite a while to launch the first time as its dependencies compile, so please be patient.
 
 Thanks for giving Ahorn a try!

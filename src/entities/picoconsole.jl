@@ -2,28 +2,20 @@ module PicoConsole
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Pico Console" => Ahorn.EntityPlacement(
         Maple.PicoConsole
     )
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "picoconsole"
-        x, y = Ahorn.entityTranslation(entity)
+sprite = "objects/pico8Console"
 
-        return true, Ahorn.Rectangle(x - 20, y - 15, 40, 15)
-    end
+function Ahorn.selection(entity::Maple.PicoConsole)
+    x, y = Ahorn.position(entity)
+
+    return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=1.0)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "picoconsole"
-        Ahorn.drawSprite(ctx, "objects/pico8Console", 0, -15)
-
-        return true
-    end
-
-    return false
-end
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.PicoConsole, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, 0, jx=0.5, jy=1.0)
 
 end

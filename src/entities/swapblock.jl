@@ -3,7 +3,7 @@ module SwapBlock
 using ..Ahorn, Maple
 
 function swapFinalizer(entity)
-    x, y = Ahorn.entityTranslation(entity)
+    x, y = Ahorn.position(entity)
 
     width = Int(get(entity.data, "width", 8))
     height = Int(get(entity.data, "height", 8))
@@ -11,7 +11,7 @@ function swapFinalizer(entity)
     entity.data["nodes"] = [(x + width, y)]
 end
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Swap Block" => Ahorn.EntityPlacement(
         Maple.SwapBlock,
         "rectangle",
@@ -20,34 +20,19 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     )
 )
 
-function nodeLimits(entity::Maple.Entity)
-    if entity.name == "swapBlock"
-        return true, 1, 1
-    end
-end
+Ahorn.nodeLimits(entity::Maple.SwapBlock) = 1, 1
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "swapBlock"
-        return true, 16, 16
-    end
-end
+Ahorn.minimumSize(entity::Maple.SwapBlock) = 16, 16
+Ahorn.resizable(entity::Maple.SwapBlock) = true, true
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "swapBlock"
-        return true, true, true
-    end
-end
+function Ahorn.selection(entity::Maple.SwapBlock)
+    x, y = Ahorn.position(entity)
+    stopX, stopY = Int.(entity.data["nodes"][1])
 
-function selection(entity::Maple.Entity)
-    if entity.name == "swapBlock"
-        x, y = Ahorn.entityTranslation(entity)
-        stopX, stopY = Int.(entity.data["nodes"][1])
+    width = Int(get(entity.data, "width", 8))
+    height = Int(get(entity.data, "height", 8))
 
-        width = Int(get(entity.data, "width", 8))
-        height = Int(get(entity.data, "height", 8))
-
-        return true, [Ahorn.Rectangle(x, y, width, height), Ahorn.Rectangle(stopX, stopY, width, height)]
-    end
+    return [Ahorn.Rectangle(x, y, width, height), Ahorn.Rectangle(stopX, stopY, width, height)]
 end
 
 frame = "objects/swapblock/blockRed"
@@ -79,7 +64,7 @@ function renderTrail(ctx, x::Number, y::Number, width::Number, height::Number)
 end
 
 function renderSwapBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number)
-    midSprite = Ahorn.sprites[midResource]
+    midSprite = Ahorn.getSprite(midResource, "Gameplay")
     
     tilesWidth = div(width, 8)
     tilesHeight = div(height, 8)
@@ -106,39 +91,29 @@ function renderSwapBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, wi
     Ahorn.drawImage(ctx, midSprite, x + div(width - midSprite.width, 2), y + div(height - midSprite.height, 2))
 end
 
-function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "swapBlock"
-        sprite = get(entity.data, "sprite", "block")
-        startX, startY = Int(entity.data["x"]), Int(entity.data["y"])
-        stopX, stopY = Int.(entity.data["nodes"][1])
+function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SwapBlock, room::Maple.Room)
+    sprite = get(entity.data, "sprite", "block")
+    startX, startY = Int(entity.data["x"]), Int(entity.data["y"])
+    stopX, stopY = Int.(entity.data["nodes"][1])
 
-        width = Int(get(entity.data, "width", 32))
-        height = Int(get(entity.data, "height", 32))
+    width = Int(get(entity.data, "width", 32))
+    height = Int(get(entity.data, "height", 32))
 
-        renderSwapBlock(ctx, stopX, stopY, width, height)
-        Ahorn.drawArrow(ctx, startX + width / 2, startY + height / 2, stopX + width / 2, stopY + height / 2, Ahorn.colors.selection_selected_fc, headLength=6)
-
-        return true
-    end
+    renderSwapBlock(ctx, stopX, stopY, width, height)
+    Ahorn.drawArrow(ctx, startX + width / 2, startY + height / 2, stopX + width / 2, stopY + height / 2, Ahorn.colors.selection_selected_fc, headLength=6)
 end
 
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "swapBlock"
-        sprite = get(entity.data, "sprite", "block")
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SwapBlock, room::Maple.Room)
+    sprite = get(entity.data, "sprite", "block")
 
-        startX, startY = Int(entity.data["x"]), Int(entity.data["y"])
-        stopX, stopY = Int.(entity.data["nodes"][1])
+    startX, startY = Int(entity.data["x"]), Int(entity.data["y"])
+    stopX, stopY = Int.(entity.data["nodes"][1])
 
-        width = Int(get(entity.data, "width", 32))
-        height = Int(get(entity.data, "height", 32))
+    width = Int(get(entity.data, "width", 32))
+    height = Int(get(entity.data, "height", 32))
 
-        renderTrail(ctx, min(startX, stopX), min(startY, stopY), abs(startX - stopX) + width, abs(startY - stopY) + height)
-        renderSwapBlock(ctx, startX, startY, width, height)
-
-        return true
-    end
-
-    return false
+    renderTrail(ctx, min(startX, stopX), min(startY, stopY), abs(startX - stopX) + width, abs(startY - stopY) + height)
+    renderSwapBlock(ctx, startX, startY, width, height)
 end
 
 end

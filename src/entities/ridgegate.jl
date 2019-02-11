@@ -2,7 +2,7 @@ module RidgeGate
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Ridge Gate" => Ahorn.EntityPlacement(
         Maple.RidgeGate,
         "point",
@@ -13,56 +13,38 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     )
 )
 
-function nodeLimits(entity::Maple.Entity)
-    if entity.name == "ridgeGate"
-        return true, 0, 1
+Ahorn.nodeLimits(entity::Maple.RidgeGate) = 0, 1
+
+Ahorn.resizable(entity::Maple.RidgeGate) = false, false
+
+sprite = "objects/ridgeGate.png"
+
+function Ahorn.selection(entity::Maple.RidgeGate)
+    x, y = Ahorn.position(entity)
+
+    nodes = get(entity.data, "nodes", ())
+    if isempty(nodes)
+        return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=0.0)
+
+    else
+        nx, ny = Int.(nodes[1])
+
+        return [Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=0.0), Ahorn.getSpriteRectangle(sprite, nx, ny, jx=0.5, jy=0.0)]
     end
 end
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "ridgeGate"
-        return true, false, false
+function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.RidgeGate)
+    x, y = Ahorn.position(entity)
+    nodes = get(entity.data, "nodes", ())
+    
+    if !isempty(nodes)
+        nx, ny = Int.(nodes[1])
+
+        Ahorn.drawSprite(ctx, sprite, nx, ny, jx=0.5, jy=0.0)
+        Ahorn.drawArrow(ctx, x, y + 16, nx, ny + 16, Ahorn.colors.selection_selected_fc, headLength=6)
     end
 end
 
-function selection(entity::Maple.Entity)
-    if entity.name == "ridgeGate"
-        x, y = Ahorn.entityTranslation(entity)
-
-        nodes = get(entity.data, "nodes", ())
-        if isempty(nodes)
-            return true, Ahorn.Rectangle(x - 16, y, 32, 32)
-
-        else
-            nx, ny = Int.(nodes[1])
-
-            return true, [Ahorn.Rectangle(x - 16, y, 32, 32), Ahorn.Rectangle(nx - 16, ny, 32, 32)]
-        end
-    end
-end
-
-function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
-    if entity.name == "ridgeGate"
-        x, y = Ahorn.entityTranslation(entity)
-        nodes = get(entity.data, "nodes", ())
-        
-        if !isempty(nodes)
-            nx, ny = Int.(nodes[1])
-
-            Ahorn.drawSprite(ctx, "objects/ridgeGate.png", nx, ny + 16)
-            Ahorn.drawArrow(ctx, x, y + 16, nx, ny + 16, Ahorn.colors.selection_selected_fc, headLength=6)
-        end
-    end
-end
-
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "ridgeGate"
-        Ahorn.drawSprite(ctx, "objects/ridgeGate.png", 0, 16)
-
-        return true
-    end
-
-    return false
-end
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.RidgeGate, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, 0, jx=0.5, jy=0.0)
 
 end

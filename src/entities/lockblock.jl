@@ -2,7 +2,7 @@ module Lockblock
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Locked Door (Wood)" => Ahorn.EntityPlacement(
         Maple.LockBlock,
         "point",
@@ -32,26 +32,18 @@ sprites = Dict{String, String}(
     "temple_b" => "objects/door/lockdoorTempleB00.png",
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "lockBlock"
-        x, y = Ahorn.entityTranslation(entity)
+function Ahorn.selection(entity::Maple.LockBlock)
+    x, y = Ahorn.position(entity)
 
-        return true, Ahorn.Rectangle(x, y, 32, 32)
-    end
+    return Ahorn.Rectangle(x, y, 32, 32)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "lockBlock"
-        sprite = get(entity.data, "sprite", "wood")
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.LockBlock, room::Maple.Room)
+    sprite = get(entity.data, "sprite", "wood")
 
-        if haskey(sprites, sprite)
-            Ahorn.drawSprite(ctx, sprites[sprite], 16, 16)
-        end
-
-        return true
+    if haskey(sprites, sprite)
+        Ahorn.drawSprite(ctx, sprites[sprite], 16, 16)
     end
-
-    return false
 end
 
 end

@@ -1,6 +1,6 @@
 module Placements
 
-using ..Ahorn
+using ..Ahorn, Maple
 
 displayName = "Placements"
 group = "Placements"
@@ -11,17 +11,16 @@ toolsLayer = nothing
 targetLayer = nothing
 
 material = nothing
+materialName = nothing
 
 scaleX = 1
 scaleY = 1
 
 selectionRect = nothing
 previewGhost = nothing
+clonedEntity = nothing
 
 blacklistedCloneAttrs = ["id", "x", "y"]
-
-animationRegex = r"\D+0*?$"
-filterAnimations(s::String) = ismatch(animationRegex, s)
 
 placementLayers = String["entities", "triggers", "fgDecals", "bgDecals"]
 
@@ -49,61 +48,83 @@ function drawPlacements(layer::Ahorn.Layer, room::Ahorn.Room)
     end
 end
 
-function generatePreview(layer::Ahorn.Layer, material::Any, x::Integer, y::Integer; sx::Integer=1, sy::Integer=1, nx=x + 8, ny=y + 8)
+function generatePreview!(layer::Ahorn.Layer, material::Any, x::Integer, y::Integer; sx::Integer=1, sy::Integer=1, nx=x + 8, ny=y)
     if material !== nothing
         if layer.name == "entities" || layer.name == "triggers"
-            return Ahorn.generateEntity(Ahorn.loadedState.map, Ahorn.loadedState.room, material, x, y, nx, ny)
+            # Use cache if possible, otherwise create a new entity/trigger
+
+            placementsCache = layer.name == "entities" ? Ahorn.entityPlacementsCache : Ahorn.triggerPlacementsCache
+            placements = layer.name == "entities" ? Ahorn.entityPlacements : Ahorn.triggerPlacements
+            
+            if materialName !== nothing
+                return Ahorn.updateCachedEntityPosition!(placementsCache, placements, Ahorn.loadedState.map, Ahorn.loadedState.room, materialName, x, y, nx, ny)
+
+            else
+                if clonedEntity === nothing
+                    global clonedEntity = Ahorn.generateEntity(Ahorn.loadedState.map, Ahorn.loadedState.room, material, x, y, nx, ny)
+                end
+
+                return Ahorn.updateEntityPosition!(clonedEntity, material, Ahorn.loadedState.map, Ahorn.loadedState.room, x, y, nx, ny)
+            end
 
         elseif layer.name == "fgDecals" || layer.name == "bgDecals"
             texture = splitext(material)[1] * ".png"
-            return Ahorn.Maple.Decal(texture, x, y, sx, sy)
+
+            return Maple.Decal(texture, x, y, sx, sy)
         end
     end
 end
 
-function pushPreview!(layer::Ahorn.Layer, room::Ahorn.Maple.Room, preview::Any)
+function pushPreview!(layer::Ahorn.Layer, room::Maple.Room, preview::Any)
+    if !get(Ahorn.config, "allow_out_of_bounds_placement", false)
+        width, height = room.size
+        x, y = Ahorn.position(preview)
+
+        if x < 0 || x > width || y < 0 || y > height
+            return false
+        end
+    end 
+
     name = Ahorn.layerName(layer)
-    Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Placement ($name)", room))
+
+    # Update the id when we place the entity/trigger
+    if name == "entities" || name == "triggers"
+        preview.id = Maple.nextEntityId()
+    end
 
     # Make sure we don't have the same referance,
     # as the preview can be placed multiple times
     preview = deepcopy(preview)
+    target = Ahorn.selectionTargets[name](room)
 
-    if name == "entities"
-        push!(room.entities, preview)
+    Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Placement ($name)", room))
+    push!(target, preview)
 
-    elseif name == "triggers"
-        push!(room.triggers, preview)
-
-    elseif name == "fgDecals"
-        push!(room.fgDecals, preview)
-
-    elseif name == "bgDecals"
-        push!(room.bgDecals, preview)
-    end
+    return true
 end
 
 function updateMaterialsEntities!()
     selectables = collect(keys(Ahorn.entityPlacements))
     sort!(selectables)
 
-    wantedEntity = get(Ahorn.persistence, "placements_placements_entity", selectables[1])
-    Ahorn.setMaterialList!(selectables, row -> row[1] == wantedEntity)
+    if !isa(clonedEntity, Maple.Entity)
+        wantedEntity = get(Ahorn.persistence, "placements_placements_entity", selectables[1])
+        Ahorn.setMaterialList!(selectables, row -> row[1] == wantedEntity)
+    end
 end
 
 function updateMaterialsTriggers!()
     selectables = collect(keys(Ahorn.triggerPlacements))
     sort!(selectables)
 
-    wantedTrigger = get(Ahorn.persistence, "placements_placements_trigger", selectables[1])
-    Ahorn.setMaterialList!(selectables, row -> row[1] == wantedTrigger)
+    if !isa(clonedEntity, Maple.Trigger)
+        wantedTrigger = get(Ahorn.persistence, "placements_placements_trigger", selectables[1])
+        Ahorn.setMaterialList!(selectables, row -> row[1] == wantedTrigger)
+    end
 end
 
 function updateMaterialsDecals!()
-    Ahorn.loadExternalSprites!()
-    textures = Ahorn.spritesToDecalTextures(Ahorn.sprites)
-    sort!(textures)
-    filter!(filterAnimations, textures)
+    textures = Ahorn.decalTextures()
 
     wantedDecal = get(Ahorn.persistence, "placements_placements_decal", textures[1])
     Ahorn.setMaterialList!(textures, row -> row[1] == wantedDecal)
@@ -149,38 +170,58 @@ function subToolSelected(list::Ahorn.ListContainer, selected::String)
 end
 
 function materialSelected(list::Ahorn.ListContainer, selected::String)
-    if Ahorn.layerName(targetLayer) == "entities"
+    global materialName = selected
+    layerName = Ahorn.layerName(targetLayer)
+
+    if layerName == "entities"
         if haskey(Ahorn.entityPlacements, selected)
+            global clonedEntity = nothing
             global material = Ahorn.entityPlacements[selected]
             Ahorn.persistence["placements_placements_entity"] = selected
         end
 
-    elseif Ahorn.layerName(targetLayer) == "triggers"
+    elseif layerName == "triggers"
         if haskey(Ahorn.triggerPlacements, selected)
+            global clonedEntity = nothing
             global material = Ahorn.triggerPlacements[selected]
             Ahorn.persistence["placements_placements_trigger"] = selected
         end
 
-    elseif Ahorn.layerName(targetLayer) == "fgDecals" || Ahorn.layerName(targetLayer) == "bgDecals" 
+    elseif layerName == "fgDecals" || layerName == "bgDecals" 
         global material = selected
         Ahorn.persistence["placements_placements_decal"] = selected
     end
 end
 
-function mouseMotion(x::Number, y::Number)
-    if !Ahorn.modifierControl()
-        newGhost = generatePreview(targetLayer, material, x * 8 - 8, y * 8 - 8, sx=scaleX, sy=scaleY)
+function materialFiltered(list::Ahorn.ListContainer)
+    layerName = Ahorn.layerName(targetLayer)
 
-        if selectionRect === nothing && newGhost != previewGhost
+    if layerName == "entities" && isa(clonedEntity, Maple.Entity)
+        return true
+    end
+
+    if layerName == "triggers" && isa(clonedEntity, Maple.Trigger)
+        return true
+    end
+
+    Ahorn.selectRow!(list, row -> row[1] == materialName)
+end
+
+function mouseMotion(x::Number, y::Number)
+    if !Ahorn.modifierControl() && selectionRect === nothing
+        prevGhost = deepcopy(previewGhost)
+        newGhost = generatePreview!(targetLayer, material, x * 8 - 8, y * 8 - 8, sx=scaleX, sy=scaleY)
+
+        if newGhost != prevGhost
             # No need to redraw if the target is on the same tile
-            if isa(previewGhost, Ahorn.Maple.Entity) || isa(previewGhost, Ahorn.Maple.Trigger)
-                if newGhost.data["x"] == previewGhost.data["x"] && newGhost.data["y"] == previewGhost.data["y"]
+            if isa(prevGhost, Maple.Entity) || isa(prevGhost, Maple.Trigger)
+                if newGhost.data["x"] == prevGhost.data["x"] && newGhost.data["y"] == prevGhost.data["y"]
                     return false
                 end
             end
 
-            if isa(previewGhost, Ahorn.Maple.Decal)
-                if newGhost.x == previewGhost.x && newGhost.y == previewGhost.y
+            if isa(prevGhost, Maple.Decal)
+                if newGhost.x == prevGhost.x && newGhost.y == prevGhost.y
                     return false
                 end
             end
@@ -193,10 +234,11 @@ function mouseMotion(x::Number, y::Number)
 end
 
 function mouseMotionAbs(x::Number, y::Number)
-    if Ahorn.modifierControl()
-        newGhost = generatePreview(targetLayer, material, x, y, sx=scaleX, sy=scaleY)
+    if Ahorn.modifierControl() && selectionRect === nothing
+        prevGhost = deepcopy(previewGhost)
+        newGhost = generatePreview!(targetLayer, material, x, y, sx=scaleX, sy=scaleY)
 
-        if selectionRect === nothing && newGhost != previewGhost
+        if newGhost != prevGhost
             global previewGhost = newGhost
 
             Ahorn.redrawLayer!(toolsLayer)
@@ -218,15 +260,16 @@ function middleClickAbs(x::Number, y::Number)
             Ahorn.persistence["placements_placements_decal"] = material
 
         elseif name == "entities" || name == "triggers"
-            func = name == "entities"? Ahorn.Maple.Entity : Ahorn.Maple.Trigger
-            horizontal, vertical = Ahorn.canResize(target)
+            func = name == "entities" ? Maple.Entity : Maple.Trigger
+            horizontal, vertical = Ahorn.canResizeWrapper(target)
 
-            placementType = horizontal || vertical? "rectangle" : "point"
+            placementType = horizontal || vertical ? "rectangle" : "point"
 
             # Fake a entity/trigger of the target
             # Copy all allowed attributes and store a fake (x, y) position for offseting nodes properly
             # If the entity/trigger is resizeable use "rectangle" placement rather than "point"
 
+            global materialName = nothing
             global material = Ahorn.EntityPlacement(
                 (x, y) -> func(target.name, x=x, y=y),
                 placementType,
@@ -279,9 +322,10 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
                 x1, y1, x2, y2 = floor.(Int, [x1, y1, x2 + 8 * sign(x2 - x1), y2 + 8 * sign(y2 - y1)] ./ 8) .* 8
             end
 
-            newGhost = generatePreview(targetLayer, material, x1, y1, nx=x2, ny=y2)
+            prevGhost = deepcopy(previewGhost)
+            newGhost = generatePreview!(targetLayer, material, x1, y1, nx=x2, ny=y2)
 
-            if newGhost != previewGhost
+            if newGhost != prevGhost
                 global previewGhost = newGhost
 
                 Ahorn.redrawLayer!(toolsLayer)
@@ -294,9 +338,10 @@ function selectionMotionAbs(rect::Ahorn.Rectangle)
     if Ahorn.modifierControl()
         if Ahorn.layerName(targetLayer) == "entities" || Ahorn.layerName(targetLayer) == "triggers"
             if material.placement == "rectangle"
-                newGhost = generatePreview(targetLayer, material, rect.x, rect.y, nx=rect.x + rect.w, ny=rect.y + rect.h)
+                prevGhost = deepcopy(previewGhost)
+                newGhost = generatePreview!(targetLayer, material, rect.x, rect.y, nx=rect.x + rect.w, ny=rect.y + rect.h)
 
-                if newGhost != previewGhost
+                if newGhost != prevGhost
                     global previewGhost = newGhost
 
                     Ahorn.redrawLayer!(toolsLayer)
@@ -314,9 +359,10 @@ function selectionMotion(rect::Ahorn.Rectangle)
 
         if Ahorn.layerName(targetLayer) == "entities" || Ahorn.layerName(targetLayer) == "triggers"
             if material.placement == "rectangle"
-                newGhost = generatePreview(targetLayer, material, ax1, ay1, nx=ax2, ny=ay2)
+                prevGhost = deepcopy(previewGhost)
+                newGhost = generatePreview!(targetLayer, material, ax1, ay1, nx=ax2, ny=ay2)
 
-                if newGhost != previewGhost
+                if newGhost != prevGhost
                     global previewGhost = newGhost
 
                     Ahorn.redrawLayer!(toolsLayer)
@@ -333,6 +379,7 @@ end
 function selectionFinish(rect::Ahorn.Rectangle)
     if previewGhost !== nothing
         pushPreview!(targetLayer, Ahorn.loadedState.room, previewGhost)
+
         global previewGhost = nothing
         global selectionRect = nothing
 
@@ -349,6 +396,19 @@ function layersChanged(layers::Array{Ahorn.Layer, 1})
     global targetLayer = Ahorn.selectLayer!(layers, wantedLayer, "entities")
 end
 
+decalScaleVals = (1.0, 2.0^4)
+
+resizeModifiers = Dict{Integer, Tuple{Number, Number}}(
+    # w, h
+    # Decrease / Increase width
+    Int('q') => (1, 0),
+    Int('e') => (-1, 0),
+
+    # Decrease / Increase height
+    Int('a') => (0, 1),
+    Int('d') => (0, -1)
+)
+
 scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
     # Vertical Flip
     Int('v') => (1, -1),
@@ -358,11 +418,35 @@ scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
 )
 
 function keyboard(event::Ahorn.eventKey)
+    redraw = false
+
     if haskey(scaleMultipliers, event.keyval)
         msx, msy = scaleMultipliers[event.keyval]
         
         global scaleX *= msx
         global scaleY *= msy
+
+        redraw = true
+    end
+
+    if haskey(resizeModifiers, event.keyval)
+        extraW, extraH = resizeModifiers[event.keyval]
+        minVal, maxVal = decalScaleVals
+        
+        global scaleX = floor(Int, sign(scaleX) * clamp(abs(scaleX) * 2.0^extraW, minVal, maxVal))
+        global scaleY = floor(Int, sign(scaleY) * clamp(abs(scaleY) * 2.0^extraH, minVal, maxVal))
+
+        redraw = true
+    end
+
+    if redraw
+        name = Ahorn.layerName(targetLayer)
+
+        if name == "fgDecals" || name == "bgDecals"
+            global previewGhost = generatePreview!(targetLayer, material, previewGhost.x, previewGhost.y, sx=scaleX, sy=scaleY)
+
+            Ahorn.redrawLayer!(toolsLayer)
+        end
     end
 
     return true

@@ -2,7 +2,7 @@ module OshiroTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Oshiro (Spawn)" => Ahorn.EntityPlacement(
         Maple.OshiroTrigger,
         "rectangle",

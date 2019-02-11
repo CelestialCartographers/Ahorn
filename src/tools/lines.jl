@@ -1,6 +1,6 @@
 module Lines
 
-using ..Ahorn
+using ..Ahorn, Maple
 
 displayName = "Lines"
 group = "Brushes"
@@ -30,10 +30,11 @@ function drawLines(layer::Ahorn.Layer, room::Ahorn.Room)
     end
 end
 
-function applyLine!(line::Ahorn.Line, tiles::Ahorn.Maple.Tiles, material::Char)
-    layer = Ahorn.layerName(targetLayer)
+function applyLine!(line::Ahorn.Line, material::Char)
     Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Line $(material)", Ahorn.loadedState.room))
 
+    Maple.updateTileSize!(Ahorn.loadedState.room, '0', '0')
+    tiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
     Ahorn.applyBrush!(lineBrush, tiles, material, 1, 1)
 end
 
@@ -78,6 +79,11 @@ function materialSelected(list::Ahorn.ListContainer, selected::String)
     global material = tileNames[selected]
 end
 
+function materialFiltered(list::Ahorn.ListContainer)
+    tileNames = Ahorn.tileNames(targetLayer)
+    Ahorn.selectRow!(list, row -> row[1] == tileNames[material])
+end
+
 function layersChanged(layers::Array{Ahorn.Layer, 1})
     wantedLayer = get(Ahorn.persistence, "brushes_layer", "fgTiles")
 
@@ -87,13 +93,14 @@ function layersChanged(layers::Array{Ahorn.Layer, 1})
 end
 
 function leftClick(x::Number, y::Number)
-    roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
-    applyLine!(line, roomTiles, material)
+    if line !== nothing
+        applyLine!(line, material)
 
-    global line = nothing
+        global line = nothing
 
-    Ahorn.redrawLayer!(toolsLayer)
-    Ahorn.redrawLayer!(targetLayer)
+        Ahorn.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(targetLayer)
+    end
 end
 
 function middleClick(x::Number, y::Number)
@@ -131,13 +138,14 @@ function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)
 end
 
 function selectionFinish(x1::Number, y1::Number, x2::Number, y2::Number)
-    roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
-    applyLine!(line, roomTiles, material)
+    if line !== nothing
+        applyLine!(line, material)
 
-    global line = nothing
+        global line = nothing
 
-    Ahorn.redrawLayer!(toolsLayer)
-    Ahorn.redrawLayer!(targetLayer)
+        Ahorn.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(targetLayer)
+    end
 end
 
 end

@@ -2,7 +2,7 @@ module Spring
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Spring (Up)" => Ahorn.EntityPlacement(
         Maple.Spring
     ),
@@ -14,40 +14,28 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function selection(entity::Maple.Entity)
-    x, y = Ahorn.entityTranslation(entity)
+function Ahorn.selection(entity::Maple.Spring)
+    x, y = Ahorn.position(entity)
 
-    if entity.name == "spring"
-        return true, Ahorn.Rectangle(x - 6, y - 3, 12, 5)
-
-    elseif entity.name == "wallSpringLeft"
-        return true, Ahorn.Rectangle(x - 1, y - 6, 5, 12)
-
-    elseif entity.name == "wallSpringRight"
-        return true, Ahorn.Rectangle(x - 4, y - 6, 5, 12)
-    end
-
-    return false
+    return Ahorn.Rectangle(x - 6, y - 3, 12, 5)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "spring"
-        Ahorn.drawSprite(ctx, "objects/spring/00.png", 0, -8)
+function Ahorn.selection(entity::Maple.SpringLeft)
+    x, y = Ahorn.position(entity)
 
-        return true
-
-    elseif entity.name == "wallSpringLeft"
-        Ahorn.drawSprite(ctx, "objects/spring/00.png", 9, -11, rot=pi / 2)
-
-        return true
-
-    elseif entity.name == "wallSpringRight"
-        Ahorn.drawSprite(ctx, "objects/spring/00.png", 3, 1, rot=-pi / 2)
-
-        return true
-    end
-
-    return false
+    return Ahorn.Rectangle(x - 1, y - 6, 5, 12)
 end
+
+function Ahorn.selection(entity::Maple.SpringRight)
+    x, y = Ahorn.position(entity)
+
+    return Ahorn.Rectangle(x - 4, y - 6, 5, 12)
+end
+
+sprite = "objects/spring/00.png"
+
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Spring, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, -8)
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SpringLeft, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 9, -11, rot=pi / 2)
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SpringRight, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 3, 1, rot=-pi / 2)
 
 end

@@ -1,8 +1,9 @@
 lockedEntityEditingFields = ["x", "y", "width", "height"]
+lockedDecalEditingFields = ["x", "y", "scaleX", "scaleY", "texture"]
 lastPropertyWindow = nothing
 lastPropertyWindowDestroyed = false
 
-function spawnPropertyWindow(title::String, options::Array{ConfigWindow.Option, 1}, callback::Function, lockedPositions::Array{String, 1})
+function spawnPropertyWindow(title::String, options::Array{Form.Option, 1}, callback::Function, lockedPositions::Array{String, 1}=String[])
     destroyPrevious = get(config, "properties_destroy_previous_window", true)
     keepPreviousPosition = get(config, "properties_keep_previous_position", true)
     alwaysOnTop = get(config, "properties_always_on_top", true)
@@ -10,8 +11,9 @@ function spawnPropertyWindow(title::String, options::Array{ConfigWindow.Option, 
     winX, winY = 0, 0
     winScreen = nothing
 
-    propertyWindow = ConfigWindow.createWindow(title, options, callback, lockedPositions=lockedPositions)
-    signal_connect(propertyWindow, :destroy) do widget
+    section = Form.Section("properties", options, fieldOrder=lockedPositions)
+    propertyWindow = Form.createFormWindow(title, section, callback=callback)
+    @guarded signal_connect(propertyWindow, :destroy) do widget
         global lastPropertyWindowDestroyed = true
     end
 
@@ -39,7 +41,7 @@ function spawnPropertyWindow(title::String, options::Array{ConfigWindow.Option, 
     global lastPropertyWindowDestroyed = false
 end
 
-function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, toolsLayer::Layer, selections::Set{Tuple{String, Rectangle, Any, Number}}=Set{Tuple{String, Rectangle, Any, Number}}())
+function getTargets(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, selections::Set{Tuple{String, Rectangle, Any, Number}}=Set{Tuple{String, Rectangle, Any, Number}}())
     targets = Any[]
     rect = Rectangle(x, y, 1, 1)
 
@@ -50,31 +52,43 @@ function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::
             push!(targets, target)
         end
     
-    else
-        success, base = hasSelectionAt(selections, rect)
+    else    
+        base = hasSelectionAt(selections, rect, room)
         
-        if success && (isa(base, Entity) || isa(base, Trigger))
+        if isa(base, Entity) || isa(base, Trigger)
             push!(targets, base)
 
-            for selection in selections
-                layer, box, target, node = selection
-
+            for (layer, box, target, node) in selections
                 if isa(target, Entity) || isa(target, Trigger)
                     if base.name == target.name && base.id != target.id
                         push!(targets, target)
                     end
                 end
             end
+
+        elseif isa(base, Decal)
+            push!(targets, base)
+            push!(targets, [
+                target for (layer, box, target, node) in selections if isa(target, Decal) && target != base
+            ]...)
         end
     end
 
+    return targets
+end
+
+function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, toolsLayer::Layer, selections::Set{Tuple{String, Rectangle, Any, Number}}=Set{Tuple{String, Rectangle, Any, Number}}())
+    targets = getTargets(x, y, room, targetLayer, selections)
+
     if !isempty(targets)
-        if isa(target, Entity) || isa(target, Trigger)
-            function callback(data::Dict{String, Any})
+        baseTarget = targets[1]
+
+        if isa(baseTarget, Entity) || isa(baseTarget, Trigger)
+            callback = function(data::Dict{String, Any})
                 updateTarget = true
 
-                minWidth, minHeight = minimumSize(target)
-                hasWidth, hasHeight = haskey(target.data, "width"), haskey(target.data, "height")
+                minWidth, minHeight = minimumSize(baseTarget)
+                hasWidth, hasHeight = haskey(baseTarget.data, "width"), haskey(baseTarget.data, "height")
                 width, height = Int(get(data, "width", minWidth)), Int(get(data, "width", minHeight))
 
                 if hasWidth && width < minWidth || hasHeight && height < minHeight
@@ -85,7 +99,9 @@ function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::
                     History.addSnapshot!(History.RoomSnapshot("Properties", room))
 
                     for target in targets
-                        merge!(target.data, deepcopy(data))
+                        if isa(target, Entity) || isa(target, Trigger)
+                            merge!(target.data, deepcopy(data))
+                        end
                     end
 
                     redrawLayer!(targetLayer)
@@ -93,13 +109,41 @@ function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::
                 end
             end
 
-            baseTarget = targets[1]
             ids = join([Int(t.id) for t in targets], ", ")
-            ignores = length(targets) > 1? String["x", "y", "nodes"] : String[]
+            ignores = length(targets) > 1 ? String["x", "y", "width", "height", "nodes"] : String[]
             options = entityConfigOptions(baseTarget, ignores)
 
             if !isempty(options)
-                spawnPropertyWindow("$(baseTitle) - Editing '$(baseTarget.name)' - $ids", options, callback, lockedEntityEditingFields)
+                spawnPropertyWindow("$(baseTitle) - Editing '$(baseTarget.name)' - ID: $ids", options, callback, lockedEntityEditingFields)
+            end
+
+        elseif isa(baseTarget, Decal)
+            callback = function(data::Dict{String, Any})
+                History.addSnapshot!(History.RoomSnapshot("Properties", room))
+
+                for target in targets
+                    if isa(target, Decal)
+                        texture = hasExt(data["texture"], ".png") ? data["texture"] : data["texture"] * ".png"
+
+                        target.x = get(data, "x", target.x)
+                        target.y = get(data, "y", target.y)
+
+                        target.texture = texture
+
+                        target.scaleX = data["scaleX"]
+                        target.scaleY = data["scaleY"]
+                    end
+                end
+
+                redrawLayer!(targetLayer)
+                redrawLayer!(toolsLayer)
+            end
+
+            ignores = length(targets) > 1 ? String["x", "y"] : String[]
+            options = decalConfigOptions(baseTarget, ignores)
+
+            if !isempty(options)
+                spawnPropertyWindow("$(baseTitle) - Editing '$(splitext(baseTarget.texture)[1])'", options, callback, lockedDecalEditingFields)
             end
         end
     end

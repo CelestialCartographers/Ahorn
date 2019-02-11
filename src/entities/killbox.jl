@@ -2,47 +2,30 @@ module Killbox
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Killbox" => Ahorn.EntityPlacement(
         Maple.Killbox,
         "rectangle"
     ),
 )
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "killbox"
-        return true, 8, 0
-    end
+Ahorn.minimumSize(entity::Maple.Killbox) = 8, 0
+Ahorn.resizable(entity::Maple.Killbox) = true, false
+
+function Ahorn.selection(entity::Maple.Killbox)
+    x, y = Ahorn.position(entity)
+
+    width = Int(get(entity.data, "width", 8))
+    height = 32
+
+    return Ahorn.Rectangle(x, y, width, height)
 end
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "killbox"
-        return true, true, false
-    end
-end
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Killbox, room::Maple.Room)
+    width = Int(get(entity.data, "width", 32))
+    height = 32
 
-function selection(entity::Maple.Entity)
-    if entity.name == "killbox"
-        x, y = Ahorn.entityTranslation(entity)
-
-        width = Int(get(entity.data, "width", 8))
-        height = 32
-
-        return true, Ahorn.Rectangle(x, y, width, height)
-    end
-end
-
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "killbox"
-        width = Int(get(entity.data, "width", 32))
-        height = 32
-
-        Ahorn.drawRectangle(ctx, 0, 0, width, height, (0.8, 0.4, 0.4, 0.8), (0.0, 0.0, 0.0, 0.0))
-
-        return true
-    end
-
-    return false
+    Ahorn.drawRectangle(ctx, 0, 0, width, height, (0.8, 0.4, 0.4, 0.8), (0.0, 0.0, 0.0, 0.0))
 end
 
 end

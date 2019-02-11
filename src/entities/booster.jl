@@ -2,7 +2,7 @@ module Booster
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Booster (Green)" => Ahorn.EntityPlacement(
         Maple.GreenBooster
     ),
@@ -11,29 +11,28 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     )
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "booster"
-        x, y = Ahorn.entityTranslation(entity)
+function boosterSprite(entity::Maple.Booster)
+    red = get(entity.data, "red", false)
+    
+    if red
+        return "objects/booster/boosterRed00.png"
 
-        return true, Ahorn.Rectangle(x - 8, y - 8, 16, 16)
+    else
+        return "objects/booster/booster00.png"
     end
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "booster"
-        red = get(entity.data, "red", false)
+function Ahorn.selection(entity::Maple.Booster)
+    x, y = Ahorn.position(entity)
+    sprite = boosterSprite(entity)
 
-        if red
-            Ahorn.drawSprite(ctx, "objects/booster/boosterRed00.png", 0, 0)
+    return Ahorn.getSpriteRectangle(sprite, x, y)
+end
 
-        else
-            Ahorn.drawSprite(ctx, "objects/booster/booster00.png", 0, 0)
-        end
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Booster, room::Maple.Room)
+    sprite = boosterSprite(entity)
 
-        return true
-    end
-
-    return false
+    Ahorn.drawSprite(ctx, sprite, 0, 0)
 end
 
 end

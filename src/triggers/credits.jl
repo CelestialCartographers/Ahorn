@@ -2,7 +2,7 @@ module CreditsTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Credits" => Ahorn.EntityPlacement(
         Maple.CreditsTrigger,
         "rectangle"

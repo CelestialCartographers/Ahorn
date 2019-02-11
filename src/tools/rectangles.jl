@@ -1,6 +1,6 @@
 module Rectangles
 
-using ..Ahorn
+using ..Ahorn, Maple
 
 displayName = "Rectangles"
 group = "Brushes"
@@ -21,7 +21,7 @@ function drawRectangle(rect::Ahorn.Rectangle, layer::Ahorn.Layer, filled=filled)
 
     pixels = fill(true, rect.h, rect.w)
     if !filled
-        pixels[2:end - 1, 2:end - 1] = false
+        pixels[2:end - 1, 2:end - 1] .= false
     end
 
     global rectangleBrush = Ahorn.Brush("Rectangle", pixels)
@@ -30,15 +30,16 @@ function drawRectangle(rect::Ahorn.Rectangle, layer::Ahorn.Layer, filled=filled)
 end
 
 function drawRectangles(layer::Ahorn.Layer, room::Ahorn.Room)
-    if selection != nothing
+    if selection !== nothing
         drawRectangle(selection, toolsLayer)
     end
 end
 
-function applyRectangle!(rect::Ahorn.Rectangle, tiles::Ahorn.Maple.Tiles, material::Char, filled)
-    layer = Ahorn.layerName(targetLayer)
+function applyRectangle!(rect::Ahorn.Rectangle, material::Char, filled)
     Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Rectangle $(material)", Ahorn.loadedState.room))
 
+    Maple.updateTileSize!(Ahorn.loadedState.room, '0', '0')
+    tiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
     Ahorn.applyBrush!(rectangleBrush, tiles, material, rect.x, rect.y)
 end
 
@@ -91,6 +92,11 @@ function materialSelected(list::Ahorn.ListContainer, selected::String)
     global material = tileNames[selected]
 end
 
+function materialFiltered(list::Ahorn.ListContainer)
+    tileNames = Ahorn.tileNames(targetLayer)
+    Ahorn.selectRow!(list, row -> row[1] == tileNames[material])
+end
+
 function layersChanged(layers::Array{Ahorn.Layer, 1})
     wantedLayer = get(Ahorn.persistence, "brushes_layer", "fgTiles")
 
@@ -100,13 +106,14 @@ function layersChanged(layers::Array{Ahorn.Layer, 1})
 end
 
 function leftClick(x::Number, y::Number)
-    roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
-    applyRectangle!(selection, roomTiles, material, filled)
+    if selection !== nothing
+        applyRectangle!(selection, material, filled)
 
-    global selection = nothing
+        global selection = nothing
 
-    Ahorn.redrawLayer!(toolsLayer)
-    Ahorn.redrawLayer!(targetLayer)
+        Ahorn.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(targetLayer)
+    end
 end
 
 function middleClick(x::Number, y::Number)
@@ -142,13 +149,14 @@ function selectionMotion(rect::Ahorn.Rectangle)
 end
 
 function selectionFinish(rect::Ahorn.Rectangle)
-    roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
-    applyRectangle!(selection, roomTiles, material, filled)
+    if selection !== nothing
+        applyRectangle!(selection, material, filled)
 
-    global selection = nothing
+        global selection = nothing
 
-    Ahorn.redrawLayer!(toolsLayer)
-    Ahorn.redrawLayer!(targetLayer)
+        Ahorn.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(targetLayer)
+    end
 end
 
 end

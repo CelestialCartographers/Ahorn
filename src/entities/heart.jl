@@ -2,28 +2,30 @@ module Heart
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Crystal Heart" => Ahorn.EntityPlacement(
         Maple.CrystalHeart
     ),
+
+    "Crystal Heart (Dream)" => Ahorn.EntityPlacement(
+        Maple.DreamCrystalHeart
+    ),
+
+    "Crystal Heart (Fake)" => Ahorn.EntityPlacement(
+        Maple.FakeCrystalHeart
+    ),
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "blackGem"
-        x, y = Ahorn.entityTranslation(entity)
+heartUnion = Union{Maple.CrystalHeart, Maple.DreamCrystalHeart, Maple.FakeCrystalHeart}
 
-        return true, Ahorn.Rectangle(x - 8, y - 8, 16, 16)
-    end
+sprite = "collectables/heartGem/0/00.png"
+
+function Ahorn.selection(entity::heartUnion)
+    x, y = Ahorn.position(entity)
+
+    return Ahorn.getSpriteRectangle(sprite, x, y)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "blackGem"
-        Ahorn.drawSprite(ctx, "collectables/heartGem/0/00.png", 0, 0)
-
-        return true
-    end
-
-    return false
-end
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::heartUnion, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, 0)
 
 end

@@ -9,17 +9,17 @@ function ValidationEntry(value::Any, validation::Function=guessValidationFunctio
     entry = Entry(text=text)
 
     if setPlaceholder
-        setproperty!(entry, :placeholder_text, placeholder)
+        GAccessor.placeholder_text(entry, placeholder)
     end
-
-    icon = validation(text)? validationPassedIcon : validationFailedIcon
-    setproperty!(entry, :secondary_icon_name, icon)
+    
+    icon = validation(text) ? validationPassedIcon : validationFailedIcon
+    set_gtk_property!(entry, :secondary_icon_name, icon)
 
     @guarded signal_connect(entry, "changed") do widget
-        text = getproperty(widget, :text, String)
-        icon = validation(text)? validationPassedIcon : validationFailedIcon
+        text = Gtk.bytestring(GAccessor.text(widget))
+        icon = validation(text) ? validationPassedIcon : validationFailedIcon
 
-        setproperty!(widget, :secondary_icon_name, icon)
+        set_gtk_property!(widget, :secondary_icon_name, icon)
     end
 
     return entry

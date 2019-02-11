@@ -1,0 +1,694 @@
+# Ahorn Language File
+# Comments start with '#'
+
+
+# -- Entity and Trigger Tooltips -- 
+#    placements.entities.entityName.tooltips.attr=Tooltip
+#    placements.triggers.triggerName.tooltips.attr=Tooltip
+
+# -- Entities -- 
+
+# Strawberry
+placements.entities.strawberry.tooltips.winged=The strawberry attempts to vertically rise offscreen when the player dashes.
+placements.entities.strawberry.tooltips.checkpointID=Manually determine what checkpoint section strawberries are visually grouped up in, showing up on the start menu during gameplay and level select. Overrides Everest's automatic berry IDs. (Default= -1)
+placements.entities.strawberry.tooltips.order=Manually determine what order strawberries are visually placed in on the start menu during gameplay and level select. Overrides Everest's automatic berry IDs. (Default= -1)
+
+# Golden Strawberry
+placements.entities.goldenBerry.tooltips.winged=The strawberry attempts to vertically rise offscreen when the player dashes.
+
+# Badeline Boost
+placements.entities.badelineBoost.tooltips.lockCamera=Upon activation, the camera cannot pan away from the entity.
+
+# Badeline Boss
+placements.entities.finalBoss.tooltips.startHit=Determines whether or not Badeline waits to attack until the first hit or upon room entry.
+placements.entities.finalBoss.tooltips.patternIndex=Determines what pattern of attack Badeline uses.\n 0 - Badeline transforms into the boss after being hit once\n 1 - Shoots orbs\n 2 - Shoots laser followed by one orb\n 3 - Shoots five streams of two orbs\n 4 - Shoots five streams of two orbs followed by one laser\n 5 - Shoots laser followed by three streams of two orbs\n 6 - Shoots lasers\n 7 - Shoots orbs with less delay\n 8 - Shoots lasers with less delay\n 9 - Shoots streams of two orbs\n 10 - Does nothing\n 11 - Shoots orbs with more delay\n 12 - Does nothing\n 13 - Shoots orbs after getting hit once\n 14 - Shoots lasers with very short delay\n 15 - Shoots lasers with more delay
+placements.entities.finalBoss.tooltips.lockCamera=The camera cannot pan away from the entity.
+
+# Fire Ball
+placements.entities.fireBall.tooltips.amount=Determines the amount of fireballs on a track.
+placements.entities.fireBall.tooltips.offset=Determines how far into the path the fireball starts.
+placements.entities.fireBall.tooltips.speed=Determines how fast a fireball reaches the end of the track.
+
+# Tentacles
+placements.entities.tentacles.tooltips.slide_until=Changes how far tentacles fall back when Madeline comes into fear distance.
+placements.entities.tentacles.tooltips.fear_distance=Determines the distance Madeline has to be at for the tentacles to fall back.
+
+# Seeker Statue
+placements.entities.seekerStatue.tooltips.hatch=Determines whether the statue releases its seeker when the player is to the right of it, or when the player gets close enough.
+
+# Feather
+placements.entities.infiniteStar.tooltips.shielded=Determines whether the feather is surrounded by a shield that must be dashed into to activate.
+placements.entities.infiniteStar.tooltips.singleUse=Determines whether the feather is single-use, not reappearing after usage.
+
+# Chapter Checkpoint
+placements.entities.checkpoint.tooltips.inventory=Determines the player's inventory when loading from the given chapter.\n Automatic keeps the inventory from Metadata\n Prologue: 0 dashes, Dream blocks disabled, wearing a backpack, ground refills enabled\n Default: 1 dash, Dream blocks enabled, wearing a backpack, ground refills enabled\n OldSite: 1 dash, Dream blocks disabled, wearing a backpack, ground refills enabled\n CH6End: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills enabled\n TheSummit: 2 dashes, Dream blocks enabled, not wearing a backpack, ground refills enabled\n Core: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills disabled
+placements.entities.checkpoint.tooltips.dreaming=Determines the dreaming state when loading from the given chapter.\nAutomatic keeps the dreaming state from Metadata.
+placements.entities.checkpoint.tooltips.checkpointID=Manually determine the order in which the checkpoints are placed on the level selection screen. Overrides Everest's automatic checkpoint system. (Default= -1)
+placements.entities.checkpoint.tooltips.allowOrigin=Whether the Checkpoint shouldn't be special cased and automatically set by Everest if position is (0, 0).
+
+# Rotate Spinner
+placements.entities.rotateSpinner.tooltips.clockwise=The spinning blade will run clockwise.
+placements.entities.rotateSpinner.tooltips.dust=Changes the appearance of the blade to be a dust sprite.
+
+# Spinner
+placements.entities.spinner.tooltips.attachToSolid=The spinner attaches to the surface of the entity or block, and can be moved by them.
+
+# TrackSpinner
+placements.entities.trackSpinner.tooltips.speed=Changes the speed of the spinner's rotation.
+placements.entities.trackSpinner.tooltips.startCenter=The spinner will start at the end of the track.
+placements.entities.trackSpinner.tooltips.dust=Turns the visual appearance of a blade into a dust sprite.
+
+# Jump Thru
+placements.entities.jumpThru.tooltips.texture=Changes the appearance of the platform.
+
+# Booster
+placements.entities.booster.tooltips.red=Determines whether the booster is green and short distance, or red and infinite distance.
+
+# Wall Booster
+placements.entities.wallBooster.tooltips.left=Whether the entity attaches to the left wall or not.
+
+# Dark Chaser
+placements.entities.darkChaser.tooltips.canChangeMusic=Whether the chaser should be able to change the music to the "chasing" track.
+
+# Final Boss
+placements.entities.finalBoss.tooltips.canChangeMusic=Whether the boss should be able to change the music to the boss track.
+
+# Moving Platform
+placements.entities.movingPlatform.tooltips.texture=What texture to use for the platform.
+
+# Sinking Platform
+placements.entities.sinkingPlatform.tooltips.texture=What texture to use for the platform.
+
+# Crumble Block
+placements.entities.crumbleBlock.tooltips.texture=What texture to use for the crumble block.
+
+# Fake Block
+placements.entities.fakeBlock.tooltips.tiletype=Changes the visual appearance of the wall.
+
+# Glass Block
+placements.entities.glassBlock.tooltips.sinks=Whether the tile should sink when the player is on top.
+
+# Cobweb
+placements.entities.cobweb.tooltips.color=Determines the colour of the cobweb.
+
+# Refill
+placements.entities.refill.tooltips.twoDash=Whether the refill should give two dashes.
+placements.entities.refill.tooltips.oneUse=Whether the refill should respawn after being used.
+
+# Lightbeam
+placements.entities.lightbeam.tooltips.rotation=Determines the rotation of the lightbeam.
+placements.entities.lightbeam.tooltips.flag=Only show up if the given flag is set, or always if left empty.
+
+# Wire
+placements.entities.wire.tooltips.above=Determines whether the wire is placed in the foreground or background.
+placements.entities.wire.tooltips.color=Determines the colour of the wire.
+
+# Torch
+placements.entities.torch.tooltips.startLit=Changes whether the light will start lit, or have the player's touch activate it.
+
+# Heart Door
+placements.entities.heartGemDoor.tooltips.requires=Determines the number of Crystal Hearts required to open the heart door. Everest keeps track of hearts collected within the level set.
+
+# Move Block
+placements.entities.moveBlock.tooltips.canSteer=Determines whether the move block can be moved by the player.
+placements.entities.moveBlock.tooltips.fast=Changes the move block between two speeds.
+placements.entities.moveBlock.tooltips.direction=Determines the direction the move block moves in upon activation.
+
+# Switch Gate
+placements.entities.switchGate.tooltips.persistent=Will stay open once activated, even if the player dies.
+placements.entities.switchGate.tooltips.sprite=Changes the visual appearance of the switch gate.
+
+#Dream Block
+placements.entities.dreamBlock.tooltips.fastMoving=Changes the dream block between two speeds.
+
+#Cliffside Flag
+placements.entities.cliffside_flag.tooltips.index=Changes the visual appearance of the flag.
+
+# Cloud
+placements.entities.cloud.tooltips.fragile=Determines if the cloud will temporarily disappear after being touched.
+placements.entities.cloud.tooltips.small=Reduces the surface area of the cloud.
+
+# Dash Switch Horizontal
+placements.entities.dashSwitchH.tooltips.persistent=Once turned on, it will stay activated, even if the player dies.
+placements.entities.dashSwitchH.tooltips.sprite=Changes the visual appearance of the switch.
+placements.entities.dashSwitchH.tooltips.leftSide=Flips the switch entity horizontally so that it can be attached to wall surfaces facing right.
+
+# Dash Switch Vertical
+placements.entities.dashSwitchV.tooltips.persistent=Once turned on, it will stay activated, even if the player dies.
+placements.entities.dashSwitchV.tooltips.ceiling=Flips the switch entity vertically so that it can be attached to ceiling surfaces.
+placements.entities.dashSwitchV.tooltips.sprite=Changes the visual appearance of the switch.
+
+# Memorial
+placements.entities.memorial.tooltips.dreaming=Changes the memorial's text to the dream state from Old Site.
+
+# Memorial (Everest)
+placements.entities.everest/memorial.tooltips.dreaming=Changes the memorial's text to the dream state from Old Site.
+placements.entities.everest/memorial.tooltips.dialog=What dialogue ID to pull the memorial's text from.
+placements.entities.everest/memorial.tooltips.sprite=What sprite to render for the memorial.
+placements.entities.everest/memorial.tooltips.spacing=The spacing for the letters.
+
+# Water
+placements.entities.water.tooltips.hasBottom=Determines whether or not the water has a bottom.
+
+# NPC
+placements.entities.npc.tooltips.npc=Changes which NPC entity appears from a list of entities. Certain entities carry dialogue from certain scenes in the game.
+
+# NPC (Everest)
+placements.entities.everest/npc.tooltips.indicatorOffsetX=Offset for the chat icon on the X axis.
+placements.entities.everest/npc.tooltips.indicatorOffsetY=Offset for the chat icon on the Y axis.
+placements.entities.everest/npc.tooltips.dialogId=The dialogue ID to use for the dialogue.
+placements.entities.everest/npc.tooltips.flipY=Flips the sprite of the NPC vertically.
+placements.entities.everest/npc.tooltips.flipX=Flips the sprite of the NPC horizontally.
+placements.entities.everest/npc.tooltips.onceOnly=Whether the dialogue should only be completable once.
+placements.entities.everest/npc.tooltips.endLevel=Whether finishing the dialogue should count as completing the map.
+placements.entities.everest/npc.tooltips.approachWhenTalking=Whether Madeline should walk towards the NPC when talking.
+placements.entities.everest/npc.tooltips.spriteRate=The animation rate for the sprite.
+placements.entities.everest/npc.tooltips.approachDistance=How far away from the NPC Madeline should stop when approaching.
+placements.entities.everest/npc.tooltips.sprite=Which sprite to use. `player/idle` will use the full path `Graphics/Atlases/Gameplay/characters/player/idle00` and loop from 00 to 08.
+
+# Slider
+placements.entities.slider.tooltips.clockwise=Whether the slider will run clockwise or counter-clockwise.
+placements.entities.slider.tooltips.surface=Attaches the slider to a surface.
+
+# Lock Block
+placements.entities.lockBlock.tooltips.sprite=Changes the visual appearance of the locked block.
+
+# Wind Trigger
+placements.triggers.windTrigger.tooltips.pattern=Changes the abilities of the room's current wind type.
+
+# Trigger Spikes Originals
+placements.entities.triggerSpikesOriginalLeft.tooltips.type=Changes the visual appearance of the spikes.
+placements.entities.triggerSpikesOriginalUp.tooltips.type=Changes the visual appearance of the spikes.
+placements.entities.triggerSpikesOriginalDown.tooltips.type=Changes the visual appearance of the spikes.
+placements.entities.triggerSpikesOriginalRight.tooltips.type=Changes the visual appearance of the spikes.
+
+# Coverup Wall
+placements.entities.coverupWall.tooltips.tiletype=Changes the visual appearance of the wall.
+
+# Spring
+placements.entities.spring.tooltips.playerCanUse=Determines whether the player is able to interact with the spring.
+
+# Lamp
+placements.entities.lamp.tooltips.broken=Changes the visual appearance of the lamp to be broken.
+
+# Falling Block
+placements.entities.fallingBlock.tooltips.climbFall=After a delay, the block will physically fall down until it comes into contact with another block.
+placements.entities.fallingBlock.tooltips.tiletype=Changes the visual appearance of the falling block.
+placements.entities.fallingBlock.tooltips.behind=Falls when the player is on the right-hand side of the block.
+placements.entities.fallingBlock.tooltips.finalBoss=Falling blocks that are tied to the final boss being hit.
+
+# Fake Wall
+placements.entities.fakeWall.tooltips.tiletype=Changes the visual appearance of the wall.
+
+# Bonfire
+placements.entities.bonfire.tooltips.mode=Changes the bonfire between lit, unlit, or smoking.
+
+# Door
+placements.entities.door.tooltips.type=Changes the door to metal or wood.
+
+# Spinner
+placements.entities.spinner.tooltips.color=Changes the colour of the spinner.
+placements.entities.spinner.tooltips.dust=Changes the spinner into a dust sprite.
+
+# Intro Crusher
+placements.entities.introCrusher.tooltips.tiletype=Determines the visual appearance of the wall.
+placements.entities.introCrusher.tooltips.flags=If any of the flags are set the entity will rest at its end node instead.
+
+# Dash Block
+placements.entities.dashBlock.tooltips.canDash=Whether the player can break the block by dashing into it.
+placements.entities.dashBlock.tooltips.blendin=Blends the block with the walls it touches, making it less apparent.
+placements.entities.dashBlock.tooltips.tiletype=Determines the visual appearance of the wall.
+placements.entities.dashBlock.tooltips.permanent=Once broken, the block will remain that way, even if the player dies.
+
+# Exit Block
+placements.entities.exitBlock.tooltips.tileType=Determines the visual appearance of the wall.
+placements.entities.exitBlock.tooltips.playTransitionReveal=Determines if revealing the block should play the reveal jingle.
+
+# Normal Spikes
+placements.entities.spikesDown.tooltips.type=Determines the visual appearance of the spike.
+placements.entities.spikesLeft.tooltips.type=Determines the visual appearance of the spike.
+placements.entities.spikesRight.tooltips.type=Determines the visual appearance of the spike.
+placements.entities.spikesUp.tooltips.type=Determines the visual appearance of the spike.
+
+# Cassette Block
+placements.entities.cassetteBlock.tooltips.index=The table of nodes that the player travels through once the cassette is collected.
+
+# Temple Gate
+placements.entities.templeGate.tooltips.sprite=Determines the visual appearance of the gate.
+placements.entities.templeGate.tooltips.type=Determines what abilities the gate has.
+
+# Temple Mirror
+placements.entities.templeMirror.tooltips.reflectX=The horizontal offset for the reflection.
+placements.entities.templeMirror.tooltips.reflectY=The vertical offset for the reflection.
+
+# Rising Lava
+placements.entities.risingLava.tooltips.intro=Determines whether the lava rises up from below the bottom of the screen or starts already present near the bottom.
+
+# Ridge Gate
+placements.entities.ridgeGate.tooltips.strawberries=Determines when the gate will appear, creating a block after certain strawberries are collected.\n\nFormat: (room:id) for one berry or (room1:id1,room2:id2,...) for multiple\nExample: "a-01:4" and "a-01:4,a-02:5"
+
+# Summit Checkpoints
+placements.entities.summitcheckpoint.tooltips.number=Changes the number on the checkpoint card. (Max = 99)
+
+# Bird
+placements.entities.bird.tooltips.mode=Determines what properties the bird has.
+
+# Intro Car
+placements.entities.introCar.tooltips.hasRoadAndBarriers=Determines if the car should come with road and barriers.
+
+# Core Mode Toggle
+placements.entities.coreModeToggle.tooltips.onlyIce=Whether the switch can only turn the core mode to ice.
+placements.entities.coreModeToggle.tooltips.onlyFire=Whether the switch can only turn the core mode to fire.
+placements.entities.coreModeToggle.tooltips.persistent=Whether the core mode persists after death instead of resetting to initial room entry state.
+
+# Clutter Door
+placements.entities.clutterDoor.tooltips.type=Determines which clutter switch will activate the block, making it appear.
+
+# Temple Cracked Block
+placements.entities.templeCrackedBlock.tooltips.persistent=Once broken, the block will remain that way, even if the player dies.
+
+# Crush Block
+placements.entities.crushBlock.tooltips.axes=Determines which sides of the Kevin block are hittable.
+placements.entities.crushBlock.tooltips.chillout=Whether the block should have the large face and get tired after being hit.
+
+# Big Waterfall
+placements.entities.bigWaterfall.tooltips.layer=Where the waterfall should render.\nFG is in the foreground\nBG is in the background and parallaxes.
+
+# Sound Source
+placements.entities.soundSource.tooltips.sound=The sound event that will be played.
+
+# Hahaha
+placements.entities.hahaha.tooltips.ifset=Only show up if the given flag is set, or always if left empty.
+placements.entities.hahaha.tooltips.triggerLaughSfx=Whether the laugh should also play audio.
+
+# Badeline Boss Moving Block
+placements.entities.finalBossMovingBlock.tooltips.nodeIndex=The node index of the Badeline boss this should fall down on.
+
+# Everest Core Message
+placements.entities.everest/coreMessage.tooltips.line=Which line of the dialogue to use.
+placements.entities.everest/coreMessage.tooltips.dialog=The dialogue key to use.
+
+# Star Jump Block
+placements.entities.starJumpBlock.tooltips.sinks=Whether the block sinks when the player stands on it.
+
+# Colour Switch
+placements.entities.colorSwitch.tooltips.type=The colour of the switch.
+
+# Badeline Boss
+placements.entities.finalBoss.tooltips.cameraPastY=Locks the camera from vertically rising, and changes the bottom screen killbox plane to be under Badeline's current position.
+
+# Condition Block
+placements.entities.conditionBlock.tooltips.conditionID=Links the condition block to the ID of a key, strawberry, or button.\nFormat: (room:id)\nExample: "a-01:4"
+placements.entities.conditionBlock.tooltips.condition=Ties the activation to the collection or activation of a key, strawberry, or button.
+placements.entities.conditionBlock.tooltips.tileType=Determines the visual appearance of the condition block.
+
+
+# -- Triggers -- 
+
+# Credits Trigger
+placements.triggers.creditsTrigger.tooltips.event=The event this will trigger.
+
+# Bloom Fade Trigger
+placements.triggers.bloomFadeTrigger.tooltips.positionMode=Determines which direction the bloom fades towards.
+
+# Oshiro Trigger
+placements.triggers.oshiroTrigger.tooltips.state=Triggers whether Oshiro spawns into or leaves the room.
+
+# Music Fade Trigger
+placements.triggers.musicFadeTrigger.tooltips.direction=The direction the music fades in.
+
+# Everest Flag Trigger
+placements.triggers.everest/flagTrigger.tooltips.state=The value to set for the flag.
+placements.triggers.everest/flagTrigger.tooltips.flag=The name of the flag to modify.
+placements.triggers.everest/flagTrigger.tooltips.only_once=Whether the trigger should only work once.
+placements.triggers.everest/flagTrigger.tooltips.mode=Determines how the trigger will activate.
+placements.triggers.everest/flagTrigger.tooltips.death_count=Determines how many deaths are required to activate the trigger. (Default= -1)
+
+# Everest Lava Blocker Trigger
+placements.triggers.everest/lavaBlockerTrigger.tooltips.canReenter=Whether the trigger should still be functional after leaving it once.
+
+# Everest Core Mode Trigger
+placements.triggers.everest/coreModeTrigger.tooltips.mode=The core mode that should be used when the trigger is entered.
+
+# Everest Change Inventory Trigger
+placements.triggers.everest/changeInventoryTrigger.tooltips.inventory=The inventory the player should get when the trigger is entered.
+
+# Camera Advanced Target Trigger
+placements.triggers.cameraAdvanceTargetTrigger.tooltips.positionModeX=Determines which direction the camera fades towards horizontally.
+placements.triggers.cameraAdvanceTargetTrigger.tooltips.positionModeY=Determines which direction the camera fades towards vertically.
+placements.triggers.cameraAdvanceTargetTrigger.tooltips.xOnly=Whether the trigger should only work horizontally.
+placements.triggers.cameraAdvanceTargetTrigger.tooltips.yOnly=Whether the trigger should only work vertically.
+placements.triggers.cameraAdvanceTargetTrigger.tooltips.lerpStrengthX=The horizontal lerp strength.
+placements.triggers.cameraAdvanceTargetTrigger.tooltips.lerpStrengthY=The vertical lerp strength.
+
+# Music Fade Trigger
+placements.triggers.musicFadeTrigger.tooltips.fadeB=Determines the ending volume of the fade.
+placements.triggers.musicFadeTrigger.tooltips.fadeA=Determines the starting volume of the fade.
+placements.triggers.musicFadeTrigger.tooltips.parameter=Uses the fade properties if left blank, otherwise uses FMOD's escape property.
+
+# Ambience Param Trigger
+placements.triggers.ambienceParamTrigger.tooltips.to=Determines the volume of the ambience at farther distances.
+placements.triggers.ambienceParamTrigger.tooltips.from=Determines the volume of the ambience at closer distances.
+placements.triggers.ambienceParamTrigger.tooltips.parameter=Uses the ambience properties if left blank, otherwise uses FMOD's escape property.
+placements.triggers.ambienceParamTrigger.tooltips.direction=Determines which direction the ambience comes from.
+
+# Bloom Fade Trigger
+placements.triggers.bloomFadeTrigger.tooltips.bloomAddTo=Determines where the bloom fade ends.
+placements.triggers.bloomFadeTrigger.tooltips.bloomAddFrom=Determines where the bloom fade starts.
+
+# Light Fade Trigger
+placements.triggers.lightFadeTrigger.tooltips.lightAddTo=Determines how the lighting changes passing through the trigger.
+placements.triggers.lightFadeTrigger.tooltips.lightAddFrom=Determines how the lighting changes passing through the trigger backwards.
+placements.triggers.lightFadeTrigger.tooltips.positionMode=Determines which direction the light fades towards.
+
+# Camera Target Trigger
+placements.triggers.cameraTargetTrigger.tooltips.positionMode=Changes the position of the camera, locking it in place.
+placements.triggers.cameraTargetTrigger.tooltips.yOnly=The camera will only lock on the Y axis.
+placements.triggers.cameraTargetTrigger.tooltips.xOnly=The camera will only lock on the X axis.
+placements.triggers.cameraTargetTrigger.tooltips.lerpStrength=Determines how fast the camera moves to lock into place upon activation.
+
+# Camera Offset Trigger
+placements.triggers.cameraOffsetTrigger.tooltips.cameraX=Offsets the player camera on the X axis.
+placements.triggers.cameraOffsetTrigger.tooltips.cameraY=Offsets the player camera on the Y axis.
+
+# No Refill Trigger
+placements.triggers.noRefillTrigger.tooltips.state=Determines whether the player is capable of acquiring refills upon touching the ground.
+
+# Minitextbox Trigger
+placements.triggers.minitextboxTrigger.tooltips.only_once=Triggers the dialogue the dialogue ID references only once.
+placements.triggers.minitextboxTrigger.tooltips.mode=Determines how the mini text box will trigger.
+placements.triggers.minitextboxTrigger.tooltips.dialog_id=References from English.txt in the map's Dialog folder to use as text in-game.
+placements.triggers.minitextboxTrigger.tooltips.death_count=Determines how many deaths are required to activate the mini text box trigger. (Default= -1)
+
+# Event Trigger
+placements.triggers.eventTrigger.tooltips.event=Upon activation, plays the event selected.
+
+# Music Trigger
+placements.triggers.musicTrigger.tooltips.resetOnLeave=Resets the music when the player leaves the current zone after entering the trigger zone.
+placements.triggers.musicTrigger.tooltips.track=Changes the track that plays when the player enters the trigger zone.
+
+# Alt Music Trigger
+placements.triggers.altMusicTrigger.tooltips.resetOnLeave=Resets the music when the player leaves the current zone after entering the trigger zone.
+placements.triggers.altMusicTrigger.tooltips.track=Changes the track that plays when the player enters the trigger zone.
+
+# Dialog Trigger (Everest)
+placements.triggers.everest/dialogTrigger.tooltips.onlyOnce=Whether the dialogue should only trigger once.
+placements.triggers.everest/dialogTrigger.tooltips.dialogId=The dialogue ID to use for the dialogue.
+
+# Shatter Crystal Trigger (Everest)
+placements.triggers.everest/crystalShatterTrigger.tooltips.mode=Whether the trigger should destroy all crystal spinners, or only the ones contained within it.
+
+
+# -- Effects -- 
+
+placements.effects.tentacles.names.sides=Sides
+placements.effects.tentacles.names.offset=Offset
+placements.effects.tentacles.names.color=Colour
+
+placements.effects.starfield.names.color=Colour
+
+placements.effects.planets.names.count=Count
+placements.effects.planets.names.size=Size
+
+
+placements.effects.tentacles.tooltips.sides=The side of the screen that the tentacles should attach to.
+placements.effects.tentacles.tooltips.offset=Determines the lerp strength of the tentacles, and their offset compared to the player's position.
+placements.effects.tentacles.tooltips.color=The colour of the tentacles.
+
+placements.effects.starfield.tooltips.color=The colour of the stars.
+
+placements.effects.planets.tooltips.count=The amount of planets to render.
+placements.effects.planets.tooltips.size=The sprite to use for the planets.\nLocated at "Gameplay/bgs/10/$size00", where "$size" is the size attribute value.
+
+
+# -- Decals Properties --
+#   placements.decals.names.attr
+#   placements.decals.tooltips.attr
+
+placements.decals.names.x=X
+placements.decals.names.y=Y
+placements.decals.names.texture=Texture
+placements.decals.names.scaleX=Scale X
+placements.decals.names.scaleY=Scale Y
+
+placements.decals.tooltips.x=X Coordinate relative to the current room
+placements.decals.tooltips.y=Y Coordinate relative to the current room
+placements.decals.tooltips.texture=The texture that should be displayed
+placements.decals.tooltips.scaleX=The horizontal scaling of the texture
+placements.decals.tooltips.scaleY=The vertical scaling of the texture
+
+
+# -- Settings Displaynames and Tooltips --
+#   settings.sectionName.names.attr=Name
+#   settings.sectionName.tooltips.attr=Tooltip
+
+settings.config.names.language=Language
+settings.config.names.camera_maximum_zoom=Maximum camera zoom
+settings.config.names.properties_keep_previous_position=Keep previous position
+settings.config.names.camera_default_zoom=Default camera zoom
+settings.config.names.properties_always_on_top=Properties window always on top
+settings.config.names.load_plugins_celeste=Load plugins from Mods dir
+settings.config.names.properties_destroy_previous_window=Replace properties window
+settings.config.names.clear_render_cache_on_map_load=Clear render cache on map load
+settings.config.names.load_plugins_ahorn=Load plugins from Ahorn dir
+settings.config.names.load_plugins_celeste_zip=Load plugins from Mod zip files
+settings.config.names.celeste_dir=Celeste game directory
+settings.config.names.camera_minimum_zoom=Minimum camera zoom
+settings.config.names.load_plugins_ahorn_zip=Load plugins from Ahorn zip files
+settings.config.names.use_simple_room_values=Simple room values
+settings.config.names.sort_rooms_on_save=Sort rooms on save
+settings.config.names.use_grid_snapping=Use grid snapping
+settings.config.names.prompt_bad_resource_exts=Prompt on bad resources
+settings.config.names.search_entities_raw_name=Search entities by raw name
+settings.config.names.search_entities_attributes=Search entities by attributes
+settings.config.names.search_entities_tooltips=Search entities by tooltips
+settings.config.names.keep_search_text_per_layer=Keep search text per layer
+settings.config.names.preview_possible_selections=Preview possible selections
+settings.config.names.warn_missing_decals_on_save=Warn missing decals
+settings.config.names.delete_non_visible_rooms_cache=Uncache offscreen rooms
+settings.config.names.backup_directory=Backup directory
+settings.config.names.backup_maximum_files=Backup file count
+settings.config.names.backup_rate=Backup rate
+settings.config.names.backup_enabled=Automatic backups
+settings.config.names.allow_out_of_bounds_placement=Out of bounds placement
+
+settings.config.tooltips.language=The language file being used.
+settings.config.tooltips.camera_maximum_zoom=The greatest allowed camera zoom level.
+settings.config.tooltips.properties_keep_previous_position=Make a new Properties window open at the same positions as the one currently open.
+settings.config.tooltips.camera_default_zoom=The default camera zoom, set for example when clicking on a room on the sidebar.
+settings.config.tooltips.properties_always_on_top=Keep the Properties window on top of the canvas and main window at all times.
+settings.config.tooltips.load_plugins_celeste=Load plugins from the Mods directory of your Celeste install.
+settings.config.tooltips.properties_destroy_previous_window=Whether to replace the properties window when opening a new one while another one is already open. When disabled, it won't open the new window instead.
+settings.config.tooltips.clear_render_cache_on_map_load=Clear the render cache when a new map is loaded. Saves memory but can increase load times when reloading a map.
+settings.config.tooltips.load_plugins_ahorn=Load plugins from the Ahorn config directory.
+settings.config.tooltips.load_plugins_celeste_zip=Load plugins from zip files inside the Mods directory of your Celeste install.
+settings.config.tooltips.celeste_dir=The directory where your Celeste game is located.
+settings.config.tooltips.camera_minimum_zoom=The smallest allowed camera zoom level.
+settings.config.tooltips.load_plugins_ahorn_zip=Load plugins from zip files inside the Ahorn config directory.
+settings.config.tooltips.use_simple_room_values=Use tile units instead of pixels for positions and sizes. One tile unit equals 8 pixels.
+settings.config.tooltips.sort_rooms_on_save=When saving, rooms are reordered based on their name.
+settings.config.tooltips.use_grid_snapping=Snap selections and sizes to the tile grid. Can be overridden by holding Ctrl.
+settings.config.tooltips.prompt_bad_resource_exts=Prompt the user when resources (e.g. textures) with bad file extensions are detected and assist with fixing them.
+settings.config.tooltips.search_entities_raw_name=The search results include entities matching by raw name.
+settings.config.tooltips.search_entities_attributes=The search results include entities with matching attributes.
+settings.config.tooltips.search_entities_tooltips=The search results include entities with a matching tooltip.
+settings.config.tooltips.keep_search_text_per_layer=Retain the contents of the search bar for each layer separately.
+settings.config.tooltips.preview_possible_selections=Show possible selections when hovering over, or before finishing a drag selection.
+settings.config.tooltips.warn_missing_decals_on_save=Whether Ahorn should warn you about potentially bad decals on save.
+settings.config.tooltips.delete_non_visible_rooms_cache=Uncache rooms that are no longer visible when moving camera. Requires more computation but should reduce memory usage.
+settings.config.tooltips.backup_directory=Folder for backups. (Requires restart)
+settings.config.tooltips.backup_maximum_files=Amount of backup files to keep around per map. (Requires restart)
+settings.config.tooltips.backup_rate=How often to backup, in seconds. (Requires restart)
+settings.config.tooltips.backup_enabled=Whether automatic backups of maps should be enabled.
+settings.config.tooltips.allow_out_of_bounds_placement=Whether you should be able to click outside of the room to place entities, triggers or decals.
+
+
+settings.debug.names.DEBUG_MENU_DROPDOWN=Debug menu dropdown
+settings.debug.names.IGNORE_MINIMUM_SIZE=Ignore minimum size
+settings.debug.names.IGNORE_CAN_RESIZE=Ignore resizeability
+settings.debug.names.DRAWING_ENTITY_MISSING=Log missing entities
+settings.debug.names.DRAWING_DECAL_MISSING=Log missing decals
+settings.debug.names.ALWAYS_FORCE_GAME_EXTRACTION=Always force game data extraction
+settings.debug.names.TOOLTIP_ENTITY_MISSING=Log missing entity tooltips
+settings.debug.names.DRAWING_CANVAS_DRAW_DURATION=Log canvas draw duration
+settings.debug.names.TOOLS_SELECTED=Log selected tool
+settings.debug.names.ENABLE_HOTSWAP_HOTKEYS=Enable hotswap hotkeys
+settings.debug.names.DRAWING_VERBOSE=Verbose drawing
+settings.debug.names.DISABLE_LOADING_SCREEN=Disable loading screen
+
+settings.debug.tooltips.DEBUG_MENU_DROPDOWN=Activate the Debug menu dropdown for various functionality useful for developing Ahorn. (Requires restart)
+settings.debug.tooltips.IGNORE_MINIMUM_SIZE=Ignore the minimum size of entities and triggers when resizing them. Can cause major visual weirdness.
+settings.debug.tooltips.IGNORE_CAN_RESIZE=Ignore whether entities can be resized and allow resizing them anyway. Can cause major visual weirdness.
+settings.debug.tooltips.DRAWING_ENTITY_MISSING=Log when Ahorn finds an entity in the map that it cannot render yet.
+settings.debug.tooltips.DRAWING_DECAL_MISSING=Log when Ahorn finds an decal that it cannot render due to missing texture.
+settings.debug.tooltips.ALWAYS_FORCE_GAME_EXTRACTION=Always newly extract the game textures on startup. Drastically increases loading time.
+settings.debug.tooltips.TOOLTIP_ENTITY_MISSING=Log when an entity is missing a tooltip.
+settings.debug.tooltips.DRAWING_CANVAS_DRAW_DURATION=Log how long the canvas takes to draw.
+settings.debug.tooltips.TOOLS_SELECTED=Log whenever a tool is selected.
+settings.debug.tooltips.ENABLE_HOTSWAP_HOTKEYS=Enable hotkeys for Ahorn code development: F1 for hotswapping tools, F2 for hotswapping entities and triggers, and F3 for deleting the room render cache.
+settings.debug.tooltips.DRAWING_VERBOSE=Verbosely log when redrawing layers.
+settings.debug.tooltips.DISABLE_LOADING_SCREEN=Disables the loading screen. Faster startup, but window will appear unresponsive.
+
+
+# -- Room Window Displaynames and Tooltips --
+#   room_window.names.attr=Name
+#   room_window.tooltips.attr=Tooltip
+
+room_window.names.name=Room Name
+room_window.names.musicProgress=Music Progress
+room_window.names.x=X
+room_window.names.y=Y
+room_window.names.width=Width
+room_window.names.height=Height
+room_window.names.underwater=Underwater
+room_window.names.space=Space
+room_window.names.disableDownTransition=Disable Down Transition
+room_window.names.checkpoint=Checkpoint
+room_window.names.dark=Dark
+room_window.names.whisper=Whisper
+room_window.names.musicLayer1=Music Layer 1
+room_window.names.musicLayer2=Music Layer 2
+room_window.names.musicLayer3=Music Layer 3
+room_window.names.musicLayer4=Music Layer 4
+room_window.names.music=Music
+room_window.names.windPattern=Wind Pattern
+room_window.names.color=Colour
+
+room_window.tooltips.name=The name of the room.
+room_window.tooltips.musicProgress=The progress of the current song.
+room_window.tooltips.x=The x coordinate of the room.
+room_window.tooltips.y=The y coordinate of the room.
+room_window.tooltips.width=The width of the room.
+room_window.tooltips.height=The height of the room.
+room_window.tooltips.underwater=Whether the room is submerged in water.
+room_window.tooltips.space=Whether the room is in space (end of Core).
+room_window.tooltips.disableDownTransition=Whether the player is allowed to transition downwards or not.
+room_window.tooltips.checkpoint=Whether the room has a checkpoint.
+room_window.tooltips.dark=Whether the room is dark.
+room_window.tooltips.whisper=Whether the room has the whisper layer enabled.
+room_window.tooltips.musicLayer1=Whether the room has the first music layer enabled.
+room_window.tooltips.musicLayer2=Whether the room has the second music layer enabled.
+room_window.tooltips.musicLayer3=Whether the room has the third music layer enabled.
+room_window.tooltips.musicLayer4=Whether the room has the fourth music layer enabled.
+room_window.tooltips.music=What song should be playing in the room, uses previous if left empty.
+room_window.tooltips.windPattern=The type of wind in the room.
+room_window.tooltips.color=The colour of the room in the debug map viewer.
+
+
+# -- Stylegrounds Window Displaynames and Tooltips --
+#   styleground_window.sectionName.names.attr=Name
+#   styleground_window.sectionName.tooltips.attr=Tooltip
+
+styleground_window.parallax.names.alpha=Alpha
+styleground_window.parallax.names.color=Colour
+styleground_window.parallax.names.exclude=Exclude
+styleground_window.parallax.names.only=Only
+styleground_window.parallax.names.scrollx=Scroll X
+styleground_window.parallax.names.scrolly=Scroll Y
+styleground_window.parallax.names.speedx=Speed X
+styleground_window.parallax.names.speedy=Speed Y
+styleground_window.parallax.names.x=X
+styleground_window.parallax.names.y=Y
+styleground_window.parallax.names.blendmode=Blend Mode
+styleground_window.parallax.names.texture=Texture
+styleground_window.parallax.names.fadeIn=Fade In
+styleground_window.parallax.names.flipx=Flip X
+styleground_window.parallax.names.flipy=Flip Y
+styleground_window.parallax.names.instantOut=Instant Out
+styleground_window.parallax.names.instantIn=Instant In
+styleground_window.parallax.names.loopx=Loop X
+styleground_window.parallax.names.loopy=Loop Y
+styleground_window.parallax.names.fg=Foreground
+
+styleground_window.parallax.tooltips.alpha=Determines opacity between 0 (Translucent) and 1 (Opaque). 
+styleground_window.parallax.tooltips.color=Using hex colour code, the code tints a styleground that colour.
+styleground_window.parallax.tooltips.exclude=Exludes specific rooms from taking stylegrounds and/or effects, taking priority over Only. Use * as a wildcard character.
+styleground_window.parallax.tooltips.only=Adds rooms to a styleground or effect. Use * as a wildcard character.
+styleground_window.parallax.tooltips.scrollx=Determines the parallax scrolling of a styleground along the X axis.
+styleground_window.parallax.tooltips.scrolly=Determines the parallax scrolling of a styleground along the Y axis.
+styleground_window.parallax.tooltips.speedx=Automatically moves the styleground along the X axis in-game.
+styleground_window.parallax.tooltips.speedy=Automatically moves the styleground along the Y axis in-game.
+styleground_window.parallax.tooltips.x=Determines the position of the styleground's appearance on screen in-game on the X axis.
+styleground_window.parallax.tooltips.y=Determines the position of the styleground's appearance on screen in-game on the Y axis.
+styleground_window.parallax.tooltips.blendmode=Determines whether the colours from overlaping stylegrounds should be added ontop of each other or multiplied.
+styleground_window.parallax.tooltips.texture=The texture that the styleground should use.
+styleground_window.parallax.tooltips.fadeIn=Determines whether the styleground should fade in when transitioning to it.
+styleground_window.parallax.tooltips.flipx=Flips the styleground on the X axis.
+styleground_window.parallax.tooltips.flipy=Flips the styleground on the Y axis.
+styleground_window.parallax.tooltips.instantOut=Determines whether the styleground should instantly fade out when transitioning away from it.
+styleground_window.parallax.tooltips.instantIn=Determines whether the styleground should instantly fade in when transitioning away from it.
+styleground_window.parallax.tooltips.loopx=Loops the styleground on the X axis.
+styleground_window.parallax.tooltips.loopy=Loops the styleground on the Y axis.
+styleground_window.parallax.tooltips.fg=Whether the styleground is in the foreground or background.
+
+
+styleground_window.effects.names.name=Name
+styleground_window.effects.names.only=Rooms
+styleground_window.effects.names.exclude=Exclude
+styleground_window.effects.names.fg=Foreground
+
+styleground_window.effects.tooltips.name=The name of the effect.
+styleground_window.effects.tooltips.only=Which rooms the effect will be visible in. Room names can be comma seperated and wildcards are supported.\nExample: "a00,b00,c*".
+styleground_window.effects.tooltips.exclude=Which rooms the effect will not be visible in. Room names can be comma seperated and wildcards are supported.\nExample: "a00,b00,c*".
+styleground_window.effects.tooltips.fg=Whether the effect should be in the foreground or background.
+
+
+# -- Metadata Window Displaynames and Tooltips --
+#   meta_window.sectionName.names.attr=Name
+#   meta_window.sectionName.tooltips.attr=Tooltip
+
+meta_window.meta.names.Icon=Title Banner Icon
+meta_window.meta.names.Interlude=Interlude
+meta_window.meta.names.CompleteScreenName=Complete Screen Name
+meta_window.meta.names.TitleBaseColor=Title Base Colour
+meta_window.meta.names.TitleAccentColor=Title Accent Colour
+meta_window.meta.names.TitleTextColor=Title Text Colour
+meta_window.meta.names.Dreaming=Dreaming
+meta_window.meta.names.ColorGrade=Colour Grade
+meta_window.meta.names.DarknessAlpha=Darkness Alpha
+meta_window.meta.names.BloomBase=Bloom Base
+meta_window.meta.names.BloomStrength=Bloom Strength
+meta_window.meta.names.CoreMode=Core Mode
+meta_window.meta.names.CassetteNoteColor=Cassette Note Colour
+meta_window.meta.names.CassetteSong=Cassette Song
+meta_window.meta.names.IntroType=Intro Type
+meta_window.meta.names.Wipe=Wipe
+meta_window.meta.names.AnimatedTiles=Animated Tiles
+meta_window.meta.names.ForegroundTiles=Foreground Tiles
+meta_window.meta.names.BackgroundTiles=Background Tiles
+meta_window.meta.names.Sprites=Sprites
+meta_window.meta.names.Portraits=Portraits
+
+meta_window.meta.tooltips.Icon=Texture to display on the title banner in level selection representing the map.
+meta_window.meta.tooltips.Interlude=Whether the map is an interlude chapter. No B-sides, deaths aren't counted.
+meta_window.meta.tooltips.CompleteScreenName=Texture used for the complete screen after beating the level.
+meta_window.meta.tooltips.TitleBaseColor=Base colour of the title banner in level selection.
+meta_window.meta.tooltips.TitleAccentColor=Colour of the additional text of the title banner and its accent in level selection.
+meta_window.meta.tooltips.TitleTextColor=Colour of the main text of the title banner in level selection.
+meta_window.meta.tooltips.Dreaming=Whether Madeline starts the map dreaming. Enables starfield background.
+meta_window.meta.tooltips.ColorGrade=The global tinting of the map.
+meta_window.meta.tooltips.DarknessAlpha=Alpha value used for darkness.
+meta_window.meta.tooltips.BloomBase=The base bloom level.
+meta_window.meta.tooltips.BloomStrength=The strength of the bloom.
+meta_window.meta.tooltips.CoreMode=Starting core mode (fire or ice). Can be changed in-game using core mode toggles.
+meta_window.meta.tooltips.CassetteSong=Song played in the cassette room.
+meta_window.meta.tooltips.IntroType=The way you enter the first room upon starting the map.
+meta_window.meta.tooltips.Wipe=The animation that plays when the player respawns.\nExample use cases from the game.\n Angled - Prologue\n Curtain - Forsaken City\n Dream - Old Site\n KeyDoor - Celestial Resort\n Wind - Golden Ridge\n Drop - Mirror Temple\n Fall - Reflection\n Mountain - Summit\n Heart - Core\n Fade - Cutscenes\n Spotlight - Cutscenes
+meta_window.meta.tooltips.AnimatedTiles=The XML file to use for custom Animated Tiles. Relative to mod root, temporarily used in place of the vanilla XML.
+meta_window.meta.tooltips.ForegroundTiles=The XML file to use for custom Foreground Tiles. Relative to mod root, temporarily used in place of the vanilla XML.
+meta_window.meta.tooltips.BackgroundTiles=The XML file to use for custom Background Tiles. Relative to mod root, temporarily used in place of the vanilla XML.
+meta_window.meta.tooltips.Sprites=The XML file to use for custom Sprites. Relative to mod root, temporarily used in place of the vanilla XML.
+meta_window.meta.tooltips.Portraits=The XML file to use for custom Portraits. Relative to mod root, temporarily used in place of the vanilla XML.
+
+
+meta_window.mode.names.IgnoreLevelAudioLayerData=Ignore Room Audio Layer Data
+meta_window.mode.names.Inventory=Starting Inventory
+meta_window.mode.names.StartLevel=Starting Room
+meta_window.mode.names.HeartIsEnd=End Level on Heart
+meta_window.mode.names.SeekerSlowdown=Seeker Slowdown
+
+meta_window.mode.tooltips.IgnoreLevelAudioLayerData=Whether the layer data set on individual rooms should be ignored.
+meta_window.mode.tooltips.Inventory=Your inventory starting the map. Changes the player's abilities.\n Prologue: 0 dashes, Dream blocks disabled, wearing a backpack, ground refills enabled\n Default: 1 dash, Dream blocks enabled, wearing a backpack, ground refills enabled\n OldSite: 1 dash, Dream blocks disabled, wearing a backpack, ground refills enabled\n CH6End: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills enabled\n TheSummit: 2 dashes, Dream blocks enabled, not wearing a backpack, ground refills enabled\n Core: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills disabled
+meta_window.mode.tooltips.StartLevel=The room to start the map in. By default, it will pick the room closest to absolute (0, 0).
+meta_window.mode.tooltips.HeartIsEnd=Whether collecting a heart counts as the end of the level. The easiest way to end a level.
+meta_window.mode.tooltips.SeekerSlowdown=Whether Seekers should be able to slow down time when attacking the player or not.

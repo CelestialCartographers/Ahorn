@@ -1,13 +1,4 @@
 function displayMainWindow()
-    # Fixes theme issues on Windows
-    if is_windows()
-        ENV["GTK_THEME"] = get(ENV, "GTK_THEME", "win32")
-        ENV["GTK_CSD"] = get(ENV, "GTK_CSD", "0")
-    end
-
-    initConfigs()
-    initLoadedState()
-
     windowTitle = baseTitle
     if loadedState.map !== nothing
         windowTitle = "$baseTitle - $(Maple.getSideName(loadedState.side))"
@@ -15,30 +6,51 @@ function displayMainWindow()
 
     # Everything else should be ready, safe to make the window
     global window = Window(windowTitle, 1280, 720, true, true, icon=windowIcon, gravity=GdkGravity.GDK_GRAVITY_CENTER)
+
+    initConfigs()
+
+    disableLoadingScreen = get(debug.config, "DISABLE_LOADING_SCREEN", false)
+    progressDialog = nothing
+    
+    if !disableLoadingScreen
+        progressDialog = getProgressDialog(
+            title="Starting Ahorn",
+            description="Getting ready...",
+            stylesheet="",
+            parent=window
+        )
+
+        showall(progressDialog)
+    end
+
+    @progress initLoadedState() "Loading previous map information..." progressDialog
     
     configured = configureCelesteDir()
     if !configured
         error("Celeste installation not configured")
     end
 
-    extractGamedata(storageDirectory, get(debug.config, "ALWAYS_FORCE_GAME_EXTRACTION", false))
+    @progress extractGamedata(storageDirectory, get(debug.config, "ALWAYS_FORCE_GAME_EXTRACTION", false)) "Extracting game assets..." progressDialog
 
-    initSprites()
-    initTilerMetas()
-    initCamera()
+    @progress initSprites() "Getting sprites ready..." progressDialog
+    @progress initTilerMetas() "Getting tiles ready..." progressDialog
+    @progress initCamera() "Getting camera ready..." progressDialog
+    @progress initLangdata() "Getting language files ready..." progressDialog
+    @progress initMenubar() "Getting menubar ready..." progressDialog
 
-    updateToolDisplayNames!(loadedTools)
-    updateToolList!(toolList)
+    @progress Backup.initBackup(persistence) "Starting backup handler..." progressDialog
 
-    initExternalModules()
+    @progress updateToolDisplayNames!(loadedTools) "Getting tools ready..." progressDialog
+    @progress updateToolList!(toolList) "Getting tools ready..." progressDialog
 
-    # Update the room list so it has rooms
-    updateTreeView!(roomList, getTreeData(loadedState.map))
+    @progress initExternalModules() "Loading external plugins..." progressDialog
+
+    @progress updateTreeView!(roomList, getTreeData(loadedState.map)) "Populating room list..." progressDialog
+
+    roomListVisiblityFunctions[get(persistence, "room_list_column_visibility", "all")]()
 
     selectLoadedRoom!(roomList)
-
-    hidden = get(debug.config, "DEBUG_MENU_DROPDOWN", false)? String[] : String["Debug"]
-    global menubar = Menubar.generateMenubar(menubarHeaders, menubarItems, hidden)
+    selectRow!(toolList, 1)
 
     global box = Box(:v)
     global grid = generateMainGrid()
@@ -46,16 +58,18 @@ function displayMainWindow()
     push!(box, grid)
     push!(window, box)
 
-    initSignals(window, canvas)
+    @progress initSignals(window, canvas) "Hooking up signals..." progressDialog
 
     # If the window was previously maximized, maximize again
     if get(persistence, "start_maximized", false)
         maximize(window)
     end
 
-    # Fixes Grids rendering right to left on certain locales
-    GAccessor.direction(window, 1)
+    @progress draw(canvas) "Warming up drawing..." progressDialog
+    @progress showall(window) "Waiting for main window..." progressDialog
 
-    showall(window)
+    visible(window, true)
+    Gtk.destroy(progressDialog)
+    
     interactiveWorkaround(window)
 end

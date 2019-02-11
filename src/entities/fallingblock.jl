@@ -2,7 +2,7 @@ module FallingBlock
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Falling Block" => Ahorn.EntityPlacement(
         Maple.FallingBlock,
         "rectangle",
@@ -11,45 +11,15 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "fallingBlock"
-        return true, Dict{String, Any}(
-            "tiletype" => string.(Maple.tile_entity_legal_tiles)
-        )
-    end
-end
+Ahorn.editingOptions(entity::Maple.FallingBlock) = Dict{String, Any}(
+    "tiletype" => Ahorn.tiletypeEditingOptions()
+)
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "fallingBlock"
-        return true, 8, 8
-    end
-end
+Ahorn.minimumSize(entity::Maple.FallingBlock) = 8, 8
+Ahorn.resizable(entity::Maple.FallingBlock) = true, true
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "fallingBlock"
-        return true, true, true
-    end
-end
+Ahorn.selection(entity::Maple.FallingBlock) = Ahorn.getEntityRectangle(entity)
 
-function selection(entity::Maple.Entity)
-    if entity.name == "fallingBlock"
-        x, y = Ahorn.entityTranslation(entity)
-
-        width = Int(get(entity.data, "width", 8))
-        height = Int(get(entity.data, "height", 8))
-
-        return true, Ahorn.Rectangle(x, y, width, height)
-    end
-end
-
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "fallingBlock"
-        Ahorn.drawTileEntity(ctx, room, entity)
-
-        return true
-    end
-
-    return false
-end
+Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.FallingBlock, room::Maple.Room) = Ahorn.drawTileEntity(ctx, room, entity)
 
 end

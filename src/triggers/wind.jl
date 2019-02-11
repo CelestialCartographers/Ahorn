@@ -2,19 +2,17 @@ module WindTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Wind Pattern" => Ahorn.EntityPlacement(
         Maple.WindTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "windTrigger"
-        return true, Dict{String, Any}(
-            "pattern" => Maple.wind_patterns
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.WindTrigger)
+    return Dict{String, Any}(
+        "pattern" => Maple.wind_patterns
+    )
 end
 
 end

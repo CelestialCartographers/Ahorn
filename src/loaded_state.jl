@@ -1,10 +1,10 @@
 mutable struct LoadedState
     roomName::String
     filename::String
-    room::Union{Maple.Room, Void}
-    side::Union{Maple.Side, Void}
-    map::Union{Maple.Map, Void}
-    lastSavedMap::Union{Maple.Map, Void}
+    room::Union{Maple.Room, Nothing}
+    side::Union{Maple.Side, Nothing}
+    map::Union{Maple.Map, Nothing}
+    lastSavedHash::Unsigned
 end
 
 function LoadedState(roomName::String, filename::String)
@@ -18,5 +18,5 @@ function LoadedState(roomName::String, filename::String)
         room = getRoomByName(map, roomName)
     end
 
-    return LoadedState(roomName, filename, isa(room, Maple.Room)? room : nothing, side, map, deepcopy(map))
+    return LoadedState(roomName, filename, isa(room, Maple.Room) ? room : nothing, side, map, hash(side))
 end

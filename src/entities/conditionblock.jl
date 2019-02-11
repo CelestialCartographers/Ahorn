@@ -2,7 +2,7 @@ module ConditionBlock
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Condition Block" => Ahorn.EntityPlacement(
         Maple.ConditionBlock,
         "rectangle",
@@ -10,47 +10,16 @@ placements = Dict{String, Ahorn.EntityPlacement}(
         Ahorn.tileEntityFinalizer
     ),
 )
+Ahorn.editingOptions(entity::Maple.ConditionBlock) = Dict{String, Any}(
+    "tileType" => Ahorn.tiletypeEditingOptions(),
+    "condition" => Maple.condition_block_conditions
+)
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "conditionBlock"
-        return true, Dict{String, Any}(
-            "tileType" => string.(Maple.tile_entity_legal_tiles),
-            "condition" => Maple.condition_block_conditions
-        )
-    end
-end
+Ahorn.minimumSize(entity::Maple.ConditionBlock) = 8, 8
+Ahorn.resizable(entity::Maple.ConditionBlock) = true, true
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "conditionBlock"
-        return true, 8, 8
-    end
-end
+Ahorn.selection(entity::Maple.ConditionBlock) = Ahorn.getEntityRectangle(entity)
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "conditionBlock"
-        return true, true, true
-    end
-end
-
-function selection(entity::Maple.Entity)
-    if entity.name == "conditionBlock"
-        x, y = Ahorn.entityTranslation(entity)
-
-        width = Int(get(entity.data, "width", 8))
-        height = Int(get(entity.data, "height", 8))
-
-        return true, Ahorn.Rectangle(x, y, width, height)
-    end
-end
-
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "conditionBlock"
-        Ahorn.drawTileEntity(ctx, room, entity, alpha=0.5)
-
-        return true
-    end
-
-    return false
-end
+Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.ConditionBlock, room::Maple.Room) = Ahorn.getEntityRectangle(entity)
 
 end

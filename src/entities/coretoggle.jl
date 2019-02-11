@@ -2,7 +2,7 @@ module CoreToggle
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Core Mode Toggle (Fire)" => Ahorn.EntityPlacement(
         Maple.CoreFlag,
         "point",
@@ -22,33 +22,32 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "coreModeToggle"
-        x, y = Ahorn.entityTranslation(entity)
+function switchSprite(entity::Maple.CoreFlag)
+    onlyIce = get(entity.data, "onlyIce", false)
+    onlyFire = get(entity.data, "onlyFire", false)
 
-        return true, Ahorn.Rectangle(x - 8, y - 6, 16, 20)
+    if onlyIce
+        return "objects/coreFlipSwitch/switch13.png"
+
+    elseif onlyFire
+        return "objects/coreFlipSwitch/switch15.png"
+
+    else
+        return "objects/coreFlipSwitch/switch01.png"
     end
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "coreModeToggle"
-        onlyIce = get(entity.data, "onlyIce", false)
-        onlyFire = get(entity.data, "onlyFire", false)
-        
-        if onlyIce
-            Ahorn.drawSprite(ctx, "objects/coreFlipSwitch/switch13.png", 0, 0)
+function Ahorn.selection(entity::Maple.CoreFlag)
+    x, y = Ahorn.position(entity)
+    sprite = switchSprite(entity)
 
-        elseif onlyFire
-            Ahorn.drawSprite(ctx, "objects/coreFlipSwitch/switch15.png", 0, 0)
+    return Ahorn.getSpriteRectangle(sprite, x, y)
+end
 
-        else
-            Ahorn.drawSprite(ctx, "objects/coreFlipSwitch/switch01.png", 0, 0)
-        end
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CoreFlag, room::Maple.Room)
+    sprite = switchSprite(entity)
 
-        return true
-    end
-
-    return false
+    Ahorn.drawSprite(ctx, sprite, 0, 0)
 end
 
 end

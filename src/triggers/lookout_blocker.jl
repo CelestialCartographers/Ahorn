@@ -2,7 +2,7 @@ module LookoutBlocker
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Lookout Blocker" => Ahorn.EntityPlacement(
         Maple.LookoutBlocker,
         "rectangle"

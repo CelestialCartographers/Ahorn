@@ -2,40 +2,38 @@ module ResortLantern
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Resort Lantern" => Ahorn.EntityPlacement(
         Maple.ResortLantern
     )
 )
 
-function isLeftSide(entity::Maple.Entity, room::Maple.Room)
-    x, y = Ahorn.entityTranslation(entity) .+ (0, 2)
+holderSprite = "objects/resortLantern/holder.png"
+lanternSprite = "objects/resortLantern/lantern00.png"
+
+function isLeftSide(entity::Maple.ResortLantern, room::Maple.Room)
+    x, y = Ahorn.position(entity) .+ (0, 2)
     tx, ty = floor(Int, x / 8), floor(Int, y / 8)
 
     return get(room.fgTiles.data, (ty, tx + 2), '0') == '0'
 end
 
-function selection(entity::Maple.Entity)
-    x, y = Ahorn.entityTranslation(entity)
+function Ahorn.selection(entity::Maple.ResortLantern, room::Maple.Room)
+    x, y = Ahorn.position(entity)
 
-    if entity.name == "resortLantern"
-        x, y = Ahorn.entityTranslation(entity)
+    leftSide = isLeftSide(entity, room)
 
-        return true, Ahorn.Rectangle(x - 9, y - 9, 18, 20)
-    end
+    return Ahorn.coverRectangles([
+        Ahorn.getSpriteRectangle(holderSprite, x, y, sx=leftSide ? 1 : -1),
+        Ahorn.getSpriteRectangle(lanternSprite, x, y)
+    ])
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "resortLantern"
-        leftSide = isLeftSide(entity, room)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.ResortLantern, room::Maple.Room)
+    leftSide = isLeftSide(entity, room)
 
-        Ahorn.drawSprite(ctx, "objects/resortLantern/holder.png", 0, 0, sx=leftSide? 1 : -1)
-        Ahorn.drawSprite(ctx, "objects/resortLantern/lantern00.png", 0, 0, sx=leftSide? 1 : -1)
-
-        return true
-    end
-
-    return false
+    Ahorn.drawSprite(ctx, holderSprite, 0, 0, sx=leftSide ? 1 : -1)
+    Ahorn.drawSprite(ctx, lanternSprite, 0, 0)
 end
 
 end

@@ -2,14 +2,14 @@ module FireBall
 
 using ..Ahorn, Maple
 
-function fireballFinalizer(entity::Maple.Entity)
-    x, y = Ahorn.entityTranslation(entity)
+function fireballFinalizer(entity::Maple.FireBall)
+    x, y = Ahorn.position(entity)
 
 
     entity.data["nodes"] = [(x + 16, y)]
 end
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Fireball" => Ahorn.EntityPlacement(
         Maple.FireBall,
         "point",
@@ -20,56 +20,41 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     )
 )
 
-function nodeLimits(entity::Maple.Entity)
-    if entity.name == "fireBall"
-        return true, 1, -1
-    end
-end
+Ahorn.nodeLimits(entity::Maple.FireBall) = 1, -1
 
 sprite = "objects/fireball/fireball01.png"
 
-function selection(entity::Maple.Entity)
-    if entity.name == "fireBall"
-        nodes = get(entity.data, "nodes", ())
-        x, y = Ahorn.entityTranslation(entity)
+function Ahorn.selection(entity::Maple.FireBall)
+    nodes = get(entity.data, "nodes", ())
+    x, y = Ahorn.position(entity)
 
-        res = Ahorn.Rectangle[Ahorn.Rectangle(x - 8, y - 8, 16, 16)]
-        
-        for node in nodes
-            nx, ny = Int.(node)
+    res = Ahorn.Rectangle[Ahorn.getSpriteRectangle(sprite, x, y)]
+    
+    for node in nodes
+        nx, ny = Int.(node)
 
-            push!(res, Ahorn.Rectangle(nx - 8, ny - 8, 16, 16))
-        end
+        push!(res, Ahorn.getSpriteRectangle(sprite, nx, ny))
+    end
 
-        return true, res
+    return res
+end
+
+function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.FireBall)
+    px, py = Ahorn.position(entity)
+
+    for node in get(entity.data, "nodes", ())
+        nx, ny = Int.(node)
+
+        Ahorn.drawArrow(ctx, px, py, nx, ny, Ahorn.colors.selection_selected_fc, headLength=6)
+        Ahorn.drawSprite(ctx, sprite, nx, ny)
+
+        px, py = nx, ny
     end
 end
 
-function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
-    if entity.name == "fireBall"
-        px, py = Ahorn.entityTranslation(entity)
-
-        for node in get(entity.data, "nodes", ())
-            nx, ny = Int.(node)
-
-            theta = atan2(py - ny, px - nx)
-            Ahorn.drawArrow(ctx, px, py, nx + cos(theta) * 8, ny + sin(theta) * 8, Ahorn.colors.selection_selected_fc, headLength=6)
-            Ahorn.drawSprite(ctx, sprite, nx, ny)
-
-            px, py = nx, ny
-        end
-    end
-end
-
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "fireBall"
-        x, y = Ahorn.entityTranslation(entity)
-        Ahorn.drawSprite(ctx, sprite, x, y)
-
-        return true
-    end
-
-    return false
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.FireBall, room::Maple.Room)
+    x, y = Ahorn.position(entity)
+    Ahorn.drawSprite(ctx, sprite, x, y)
 end
 
 end

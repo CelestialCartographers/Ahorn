@@ -11,7 +11,7 @@ end
 
 include("drawable_room.jl")
 
-Base.isequal(lhs::Layer, rhs::Layer) = lhs.name == rhs.name
+Base.:(==)(lhs::Layer, rhs::Layer) = lhs.name == rhs.name
 
 redrawingFuncs = Dict{String, Function}()
 
@@ -41,10 +41,10 @@ end
 
 # Void redraw because layers might not be set yet in tools
 redrawLayer!(layers::Array{Layer, 1}, name::String) = redrawLayer!(getLayerByName(layers, name))
-redrawLayer!(::Void) = false
+redrawLayer!(::Nothing) = false
 
 layerName(l::Layer) = l.name
-layerName(l::Void) = ""
+layerName(l::Nothing) = ""
 
 function resetLayer!(layer::Layer, room::Room)
     if (Int(width(layer.surface)), Int(height(layer.surface))) != room.size
@@ -57,14 +57,27 @@ end
 
 resetLayer!(layer::Layer, room::DrawableRoom) = resetLayer!(layer, room.room)
 
-function useIfApplicable(f, args...)
-    if applicable(f, args...)
-        f(args...)
+globalLayerVisibility = Dict{String, Bool}()
 
-        return true
+function setGlobalLayerVisiblity(canvas::Gtk.GtkCanvas, name::String, visible::Bool=true)
+    if get!(globalLayerVisibility, name, true) != visible
+        globalLayerVisibility[name] = visible
+
+        # Make sure all relevant layers are marked for redraw
+        for (map, data) in drawableRooms
+            for (room, dr) in data
+                layer = getLayerByName(dr.layers, name)
+
+                layer.redraw = true
+            end
+        end
+
+        draw(canvas)
     end
+end
 
-    return false
+function setGlobalLayerVisiblity(name::String, widget::Gtk.GtkCheckMenuItem)
+    setGlobalLayerVisiblity(canvas, name, get_gtk_property(widget, :active, Bool))
 end
 
 function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera::Camera, room::DrawableRoom; alpha::Number=getGlobalAlpha())
@@ -87,7 +100,7 @@ function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera
             debug.log("Done redrawing $(layer.name)", "DRAWING_VERBOSE")
         end
 
-        if layer.visible && !layer.dummy
+        if layer.visible && !layer.dummy && get!(globalLayerVisibility, layer.name, true)
             applyLayer!(ctx, layer, alpha=alpha)
             debug.log("Applying $(layer.name)", "DRAWING_VERBOSE")
         end

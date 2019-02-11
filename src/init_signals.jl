@@ -12,7 +12,7 @@ function initSignals(window::Gtk.GtkWindow, canvas::Gtk.GtkCanvas)
     signal_connect(ExitWindow.exitAhorn, window, "delete_event")
     signal_connect(
         function(window::GtkWindow, event::Gtk.GdkEventAny)
-            persistence["start_maximized"] = getproperty(window, :is_maximized, Bool)
+            persistence["start_maximized"] = get_gtk_property(window, :is_maximized, Bool)
 
             return false
         end,

@@ -1,4 +1,4 @@
-loadedModules = Dict{String, Module}()
+const loadedModules = Dict{String, Module}()
 
 function loadModule(fn::String)
     # Explicit check for .jl extensions
@@ -14,8 +14,8 @@ function loadModule(fn::String)
         return true
 
     catch e
-        println("! Failed to load \"$fn\"")
-        println(e)
+        println(Base.stderr, "! Failed to load \"$fn\"")
+        println(Base.stderr, e)
 
         return false
     end
@@ -34,14 +34,18 @@ function eventToModule(modul::Module, funcname::String, args...)
 
         if isa(func, Function) && applicable(func, args...)
             try
-                return func(args...)
+                res = func(args...)
+
+                #println(("S", modul, funcname, typeof.(args)..., res))
+
+                return res
 
             catch e
                 # Error running the function
-                println("Exception running function $funcname for $modul")
-                println(e)
-                println.(stacktrace())
-                println("---")
+                println(Base.stderr, "Exception running function $funcname for $modul")
+                println(Base.stderr, e)
+                println.(Ref(Base.stderr), stacktrace())
+                println(Base.stderr, "---")
             end
 
         else
@@ -60,17 +64,18 @@ function eventToModule(modul::Module, funcname::String, args...)
 end
 
 eventToModule(fn::String, funcname::String, args...) = eventToModule(loadedModules[fn], funcname, args...)
-eventToModule(v::Void, funcname::String, args...) = false
+eventToModule(v::Nothing, funcname::String, args...) = false
 
 function eventToModules(funcname::String, args...)
     for (filename, modul) in loadedModules
         moduleRes = eventToModule(modul, funcname, args...)
-        if isa(moduleRes, Tuple) && moduleRes[1]
-            return moduleRes
 
-        elseif moduleRes == true
-            return true
+        # False and nothing as only return value means we are not handing it and it should be taken to another function
+        if moduleRes == false || moduleRes === nothing
+            continue
         end
+
+        return moduleRes
     end
 
     return false
@@ -79,12 +84,13 @@ end
 function eventToModules(moduleNames::Array{String, 1}, funcname::String, args...)
     for moduleName in moduleNames
         moduleRes = eventToModule(moduleName, funcname, args...)
-        if isa(moduleRes, Tuple) && moduleRes[1]
-            return moduleRes
 
-        elseif moduleRes == true
-            return true
+        # False and nothing as only return value means we are not handing it and it should be taken to another function
+        if moduleRes == false || moduleRes === nothing
+            continue
         end
+
+        return moduleRes
     end
 
     return false

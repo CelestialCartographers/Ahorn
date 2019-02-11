@@ -1,34 +1,35 @@
-@static if is_windows()
+@static if Sys.iswindows()
     using WinReg
 end
 
 function findSteamInstallDir()
-    if is_windows()
+    if Sys.iswindows()
         try
-            try
-                # 64bit 
-                return querykey(WinReg.HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Valve\\Steam", "InstallPath")
+            # 64bit 
+            return querykey(WinReg.HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Valve\\Steam", "InstallPath")
 
-            catch e
+        catch e
+            try
                 # 32bit
                 return querykey(WinReg.HKEY_LOCAL_MACHINE, "SOFTWARE\\Valve\\Steam", "InstallPath")
+
+            catch e
+                # User doesn't have steam installed
+                return nothing
             end
-        catch
-            # No Steam installed
-            return nothing
         end
 
-    elseif is_apple()
+    elseif Sys.isapple()
         return joinpath(homedir(), "Library/Application Support/Steam")
 
-    elseif is_linux()
+    elseif Sys.islinux()
         return joinpath(homedir(), ".local/share/Steam")
     end
 end
 
 function findCelesteDir()
     steam = findSteamInstallDir()
-    
+
     if steam !== nothing
         steamfn = joinpath(steam, "steamapps", "common", "Celeste", "Celeste.exe")
 
@@ -43,8 +44,7 @@ end
 function configureCelesteDir()
     if !haskey(config, "celeste_dir")
         found, filename = findCelesteDir()
-
-        if !found
+        if !found || ask_dialog("Looks like you installed Celeste using Steam!\nAhorn depends on the Celeste installation directory to function; would you like Ahorn to use the Steam installation, or would you rather select a different installation of the game for it to use?", "Use Steam installation", "Manually select Celeste dir", window)
             info_dialog("Ahorn depends on the Celeste installation directory to function.\nPlease use the file dialog to select 'Celeste.exe' on your computer.", window)
             filename = openDialog("Select Celeste.exe", window, tuple("*.exe"))
 
@@ -74,29 +74,62 @@ function configureCelesteDir()
     return true
 end
 
+function needsExtraction(file::String, force::Bool=false)
+    return !isfile(file) || force || filesize(file) == 0
+end
+
+function needsExtraction(from::String, to::String, force::Bool=false)
+    return needsExtraction(to, force) || mtime(from) > mtime(to)
+end
+
 function extractGamedata(storage::String, force::Bool=false)
     celesteGraphics = joinpath(config["celeste_dir"], "Content", "Graphics") 
     celesteAtlases = joinpath(celesteGraphics, "Atlases")
 
+    storageXML = joinpath(storage, "XML")
+    storageSprites = joinpath(storage, "Sprites")
+    
+    requiredFiles = (
+        (joinpath(celesteGraphics, "ForegroundTiles.xml"), joinpath(storageXML, "ForegroundTiles.xml")),
+        (joinpath(celesteGraphics, "BackgroundTiles.xml"), joinpath(storageXML, "BackgroundTiles.xml")),
+        (joinpath(celesteGraphics, "AnimatedTiles.xml"), joinpath(storageXML, "AnimatedTiles.xml")),
+        (joinpath(celesteGraphics, "Sprites.xml"), joinpath(storageXML, "Sprites.xml")),
+        (joinpath(celesteGraphics, "Portraits.xml"), joinpath(storageXML, "Portraits.xml")),
+    
+        (joinpath(celesteAtlases, "Gameplay.meta"), joinpath(storageSprites, "Gameplay.meta")),
+        (joinpath(celesteAtlases, "Gui.meta"), joinpath(storageSprites, "Gui.meta")),
+        (joinpath(celesteAtlases, "Portraits.meta"), joinpath(storageSprites, "Portraits.meta")),
+        (joinpath(celesteAtlases, "Checkpoints.meta"), joinpath(storageSprites, "Checkpoints.meta")),
+        (joinpath(celesteAtlases, "Misc.meta"), joinpath(storageSprites, "Misc.meta"))
+    )
+
+    requiredAtlases = (
+        (joinpath(celesteAtlases, "Gameplay0.data"), joinpath(storageSprites, "Gameplay.png")),
+        (joinpath(celesteAtlases, "Gui0.data"), joinpath(storageSprites, "Gui.png")),
+        (joinpath(celesteAtlases, "Checkpoints0.data"), joinpath(storageSprites, "Checkpoints0.png")),
+        (joinpath(celesteAtlases, "Checkpoints1.data"), joinpath(storageSprites, "Checkpoints1.png")),
+    )
+
     gameplaySprites = joinpath(storage, "Gameplay.png")
-    gameplayMeta = joinpath(storage, "Gameplay.meta")
-    foregroundTilesXML = joinpath(storage, "ForegroundTiles.xml")
-    backgroundTilesXML = joinpath(storage, "BackgroundTiles.xml")
+    
+    needsInclude = any(Bool[needsExtraction(from, to, force) for (from, to) in requiredAtlases])    
 
-    if !isfile(gameplaySprites) || force || filesize(gameplaySprites) == 0
+    if needsInclude
         include(Ahorn.abs"extract_sprites_images.jl")
-        Base.invokelatest(Main.dumpSprites, celesteAtlases, storage) # Making sure the method just loaded is used.
     end
 
-    if !isfile(gameplayMeta) || force
-        cp(joinpath(celesteAtlases, "Gameplay.meta"), gameplayMeta)
+    for (from, to) in requiredAtlases
+        if needsExtraction(from, to, force)
+             # Making sure the method just loaded is used.
+            Base.invokelatest(dumpSprites, from, to)
+        end
     end
 
-    if !isfile(foregroundTilesXML) || force
-        cp(joinpath(celesteGraphics, "ForegroundTiles.xml"), foregroundTilesXML)
-    end
+    for (from, to) in requiredFiles
+        if needsExtraction(from, to, force)
+            mkpath(dirname(to))
 
-    if !isfile(backgroundTilesXML) || force
-        cp(joinpath(celesteGraphics, "BackgroundTiles.xml"), backgroundTilesXML)
+            cp(from, to, force=true)
+        end
     end
 end

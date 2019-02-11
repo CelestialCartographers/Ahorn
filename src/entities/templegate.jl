@@ -2,7 +2,7 @@ module TempleGate
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Temple Gate (Theo, Holding Theo)" => Ahorn.EntityPlacement(
         Maple.TempleGate,
         "point",
@@ -20,7 +20,7 @@ placements = Dict{String, Ahorn.EntityPlacement}(
             "type" => "CloseBehindPlayer",
         )
     ),
-    "Temple Gate (Default, Close Behind)" => Ahorn.EntityPlacement(
+    "Temple Gate (Mirror, Close Behind)" => Ahorn.EntityPlacement(
         Maple.TempleGate,
         "point",
         Dict{String, Any}(
@@ -28,41 +28,56 @@ placements = Dict{String, Ahorn.EntityPlacement}(
             "type" => "CloseBehindPlayer",
         )
     ),
-)
 
-textures = ["default", "mirror", "theo"]
-modes = Maple.temple_gate_modes
-
-# One per texture of NearestSwitch
-for texture in textures
-    key = "Temple Gate ($(titlecase(texture)), Nearest Switch)"
-    placements[key] = Ahorn.EntityPlacement(
+    "Temple Gate (Default, Nearest Switch)" => Ahorn.EntityPlacement(
         Maple.TempleGate,
         "point",
         Dict{String, Any}(
-            "sprite" => texture,
-            "type" => "NearestSwitch"
+            "sprite" => "default",
+            "type" => "NearestSwitch",
         )
-    )
-end
-
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "templeGate"
-        return true, Dict{String, Any}(
-            "type" => modes,
-            "sprite" => textures
+    ),
+    "Temple Gate (Mirror, Nearest Switch)" => Ahorn.EntityPlacement(
+        Maple.TempleGate,
+        "point",
+        Dict{String, Any}(
+            "sprite" => "mirror",
+            "type" => "NearestSwitch",
         )
-    end
-end
+    ),
 
-function selection(entity::Maple.Entity)
-    if entity.name == "templeGate"
-        x, y = Ahorn.entityTranslation(entity)
 
-        height = Int(get(entity.data, "height", 8))
+    "Temple Gate (Default, Touch Switches)" => Ahorn.EntityPlacement(
+        Maple.TempleGate,
+        "point",
+        Dict{String, Any}(
+            "sprite" => "default",
+            "type" => "TouchSwitches",
+        )
+    ),
+    "Temple Gate (Mirror, Touch Switches)" => Ahorn.EntityPlacement(
+        Maple.TempleGate,
+        "point",
+        Dict{String, Any}(
+            "sprite" => "mirror",
+            "type" => "TouchSwitches",
+        )
+    ),
+)
 
-        return true, Ahorn.Rectangle(x - 4, y, 15, height)
-    end
+textures = String["default", "mirror", "theo"]
+modes = Maple.temple_gate_modes
+
+Ahorn.editingOptions(entity::Maple.TempleGate) = Dict{String, Any}(
+    "type" => modes,
+    "sprite" => textures
+)
+
+function Ahorn.selection(entity::Maple.TempleGate)
+    x, y = Ahorn.position(entity)
+    height = Int(get(entity.data, "height", 8))
+
+    return Ahorn.Rectangle(x - 4, y, 15, height)
 end
 
 sprites = Dict{String, String}(
@@ -71,15 +86,11 @@ sprites = Dict{String, String}(
     "theo" => "objects/door/TempleDoorC00"
 )
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "templeGate"
-        sprite = get(entity.data, "sprite", "default")
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.TempleGate, room::Maple.Room)
+    sprite = get(entity.data, "sprite", "default")
 
-        if haskey(sprites, sprite)
-            Ahorn.drawImage(ctx, sprites[sprite], -4, 0)
-        end
-        
-        return true
+    if haskey(sprites, sprite)
+        Ahorn.drawImage(ctx, sprites[sprite], -4, 0)
     end
 end
 

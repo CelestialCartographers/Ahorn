@@ -8,7 +8,7 @@ catch e
     # HTTP not installed
     # Causes problems on Windows 7 due to github TLS versions
 
-    loaded = false
+    global loaded = false
 end
 
 if loaded
@@ -25,7 +25,7 @@ if loaded
                 return false, String(e.response.body)
 
             else
-                println(e)
+                println(Base.stderr, e)
                 return false, "Connection timed out"
             end
         end

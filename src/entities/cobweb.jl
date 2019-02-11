@@ -2,79 +2,61 @@ module Cobweb
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Cobweb" => Ahorn.EntityPlacement(
         Maple.Cobweb,
         "line"
     )
 )
 
+cobwebColorHex = "696A6A"
 cobwebColor = (41, 42, 42, 1) ./ (255, 255, 255, 1)
 cobwebColorSelected = (Ahorn.colors.selection_selected_fc)
 
-function renderCobweb(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, color::Ahorn.colorTupleType=cobwebColor)
-    x, y = Ahorn.entityTranslation(entity)
+function renderCobweb(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Cobweb, color::Ahorn.colorTupleType=cobwebColor)
+    x, y = Ahorn.position(entity)
 
-    Ahorn.Cairo.save(ctx)
-    
-    Ahorn.setSourceColor(ctx, color)
-    Ahorn.set_antialias(ctx, 1)
-    Ahorn.set_line_width(ctx, 1)
+    start = (x, y)
+    nodes = get(entity.data, "nodes", [start])
+    stop = nodes[1]
 
-    nodes = get(entity.data, "nodes", [])
-    nx, ny = Int.(nodes[1])
-    dx, dy = nx - x, ny - y
-
-    centerX, centerY = round(Int, x + 0.66 * dx), round(Int, y + 0.66 * dy + abs(dy * 0.3))
-
-    Ahorn.move_to(ctx, x, y)
-    Ahorn.curve_to(ctx, x + 0.33 * dx, y + 0.33 * dy + abs(dy * 0.2) + 5, x + 0.66 * dx, y + 0.66 * dy + abs(dy * 0.3) + 7, nx, ny)
+    baseCurve = Ahorn.SimpleCurve(start, stop, (start .+ stop) ./ 2 .+ (0, 4))
+    middle = Ahorn.getPoint(baseCurve, 0.5)
 
     for node in nodes
-        Ahorn.move_to(ctx, centerX, centerY)
-
-        nx, ny = Int.(node)
-        dx, dy = nx - centerX, ny - centerY
-
-        Ahorn.curve_to(ctx, centerX + 0.33 * dx, centerY + 0.33 * dy + abs(dy * 0.2) + 5, centerX + 0.66 * dx, centerY + 0.66 * dy + abs(dy * 0.3) + 7, nx, ny)
+        curve = Ahorn.SimpleCurve(middle, node, (middle .+ node) ./ 2 .+ (0, 4))
+        Ahorn.drawSimpleCurve(ctx, curve, color, thickness=1)
     end
 
-    Ahorn.stroke(ctx)
-
-    Ahorn.Cairo.restore(ctx)
+    curve = Ahorn.SimpleCurve(middle, start, (middle .+ start) ./ 2 .+ (0, 4))
+    Ahorn.drawSimpleCurve(ctx, curve, color, thickness=1)
 end
 
-function nodeLimits(entity::Maple.Entity)
-    if entity.name == "cobweb"
-        return true, 1, -1
+Ahorn.nodeLimits(entity::Maple.Cobweb) = 1, -1
+
+function Ahorn.selection(entity::Maple.Cobweb)
+    nodes = get(entity.data, "nodes", ())
+    x, y = Ahorn.position(entity)
+
+    res = Ahorn.Rectangle[Ahorn.Rectangle(x - 4, y - 4, 8, 8)]
+    
+    for node in nodes
+        nx, ny = node
+
+        push!(res, Ahorn.Rectangle(nx - 4, ny - 4, 8, 8))
     end
+
+    return res
 end
 
-function selection(entity::Maple.Entity)
-    if entity.name == "cobweb"
-        nodes = get(entity.data, "nodes", ())
-        x, y = Ahorn.entityTranslation(entity)
+Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Cobweb) = renderCobweb(ctx, entity, cobwebColorSelected)
 
-        res = Ahorn.Rectangle[Ahorn.Rectangle(x - 4, y - 4, 8, 8)]
-        
-        for node in nodes
-            nx, ny = node
-
-            push!(res, Ahorn.Rectangle(nx - 4, ny - 4, 8, 8))
-        end
-
-        return true, res
-    end
-end
-
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "cobweb"
-        renderCobweb(ctx, entity, cobwebColor)
-
-        return true
-    end
-
-    return false
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Cobweb, room::Maple.Room)
+    # Make sure Alpha is 1
+    rawColor = Ahorn.argb32ToRGBATuple(parse(Int, get(entity.data, "color", cobwebColorHex), base=16))[1:3] ./ 255
+    color = (rawColor..., 1.0)
+            
+    renderCobweb(ctx, entity, color)
 end
 
 end

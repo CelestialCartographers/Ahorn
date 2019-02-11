@@ -1,9 +1,8 @@
-julia 0.6
+julia 1.1
 Cairo 0.5.1
 Gtk 0.14.0
 YAML
 LightXML
-ImageMagick 0.5.1
 Maple
 @windows WinReg 0.3
 ZipFile

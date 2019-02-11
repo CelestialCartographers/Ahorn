@@ -1,2 +1,4 @@
 #!/bin/sh
-julia ahorn.jl
+echo "If this is the first time running Ahorn, this might take a while."
+echo "The window might stay blank for a long time, this is normal as packages are precompiling in the background."
+JULIA_PROJECT="$HOME/.config/Ahorn/env" julia -e "using Ahorn; Ahorn.displayMainWindow()" 2> "$HOME/.config/Ahorn/error.log"

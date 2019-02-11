@@ -2,28 +2,39 @@ module Refill
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Refill" => Ahorn.EntityPlacement(
         Maple.Refill
+    ),
+
+    "Refill (Two Dashes)" => Ahorn.EntityPlacement(
+        Maple.Refill,
+        "point",
+        Dict{String, Any}(
+            "twoDash" => true
+        )
     )
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "refill"
-        x, y = Ahorn.entityTranslation(entity)
+spriteOneDash = "objects/refill/idle00"
+spriteTwoDash = "objects/refillTwo/idle00"
 
-        return true, Ahorn.Rectangle(x - 6, y - 6, 12, 12)
-    end
+function getSprite(entity::Maple.Refill)
+    twoDash = get(entity.data, "twoDash", false)
+
+    return twoDash ? spriteTwoDash : spriteOneDash
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "refill"
-        Ahorn.drawSprite(ctx, "objects/refill/idle00.png", 0, 0)
+function Ahorn.selection(entity::Maple.Refill)
+    x, y = Ahorn.position(entity)
+    sprite = getSprite(entity)
 
-        return true
-    end
+    return Ahorn.getSpriteRectangle(sprite, x, y)
+end
 
-    return false
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Refill, room::Maple.Room)
+    sprite = getSprite(entity)
+    Ahorn.drawSprite(ctx, sprite, 0, 0)
 end
 
 end

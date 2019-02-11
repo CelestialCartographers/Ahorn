@@ -1,7 +1,8 @@
 /*
 
+!/assets
 !/docs
-!/deps
+!/lang
 !/src
 !/test
 
@@ -9,5 +10,8 @@
 !/LICENSE.md
 !/README.md
 !/REQUIRE
-!/ahorn*
+!/*.toml
+
+!/ahorn
+!/ahorn.bat
 !/install_ahorn.jl

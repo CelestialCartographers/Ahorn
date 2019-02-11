@@ -2,19 +2,15 @@ module NPC
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "NPC" => Ahorn.EntityPlacement(
         Maple.NPC
     )
 )
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "npc"
-        return true, Dict{String, Any}(
-            "npc" => Maple.npc_npcs
-        )
-    end
-end
+Ahorn.editingOptions(entity::Maple.NPC) = Dict{String, Any}(
+    "npc" => Maple.npc_npcs
+)
 
 npcSprites = Dict{String, String}(
     "granny" => "characters/oldlady/idle00",
@@ -24,34 +20,27 @@ npcSprites = Dict{String, String}(
     "badeline" => "characters/badeline/sleep00",
 )
 
-function getTexture(entity::Maple.Entity)
+function getTexture(entity::Maple.NPC)
     npcName = get(entity.data, "npc", "granny_00_house")
     name = lowercase(split(npcName, "_")[1])
 
     return get(npcSprites, name, false)
 end
 
-function selection(entity::Maple.Entity)
-    if entity.name == "npc"
-        sprite = Ahorn.sprites[getTexture(entity)]
+function Ahorn.selection(entity::Maple.NPC)
+    x, y = Ahorn.position(entity)
+    sprite = getTexture(entity)
 
-        x, y = Ahorn.entityTranslation(entity)
-        w, h = sprite.width, sprite.height
-
-        return true, Ahorn.Rectangle(x - floor(Int, w / 2), y - h, w, h)
-    end
+    return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=1.0)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "npc"
-        texture = getTexture(entity)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.NPC, room::Maple.Room)
+    texture = getTexture(entity)
 
-        if isa(texture, String)
-            sprite = Ahorn.sprites[texture]
-            Ahorn.drawImage(ctx, sprite, -sprite.width / 2, -sprite.height)
+    if isa(texture, String)
+        Ahorn.drawSprite(ctx, texture, 0, 0, jx=0.5, jy=1.0)
 
-            return true
-        end
+        return true
     end
 
     return false

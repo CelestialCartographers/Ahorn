@@ -3,11 +3,10 @@ keyPressed = Dict{Integer, Tuple{Gtk.GdkEventKey, Bool}}()
 mouseMotion = false
 lastSelection = false
 
+cursor = nothing
+
 const dragButton = 0x3
 const clickThreshold = 4
-
-eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion, Gtk.GdkEventCrossing}
-eventKey = Gtk.GdkEventKey
 
 mouseHandlers = Dict{Integer, String}(
     1 => "leftClick",
@@ -32,14 +31,6 @@ moveDirections = Dict{Integer, Tuple{Number, Number}}(
 
 mouseButtonHeld(n::Integer) = get(mousePressed, n, (false, false, false))[2]
 keyHeld(n::Integer) = get(keyPressed, n, (false, false))[2]
-
-# Saner way to get modifier keys in tools
-modifierControl() = keyHeld(Gtk.GdkKeySyms.Control_L) || keyHeld(Gtk.GdkKeySyms.Control_R)
-modifierShift() = keyHeld(Gtk.GdkKeySyms.Shift_L) || keyHeld(Gtk.GdkKeySyms.Shift_R)
-modifierMeta() = keyHeld(Gtk.GdkKeySyms.Meta_L) || keyHeld(Gtk.GdkKeySyms.Meta_R)
-modifierAlt() = keyHeld(Gtk.GdkKeySyms.Alt_L) || keyHeld(Gtk.GdkKeySyms.Alt_R)
-modifierSuper() = keyHeld(Gtk.GdkKeySyms.Super_L) || keyHeld(Gtk.GdkKeySyms.Super_R)
-modifierHyper() = keyHeld(Gtk.GdkKeySyms.Hyper_L) || keyHeld(Gtk.GdkKeySyms.Hyper_R)
 
 # Event -> Map coordinates
 getMapCoordinates(camera::Camera, mouseX::Number, mouseY::Number) = (floor(Int, (mouseX + camera.x) / camera.scale / 8) + 1, floor(Int, (mouseY + camera.y) / camera.scale / 8) + 1)
@@ -66,25 +57,16 @@ function shouldConsumeKeys()
     end
 end
 
-function scroll_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventScroll)
-    prevScale = camera.scale
-
-    if event.direction == 0
-        if minimumZoom <= camera.scale * 2 <= maximumZoom
-            global camera.scale = camera.scale * 2
-            global camera.x = round(Int, camera.x * 2 + event.x)
-            global camera.y = round(Int, camera.y * 2 + event.y)
-        end
-
-    else
-        if minimumZoom <= camera.scale / 2 <= maximumZoom
-            global camera.scale = camera.scale / 2
-            global camera.x = round(Int, (camera.x - event.x) / 2)
-            global camera.y = round(Int, (camera.y - event.y) / 2)
-        end
+function updateCursor(event::eventMouse, camera::Camera, room::Union{Maple.Room, Nothing})
+    if room !== nothing
+        global cursor = Cursor(event, camera, room)
     end
+end
 
-    if prevScale != camera.scale
+function scroll_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventScroll)
+    changed = event.direction == 0 ? zoomIn!(camera, event) : zoomOut!(camera, event)
+    
+    if changed
         draw(canvas)
     end
 
@@ -134,11 +116,14 @@ function motion_notify_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventMotion)
     end
 
     global mouseMotion = event
+    updateCursor(event, camera, loadedState.room)
 
     return true
 end
 
 function button_press_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventButton)
+    unfocusFilterEntry!()
+
     mousePressed[event.button] = (event, true, deepcopy(camera))
 
 	return true
@@ -180,19 +165,24 @@ function leave_notify_event(canvas::Gtk.GtkCanvas, event::Gtk.GdkEventCrossing)
     end
 end
 
+function handleHotkeys(hotkeys::Array{Hotkey, 1}, event::Gtk.GdkEventKey)
+    return callbackFirstActive(hotkeys, event)
+end
+
 function key_press_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
     keyPressed[event.keyval] = (event, true)
     consume = shouldConsumeKeys()
+
+    # Always handle non specific hotkeys
+    handleHotkeys(hotkeys, event)
+
     if consume
         handleKeyPressed(event)
-
-        for hotkey in hotkeys
-            if active(hotkey, event)
-                callback(hotkey)
-            end
-        end
     
     else
+        # Let tools manager handle hotkeys, but not pass it onto the tools
+        handleKeyPressed(event, false)
+
         return handleFilterKeyPressed(event)
     end
 

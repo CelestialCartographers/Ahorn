@@ -2,7 +2,7 @@ module TempleCrackedBlock
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Temple Cracked Block" => Ahorn.EntityPlacement(
         Maple.TempleCrackedBlock,
         "rectangle",
@@ -19,28 +19,10 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "templeCrackedBlock"
-        return true, 16, 16
-    end
-end
+Ahorn.minimumSize(entity::Maple.TempleCrackedBlock) = 16, 16
+Ahorn.resizable(entity::Maple.TempleCrackedBlock) = true, true
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "templeCrackedBlock"
-        return true, true, true
-    end
-end
-
-function selection(entity::Maple.Entity)
-    if entity.name == "templeCrackedBlock"
-        x, y = Ahorn.entityTranslation(entity)
-
-        width = Int(get(entity.data, "width", 16))
-        height = Int(get(entity.data, "height", 16))
-
-        return true, Ahorn.Rectangle(x, y, width, height)
-    end
-end
+Ahorn.selection(entity::Maple.TempleCrackedBlock) = Ahorn.getEntityRectangle(entity)
 
 frame = "objects/temple/breakBlock00"
 
@@ -75,20 +57,14 @@ function rendertempleCrackedBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::N
     Ahorn.restore(ctx)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "templeCrackedBlock"
-        x = Int(get(entity.data, "x", 0))
-        y = Int(get(entity.data, "y", 0))
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.TempleCrackedBlock, room::Maple.Room)
+    x = Int(get(entity.data, "x", 0))
+    y = Int(get(entity.data, "y", 0))
 
-        width = Int(get(entity.data, "width", 32))
-        height = Int(get(entity.data, "height", 32))
+    width = Int(get(entity.data, "width", 32))
+    height = Int(get(entity.data, "height", 32))
 
-        rendertempleCrackedBlock(ctx, x, y, width, height)
-
-        return true
-    end
-
-    return false
+    rendertempleCrackedBlock(ctx, x, y, width, height)
 end
 
 end

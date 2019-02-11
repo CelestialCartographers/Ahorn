@@ -1,34 +1,38 @@
 __precompile__(false)
 module Ahorn
 
+# Fixes theme issues on Windows
+if Sys.iswindows()
+    ENV["GTK_THEME"] = get(ENV, "GTK_THEME", "win32")
+    ENV["GTK_CSD"] = get(ENV, "GTK_CSD", "0")
+end
+
 using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Cairo
 using Maple
+using Random
+
+function abspath(path::String)
+    return normpath(joinpath(@__DIR__, path))
+end
 
 macro abs_str(path)
-    :($(normpath(joinpath(@__DIR__, path))))
+    abspath(path)
 end
 
-function setDefaultDirection(direction::Integer)
-    ccall((:gtk_widget_set_default_direction, Gtk.libgtk), Ptr{}, (Cint,), direction)
-end
+include("helpers/gtk_helpers.jl")
 
 # Force all widgets to be Left to Right
 # Program is not really useable in Right to Left mode, which Gtk respects on RTL languages for some reason
-Gtk.GLib.@sigatom setDefaultDirection(1)
+setDefaultDirection(1)
 
-baseTitle = "Ahorn α"
-iconFile = abs"../docs/logo-256-a.png"
-logoFile = abs"../docs/logo-1024-a.png"
+const baseTitle = "Ahorn"
+const iconFile = abs"../docs/logo-256.png"
+const logoFile = abs"../docs/logo-1024.png"
 
-windowIcon = Pixbuf(filename=iconFile, width=-1, height=-1, preserve_aspect_ratio=true)
-box = Box(:v)
+const windowIcon = Pixbuf(filename=iconFile, width=-1, height=-1, preserve_aspect_ratio=true)
 
-canvas = Canvas(0, 0)
-window = nothing
-
-saveDialog = isdefined(Gtk, :save_dialog_native) && Gtk.libgtk_version >= v"3.20.0"? Gtk.save_dialog_native : Gtk.save_dialog
-openDialog = isdefined(Gtk, :open_dialog_native) && Gtk.libgtk_version >= v"3.20.0"? Gtk.open_dialog_native : Gtk.open_dialog
+const canvas = Canvas(0, 0)
 
 storageDirectory = ""
 configFilename = ""
@@ -36,6 +40,8 @@ persistenceFilename = ""
 
 config = Dict{String, Any}()
 persistence = Dict{String, Any}()
+
+langdata = nothing
 
 include("config.jl")
 include("debug.jl")
@@ -49,42 +55,58 @@ camera = Camera(0, 0, 4)
 # Time Machine workaround
 sleep(0)
 
-include("helpers.jl")
+include("helpers/helpers.jl")
+include("lang.jl")
 include("validation_entry.jl")
 include("mods.jl")
+include("hotkey.jl")
+include("cursor.jl")
 include("color_constants.jl")
 include("module_loader.jl")
-include("rectangle.jl")
-include("line.jl")
-include("list_view_helper.jl")
-include("ahorn_list_helper.jl")
-include("config_window.jl")
+include("shapes/rectangle.jl")
+include("shapes/simple_curve.jl")
+include("shapes/line.jl")
+include("shapes/circle.jl")
+include("shapes/ellipse.jl")
+include("helpers/list_view_helper.jl")
+include("helpers/ahorn_list_helper.jl")
+include("helpers/color_helper.jl")
+include("helpers/xna_colors.jl")
+include("helpers/form_helper.jl")
+include("helpers/processing_helper.jl")
+include("windows/settings_window.jl")
+include("windows/test_eval_window.jl")
 include("materials_filter.jl")
-include("menubar_helper.jl")
+include("helpers/menubar_helper.jl")
 include("celeste_render.jl")
-include("map_image_dumper.jl")
+include("effects.jl")
+include("windows/map_image_dumper_window.jl")
+include("windows/sprite_dumper_window.jl")
 include("selections.jl")
 include("property_menu.jl")
 include("event_handler.jl")
-include("file_dialogs.jl")
-include("room_window.jl")
-include("about_window.jl")
-include("map_window.jl")
-include("styleground_window.jl")
-include("metadata_window.jl")
-include("update_window.jl")
-include("exit_window.jl")
+include("pre_save_sanitizers.jl")
+include("windows/file_dialog_window.jl")
+include("windows/room_window.jl")
+include("windows/about_window.jl")
+include("windows/map_window.jl")
+include("windows/styleground_window.jl")
+include("windows/metadata_window.jl")
+include("windows/update_window.jl")
+include("windows/exit_window.jl")
 include("history_manager.jl")
 include("roomlist.jl")
 include("everest_rcon.jl")
 include("hotkeys.jl")
 include("tools.jl")
 include("menubar.jl")
+include("backups.jl")
+include("loading_spinner.jl")
 
 # Time Machine workaround
 sleep(0)
 
-include("main_window.jl")
+include("windows/main_window.jl")
 include("interactive_workaround.jl")
 
 include("init_ahorn.jl")

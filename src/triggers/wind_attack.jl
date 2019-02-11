@@ -2,7 +2,7 @@ module WindAttackTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Snowballs" => Ahorn.EntityPlacement(
         Maple.WindAttackTrigger,
         "rectangle",

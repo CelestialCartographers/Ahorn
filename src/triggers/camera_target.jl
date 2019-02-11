@@ -2,7 +2,7 @@ module CameraTargetTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Camera Target" => Ahorn.EntityPlacement(
         Maple.CameraTargetTrigger,
         "rectangle",
@@ -13,18 +13,14 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "cameraTargetTrigger"
-        return true, Dict{String, Any}(
-            "positionMode" => Maple.trigger_position_modes
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.CameraTargetTrigger)
+    return Dict{String, Any}(
+        "positionMode" => Maple.trigger_position_modes
+    )
 end
 
-function nodeLimits(trigger::Maple.Trigger)
-    if trigger.name == "cameraTargetTrigger"
-        return true, 1, 1
-    end
+function Ahorn.nodeLimits(trigger::Maple.CameraTargetTrigger)
+    return 1, 1
 end
 
 end

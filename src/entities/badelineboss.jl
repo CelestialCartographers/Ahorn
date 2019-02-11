@@ -2,70 +2,51 @@ module BadelineBoss
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Badeline Boss" => Ahorn.EntityPlacement(
         Maple.BadelineBoss,
     )
 )
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "finalBoss"
-        return true, Dict{String, Any}(
-            "patternIndex" => Maple.badeline_boss_shooting_patterns
-        )
-    end
-end
+Ahorn.editingOptions(entity::Maple.BadelineBoss) = Dict{String, Any}(
+    "patternIndex" => Maple.badeline_boss_shooting_patterns
+)
 
-function nodeLimits(entity::Maple.Entity)
-    if entity.name == "finalBoss"
-        return true, 0, -1
-    end
-end
+Ahorn.nodeLimits(entity::Maple.BadelineBoss) = 0, -1
 
 sprite = "characters/badelineBoss/charge00.png"
 
-function selection(entity::Maple.Entity)
-    if entity.name == "finalBoss"
-        nodes = get(entity.data, "nodes", ())
-        x, y = Ahorn.entityTranslation(entity)
+function Ahorn.selection(entity::Maple.BadelineBoss)
+    nodes = get(entity.data, "nodes", ())
+    x, y = Ahorn.position(entity)
 
-        res = Ahorn.Rectangle[Ahorn.Rectangle(x - 18, y - 12, 36, 28)]
-        
-        for node in nodes
-            nx, ny = Int.(node)
+    res = Ahorn.Rectangle[Ahorn.getSpriteRectangle(sprite, x, y)]
+    
+    for node in nodes
+        nx, ny = Int.(node)
 
-            push!(res, Ahorn.Rectangle(nx - 18, ny - 12, 36, 28))
-        end
+        push!(res, Ahorn.getSpriteRectangle(sprite, nx, ny))
+    end
 
-        return true, res
+    return res
+end
+
+function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.BadelineBoss)
+    px, py = Ahorn.position(entity)
+
+    for node in get(entity.data, "nodes", ())
+        nx, ny = Int.(node)
+
+        Ahorn.drawArrow(ctx, px, py, nx, ny, Ahorn.colors.selection_selected_fc, headLength=6)
+        Ahorn.drawSprite(ctx, sprite, nx, ny)
+
+        px, py = nx, ny
     end
 end
 
-function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
-    if entity.name == "finalBoss"
-        px, py = Ahorn.entityTranslation(entity)
-
-        for node in get(entity.data, "nodes", ())
-            nx, ny = Int.(node)
-
-            theta = atan2(py - ny, px - nx)
-            Ahorn.drawArrow(ctx, px, py, nx + cos(theta) * 8, ny + sin(theta) * 8, Ahorn.colors.selection_selected_fc, headLength=6)
-            Ahorn.drawSprite(ctx, sprite, nx, ny)
-
-            px, py = nx, ny
-        end
-    end
-end
-
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "finalBoss"
-        x, y = Ahorn.entityTranslation(entity)
-        Ahorn.drawSprite(ctx, sprite, x, y)
-
-        return true
-    end
-
-    return false
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.BadelineBoss, room::Maple.Room)
+    x, y = Ahorn.position(entity)
+    Ahorn.drawSprite(ctx, sprite, x, y)
 end
 
 end

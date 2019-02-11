@@ -2,7 +2,7 @@ module FakeWall
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Fake Wall" => Ahorn.EntityPlacement(
         Maple.FakeWall,
         "rectangle",
@@ -11,45 +11,15 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "fakeWall"
-        return true, Dict{String, Any}(
-            "tiletype" => string.(Maple.tile_entity_legal_tiles)
-        )
-    end
-end
+Ahorn.editingOptions(entity::Maple.FakeWall) = Dict{String, Any}(
+    "tiletype" => Ahorn.tiletypeEditingOptions()
+)
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "fakeWall"
-        return true, 8, 8
-    end
-end
+Ahorn.minimumSize(entity::Maple.FakeWall) = 8, 8
+Ahorn.resizable(entity::Maple.FakeWall) = true, true
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "fakeWall"
-        return true, true, true
-    end
-end
+Ahorn.selection(entity::Maple.FakeWall) = Ahorn.getEntityRectangle(entity)
 
-function selection(entity::Maple.Entity)
-    if entity.name == "fakeWall"
-        x, y = Ahorn.entityTranslation(entity)
-
-        width = Int(get(entity.data, "width", 8))
-        height = Int(get(entity.data, "height", 8))
-
-        return true, Ahorn.Rectangle(x, y, width, height)
-    end
-end
-
-function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "fakeWall"
-        Ahorn.drawTileEntity(ctx, room, entity, alpha=0.5)
-
-        return true
-    end
-
-    return false
-end
+Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.FakeWall, room::Maple.Room) = Ahorn.drawTileEntity(ctx, room, entity, alpha=0.7)
 
 end

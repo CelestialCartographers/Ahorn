@@ -1,63 +1,46 @@
-include("hotkey.jl")
-
 hotkeys = Hotkey[
     Hotkey(
-        's',
-        menuFileSave,
-        Function[
-            modifierControl
-        ]
+        "ctrl + alt + shift + s",
+        SettingsWindow.showSettings
     ),
     Hotkey(
-        'S',
-        showFileSaveDialog,
-        Function[
-            modifierControl,
-            modifierShift
-        ]
+        "ctrl + shift + s",
+        showFileSaveDialog
     ),
     Hotkey(
-        'o',
-        showFileOpenDialog,
-        Function[
-            modifierControl
-        ]
+        "ctrl + s",
+        menuFileSave
     ),
     Hotkey(
-        't',
-        RoomWindow.createRoom,
-        Function[
-            modifierControl
-        ]
+        "ctrl + o",
+        showFileOpenDialog
     ),
     Hotkey(
-        'T',
-        RoomWindow.configureRoom,
-        Function[
-            modifierControl,
-            modifierShift
-        ]
+        "ctrl + n",
+        createNewMap
     ),
     Hotkey(
-        'z',
-        History.undo!,
-        Function[
-            modifierControl
-        ]
+        "ctrl + m",
+        MetadataWindow.configureMetadata
     ),
     Hotkey(
-        'Z',
-        History.redo!,
-        Function[
-            modifierControl,
-            modifierShift
-        ]
+        "ctrl + shift + t",
+        RoomWindow.configureRoom
     ),
     Hotkey(
-        'f',
-        focusFilterEntry!,
-        Function[
-            modifierControl
-        ]
+        "ctrl + t",
+        RoomWindow.createRoom
+    ),
+    Hotkey(
+        "ctrl + shift + z",
+        History.redo!
+    ),
+    Hotkey(
+        "ctrl + z",
+        History.undo!
+    ),
+    Hotkey(
+        "ctrl + f",
+        focusFilterEntry!
     )
 ]

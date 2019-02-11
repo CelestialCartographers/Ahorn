@@ -2,19 +2,17 @@ module EverestFlagTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Flag (Everest)" => Ahorn.EntityPlacement(
         Maple.EverestFlagTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "everest/flagTrigger"
-        return true, Dict{String, Any}(
-            "mode" => Maple.everest_flag_trigger_modes
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.EverestFlagTrigger)
+    return Dict{String, Any}(
+        "mode" => Maple.everest_flag_trigger_modes
+    )
 end
 
 end

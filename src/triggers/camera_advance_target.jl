@@ -2,7 +2,7 @@ module CameraAdvanceTargetTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Camera Advance Target" => Ahorn.EntityPlacement(
         Maple.CameraAdvanceTargetTrigger,
         "rectangle",
@@ -13,19 +13,15 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "cameraAdvanceTargetTrigger"
-        return true, Dict{String, Any}(
-            "positionModeX" => Maple.trigger_position_modes,
-            "positionModeY" => Maple.trigger_position_modes,
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.CameraAdvanceTargetTrigger)
+    return Dict{String, Any}(
+        "positionModeX" => Maple.trigger_position_modes,
+        "positionModeY" => Maple.trigger_position_modes,
+    )
 end
 
-function nodeLimits(trigger::Maple.Trigger)
-    if trigger.name == "cameraAdvanceTargetTrigger"
-        return true, 1, 1
-    end
+function Ahorn.nodeLimits(trigger::Maple.CameraAdvanceTargetTrigger)
+    return 1, 1
 end
 
 end

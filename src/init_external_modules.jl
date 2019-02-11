@@ -7,12 +7,19 @@ function initExternalEntities()
 end
 
 function initExternalTriggers()
-    # Load external triggers
     externalTriggers = findExternalModules("triggers")
     append!(loadedTriggers, externalTriggers)
     loadModule.(externalTriggers)
     loadExternalModules!(loadedModules, loadedTriggers, "triggers")
     registerPlacements!(triggerPlacements, loadedTriggers)
+end
+
+function initExternalEffects()
+    externalEffects = findExternalModules("ffects")
+    append!(loadedEffects, externalEffects)
+    loadModule.(externalEffects)
+    loadExternalModules!(loadedModules, loadedEffects, "effects")
+    registerPlacements!(effectPlacements, loadedEffects)
 end
 
 function initExternalTools()
@@ -25,5 +32,6 @@ end
 function initExternalModules()
     initExternalEntities()
     initExternalTriggers()
+    initExternalEffects()
     initExternalTools()
 end

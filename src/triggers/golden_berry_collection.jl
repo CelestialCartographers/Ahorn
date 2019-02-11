@@ -2,7 +2,7 @@ module GoldenBerryCollectionTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Golden Berry Collection" => Ahorn.EntityPlacement(
         Maple.GoldenBerryCollectionTrigger,
         "rectangle"

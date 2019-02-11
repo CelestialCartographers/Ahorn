@@ -2,7 +2,7 @@ module RespawnTargetTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Respawn Target" => Ahorn.EntityPlacement(
         Maple.RespawnTargetTrigger,
         "rectangle",
@@ -13,10 +13,8 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     )
 )
 
-function nodeLimits(trigger::Maple.Trigger)
-    if trigger.name == "respawnTargetTrigger"
-        return true, 1, 1
-    end
+function Ahorn.nodeLimits(trigger::Maple.RespawnTargetTrigger)
+    return 1, 1
 end
 
 end

@@ -34,9 +34,8 @@ function MapSnapshot(description::String, map::Maple.Map)
         push!(snapshots, RoomSnapshot("Map backup", room))
     end
 
-    success, selections = getToolSelections()
-    if success
-        println("Selections for map")
+    selections = getToolSelections()
+    if Ahorn.loadedState.room !== nothing && isa(selections, Set)
         push!(snapshots, SelectionSnapshot("Map backup", Ahorn.loadedState.room, selections))
     end
 
@@ -51,7 +50,7 @@ function restoreSnapshot!(map::Maple.Map, snapshot::RoomSnapshot)
     room = Maple.getRoomByName(map, snapshot.room.name)
 
     if isa(room, Maple.Room)
-        for n in fieldnames(room)
+        for n in fieldnames(typeof(room))
             setfield!(room, n, deepcopy(getfield(snapshot.room, n)))
         end
 
@@ -78,22 +77,18 @@ end
 
 function getToolSelections()
     selectionRes = Ahorn.eventToModule(Ahorn.currentTool, "getSelections") 
-    if isa(selectionRes, Tuple)
-        success, selections = selectionRes
-
-        if success
-            return true, deepcopy(selections)
-        end
+    if isa(selectionRes, Set)
+        return deepcopy(selectionRes)
     end
 
-    return false, Set{Tuple{String, Ahorn.Rectangle, Any, Number}}()
+    return Set{Tuple{String, Ahorn.Rectangle, Any, Number}}()
 end
 
 historyTimelines = Dict{Maple.Map, HistoryTimeline}()
 
 currentMap() = Ahorn.loadedState.map
 
-function getHistory!(map::Maple.Map)
+function getHistory(map::Maple.Map)
     if !haskey(historyTimelines, map)
         historyTimelines[map] = HistoryTimeline()
     end
@@ -105,7 +100,7 @@ function undo!(map::Maple.Map=currentMap())
     res = false
     Ahorn.eventToModule(Ahorn.currentTool, "beforeUndo", map)
 
-    history = getHistory!(map::Maple.Map)
+    history = getHistory(map)
     if history.index > 0
         if history.index == length(history.snapshots)
             push!(history.snapshots, MapSnapshot("Map backup", map))
@@ -126,7 +121,7 @@ function redo!(map::Maple.Map=currentMap())
     res = false
     Ahorn.eventToModule(Ahorn.currentTool, "beforeRedo", map)
 
-    history = getHistory!(map::Maple.Map)
+    history = getHistory(map)
 
     if history.skip
         history.skip = false
@@ -151,20 +146,20 @@ function redo!(map::Maple.Map=currentMap())
     return res
 end
 
-function undo!(widget::Gtk.GtkMenuItemLeaf)
+function undo!(widget::Ahorn.MenuItemsTypes)
     if !undo!()
         info_dialog("Cannot undo.\nStart of history.", Ahorn.window)
     end
 end
 
-function redo!(widget::Gtk.GtkMenuItemLeaf)
+function redo!(widget::Ahorn.MenuItemsTypes)
     if !redo!()
         info_dialog("Cannot redo.\nEnd of history.", Ahorn.window)
     end
 end
 
 function addSnapshot!(snapshot::Snapshot, map::Maple.Map=currentMap())
-    history = getHistory!(map::Maple.Map)
+    history = getHistory(map)
     push!(history, snapshot)
 end
 

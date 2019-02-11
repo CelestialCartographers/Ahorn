@@ -1,51 +1,96 @@
 include("drawing.jl")
+include("font.jl")
+include("text_drawing.jl")
+include("assets.jl")
 include("layers.jl")
 include("auto_tiler.jl")
 include("decals.jl")
 include("entities.jl")
 include("triggers.jl")
+include("fillers.jl")
+
+function drawObjectTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tile::Integer; alpha::Number=getGlobalAlpha())
+    scenery = getSprite("tilesets/scenery", "Gameplay")
+
+    width = floor(Int, scenery.realWidth / 8)
+
+    drawX, drawY = (x - 1) * 8, (y - 1) * 8
+    quadY, quadX = divrem(tile, width)
+
+    drawImage(ctx, "tilesets/scenery", drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
+end
 
 function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates; alpha::Number=getGlobalAlpha())
     tileValue = tiles.data[y, x]
 
     if tileValue != '0'
-        imagePath = meta.paths[tileValue]
-        quads = getMaskQuads(x, y, tiles, meta)
-
-        quadX, quadY = quads[Integer(mod1(states.rands[y, x], length(quads)))]
         drawX, drawY = (x - 1) * 8, (y - 1) * 8
+        
+        if haskey(meta.paths, tileValue)
+            imagePath = meta.paths[tileValue]
+            quads, sprite = getMaskQuads(x, y, tiles, meta)
 
-        if tileValue != states.chars[y, x] || state.quads[y, x] != (quadX, quadY)
-            drawImage(ctx, imagePath, drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
+            quadX, quadY = quads[Integer(mod1(states.rands[y, x], length(quads)))]
 
-            states.quads[y, x] = (quadX, quadY)
+            if !isempty(sprite)
+                animatedMeta = filter(m -> m.name == sprite, animatedTilesMeta)[1]
+                frames = findTextureAnimations(animatedMeta.path, getAtlas("Gameplay"))
+
+                if !isempty(frames)
+                    frame = frames[Integer(mod1(states.rands[y, x], length(frames)))]
+                    sprite = getSprite(frame, "Gameplay")
+
+                    ox = animatedMeta.posX - sprite.offsetX
+                    oy = animatedMeta.posY - sprite.offsetY
+
+                    drawImage(ctx, frame, drawX + ox, drawY + oy, alpha=alpha)
+                end
+            end
+
+            if tileValue != states.chars[y, x] || states.quads[y, x] != (quadX, quadY)
+                drawImage(ctx, imagePath, drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
+
+                states.quads[y, x] = (quadX, quadY)
+            end
+
+        else
+            drawRectangle(ctx, drawX, drawY, 8, 8, colors.unknown_tile_color, (0.0, 0.0, 0.0, 0.0))
         end
     end
 end
 
-function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, meta::TilerMeta, states::TileStates, width::Integer, height::Integer; alpha::Number=getGlobalAlpha())
+function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, objtiles::ObjectTiles, meta::TilerMeta, states::TileStates, width::Integer, height::Integer; alpha::Number=getGlobalAlpha(), fg::Bool=true, useObjectTiles::Bool=false)
     for y in 1:height, x in 1:width
-        drawTile(ctx, x, y, tiles, meta, states, alpha=alpha)
+        objtile = get(objtiles.data, (y, x), -1)
+        tile = get(tiles.data, (y, x), '0')
+
+        if useObjectTiles && objtile != -1 && tile != '0'
+            drawObjectTile(ctx, x, y, objtile, alpha=alpha)
+
+        else
+            drawTile(ctx, x, y, tiles, meta, states, alpha=alpha)
+        end
     end
 end
 
-function drawTiles(ctx::Cairo.CairoContext, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha())
-    tiles = fg? dr.room.fgTiles : dr.room.bgTiles
+function drawTiles(ctx::Cairo.CairoContext, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha(), useObjectTiles::Bool=false)
+    objtiles = dr.room.objTiles
+    tiles = fg ? dr.room.fgTiles : dr.room.bgTiles
     height, width = size(tiles.data)
 
-    states = fg? dr.fgTileStates : dr.bgTileStates
-    meta = fg? fgTilerMeta : bgTilerMeta
+    states = fg ? dr.fgTileStates : dr.bgTileStates
+    meta = fg ? fgTilerMeta : bgTilerMeta
 
     if size(states) != (height, width)
         updateTileStates!(dr.room, dr.map.package, states, width, height, fg)
     end
 
-    drawTiles(ctx, tiles, meta, states, width, height, alpha=alpha)
+    drawTiles(ctx, tiles, objtiles, meta, states, width, height, alpha=alpha, fg=fg, useObjectTiles=useObjectTiles)
 
     return true
 end
 
-drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha()) = drawTiles(creategc(layer.surface), dr, fg, alpha=alpha)
+drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha(), useObjectTiles::Bool=false) = drawTiles(creategc(layer.surface), dr, fg, alpha=alpha, useObjectTiles=useObjectTiles)
 
 function drawParallax(ctx::Cairo.CairoContext, parallax::Maple.Parallax, camera::Camera, fg::Bool=true)
 
@@ -66,25 +111,26 @@ backgroundFuncs = Dict{Type, Function}(
 )
 
 function drawBackground(layer::Layer, dr::DrawableRoom, camera::Camera, fg::Bool=true)
-    styles = fg? dr.map.style.foregrounds : dr.map.style.backgrounds
+    backdrops = fg ? dr.map.style.foregrounds : dr.map.style.backgrounds
     ctx = creategc(layer.surface)
 
     if !fg
-        paintSurface(ctx, dr.fillColor)
+        color = something(dr.fillColor, getRoomBackgroundColor(dr.room))
+        paintSurface(ctx, color)
     end
 
-    for style in styles.children
-        t = typeof(style)
+    for backdrop in backdrops
+        t = typeof(backdrop)
 
         if haskey(backgroundFuncs, t)
-            backgroundFuncs[t](ctx, style, camera, fg)
+            backgroundFuncs[t](ctx, backdrop, camera, fg)
         end
     end
 end
 
 function drawDecals(layer::Layer, dr::DrawableRoom, fg::Bool=true)
     ctx = creategc(layer.surface)
-    decals = fg? dr.room.fgDecals : dr.room.bgDecals
+    decals = fg ? dr.room.fgDecals : dr.room.bgDecals
 
     for decal in decals
         drawDecal(ctx, decal)
@@ -175,11 +221,28 @@ function drawMap(ctx::Cairo.CairoContext, camera::Camera, map::Map; adjacentAlph
     paintSurface(ctx, backgroundFill)
     pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
 
+    for filler in map.fillers
+        if fillerVisible(camera, width, height, filler)
+            drawFiller(ctx, camera, filler)
+        end
+    end
+
     for room in map.rooms
-        dr = getDrawableRoom(map, room)
         if roomVisible(camera, width, height, room)
-            alpha = loadedState.roomName == room.name? 1.0 : adjacentAlpha
+            dr = getDrawableRoom(map, room)
+            alpha = loadedState.roomName == room.name ? 1.0 : adjacentAlpha
+
             drawRoom(ctx, camera, dr, alpha=alpha)
+
+        else
+            if get(config, "delete_non_visible_rooms_cache", false)
+                if haskey(drawableRooms, map)
+                    if haskey(drawableRooms[map], room)
+                        destroy(drawableRooms[map][room])
+                        delete!(drawableRooms[map], room)
+                    end
+                end
+            end
         end
     end
 end

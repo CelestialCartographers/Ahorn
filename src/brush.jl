@@ -1,14 +1,14 @@
-roomTiles(layer::Layer, room::Maple.Room) = layerName(layer) == "fgTiles"? room.fgTiles : room.bgTiles
+roomTiles(layer::Layer, room::Maple.Room) = layerName(layer) == "fgTiles" ? room.fgTiles : room.bgTiles
 
-function validTiles(layer::Layer, removeTemplate::Bool=true) 
-    meta = layerName(layer) == "fgTiles"? fgTilerMeta : bgTilerMeta
+function validTiles(layer::String, removeTemplate::Bool=true) 
+    meta = layer == "fgTiles" ? fgTilerMeta : bgTilerMeta
 
     res = collect(keys(meta.paths))
     push!(res, '0')
 
     if removeTemplate
-        index = findfirst(res, 'z')
-        if index != 0
+        index = findfirst(isequal('z'), res)
+        if index !== nothing
             deleteat!(res, index)
         end
     end
@@ -18,8 +18,10 @@ function validTiles(layer::Layer, removeTemplate::Bool=true)
     return res
 end
 
-function tileNames(layer::Layer) 
-    meta = layerName(layer) == "fgTiles"? fgTilerMeta : bgTilerMeta
+validTiles(layer::Layer, removeTemplate::Bool=true) = validTiles(layerName(layer), removeTemplate)
+
+function tileNames(name::String) 
+    meta = name == "fgTiles" ? fgTilerMeta : bgTilerMeta
     res = Dict{Any, Any}(
         '0' => "Air",
         "Air" => '0'
@@ -38,6 +40,8 @@ function tileNames(layer::Layer)
 
     return res
 end
+
+tileNames(layer::Layer) = tileNames(layerName(layer))
 
 nodeType = Tuple{Number, Number}
 edgeType = Tuple{nodeType, nodeType}
@@ -139,7 +143,7 @@ function connectEdges!(edges::Array{edgeType, 1})
                 headc = head == nodes[end]
 
                 if tailc || headc
-                    push!(nodes, tailc? head : tail)
+                    push!(nodes, tailc ? head : tail)
                     deleteat!(edges, i)
 
                     changed = true
@@ -184,7 +188,7 @@ function rotationOffset(ctx::CairoContext, brush::Brush)
     end
 end
 
-function drawBrush(brush::Brush, layer::Layer, x::Number, y::Number)
+function drawBrush(brush::Brush, layer::Layer, x::Number, y::Number, thickness::Integer=2)
     ctx = creategc(layer.surface)
 
     ox, oy = brush.offset
@@ -197,8 +201,14 @@ function drawBrush(brush::Brush, layer::Layer, x::Number, y::Number)
     translate(ctx, -1.5, -1.5)
     rotationOffset(ctx, brush)
 
-    for nodes in brush.nodes
-        drawLines(ctx, nodes, colors.brush_bc, filled=true, fc=colors.brush_fc)
+    for nodes in deepcopy.(brush.nodes)
+        # Fixes weird off by one error in Cairo paths
+        # 1 / 8 is one "pixel", taking into account the (8, 8) scale
+        # This should be good enough, but might look bad at non default stroke thickness
+
+        extend = ceil(thickness / 2)
+        nodes[end] = nodes[end] .+ (extend / 8, extend / 8) .* sign.(nodes[end] .- nodes[end - 1])
+        drawLines(ctx, nodes, colors.brush_bc, filled=true, fc=colors.brush_fc, thickness=thickness)
     end
 
     restore(ctx)
@@ -245,4 +255,30 @@ function applyBrush!(brush::Brush, tiles::Maple.Tiles, materials::Array{Char, 2}
             end
         end
     end
+end
+
+function findFill(tiles::Array{Char, 2}, x::Number, y::Number)
+    target = tiles[y, x]
+    stack = Tuple{Number, Number}[(x, y)]
+
+    h, w = size(tiles)
+
+    res = fill(false, (h, w))
+
+    while length(stack) > 0
+        tx, ty = pop!(stack)
+
+        if 1 <=tx <= w && 1 <= ty <= h && !res[ty, tx]
+            if target == tiles[ty, tx]
+                res[ty, tx] = true
+
+                push!(stack, (tx - 1, ty))
+                push!(stack, (tx, ty - 1))
+                push!(stack, (tx + 1, ty))
+                push!(stack, (tx, ty + 1))
+            end
+        end
+    end
+
+    return res
 end

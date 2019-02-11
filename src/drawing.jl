@@ -1,26 +1,26 @@
 include("extract_sprites_meta.jl")
 
-sprites = Dict{String, Sprite}()
+atlases = Dict{String, Dict{String, SpriteHolder}}()
+
 drawingAlpha = 1
 fileNotFoundSurface = CairoARGBSurface(0, 0)
 
-function getSpriteSurface(resource::String, filename::String)
-    # If we have a filename use that, otherwise look for the resource    
-    filename = isempty(filename)? findExternalSprite(resource) : filename
-    filename = isa(filename, String)? filename : ""
-
-    path, ext = splitext(filename)
+function getSpriteSurface(resource::String, filename::String, atlas::String="Gameplay")
+    # If we have a filename use that, otherwise look for the resource
+    filename = isempty(filename) ? findExternalSprite(resource) : filename
+    filename = isa(filename, String) ? filename : ""
 
     if isfile(filename)
-        if ext == ".png"
+        if hasExt(filename, ".png")
             return open(Cairo.read_from_png, filename), filename
 
-        elseif ext == ".zip"
+        elseif hasExt(filename, ".zip")
             res = fileNotFoundSurface
             zipfh = ZipFile.Reader(filename)
 
             # Cheaper to fix resource name than every filename from zip
-            resourcePath = joinpath("Graphics", "Atlases", "Gameplay", splitext(resource)[1] * ".png")
+            # Always uses Unix path
+            resourcePath = "Graphics/Atlases/$atlas/" * splitext(resource)[1] * ".png"
 
             for file in zipfh.files
                 if file.name == resourcePath
@@ -40,53 +40,78 @@ function getSpriteSurface(resource::String, filename::String)
     end
 end
 
-function addSprite!(resource::String, filename::String="")
-    surface, filename = getSpriteSurface(resource, filename)
-    sprites[resource] = Sprite(
-        0,
-        0,
+function addSprite!(resource::String, filename::String=""; atlas::String="Gameplay", force::Bool=false)
+    atlas = getAtlas(atlas)
 
-        Int(width(surface)),
-        Int(height(surface)),
+    if !haskey(atlas, resource) || atlas[resource].sprite.width == 0 || atlas[resource].sprite.height == 0 || mtime(atlas[resource].path) > atlas[resource].readtime || force
+        surface, filename = getSpriteSurface(resource, filename)
+        atlas[resource] = SpriteHolder(
+            Sprite(
+                0,
+                0,
+        
+                Int(width(surface)),
+                Int(height(surface)),
+        
+                0,
+                0,
+                Int(width(surface)),
+                Int(height(surface)),
+        
+                surface,
+                filename
+            ),
 
-        0,
-        0,
-        Int(width(surface)),
-        Int(height(surface)),
+            time(),
+            filename
+        )
+    end
 
-        surface,
-        filename
-    )
+    return atlas[resource].sprite
+end
+
+function getAtlas(atlas::String="Gameplay")
+    if !haskey(atlases, atlas)
+        atlases[atlas] = Dict{String, SpriteHolder}()
+    end
+
+    return atlases[atlas]
+end
+
+function getAtlasResourceNames(atlas::String="Gameplay")
+    atlas = getAtlas(atlas)
+
+    return collect(keys(atlas))
 end
 
 # Gets a resource or loads a modded one
-function getSprite(name::String)
+function getSprite(name::String, atlas::String="Gameplay"; force::Bool=false)
     # Remove entry if its (0, 0) in size
-    if haskey(sprites, name) && sprites[name].width == 0 && sprites[name].height == 0
-        delete!(sprites, name)
+    if haskey(atlases, atlas) && haskey(atlases[atlas], name)
+        sprite = atlases[atlas][name].sprite
+
+        if sprite.realWidth == 0 && sprite.realHeight == 0
+            delete!(atlases, name)
+        end
     end
 
-    if !haskey(sprites, name)
-        addSprite!(name)
-    end
-
-    return sprites[name]
+    return addSprite!(name, atlas=atlas, force=force)
 end
 
-function loadExternalSprites!()
+function loadExternalSprites!(force::Bool=false)
     externalSprites = findExternalSprites()
-    for (texture, raw) in externalSprites
-        addSprite!(fixTexturePath(texture), raw)
+    for (texture, raw, atlas) in externalSprites
+        addSprite!(fixTexturePath(texture), raw, atlas=atlas, force=force)
     end
 end
 
 # remove .png and convert to unix paths
 function fixTexturePath(texture::String)
-    return replace(Base.splitext(texture)[1], "\\", "/")
+    return replace(Base.splitext(texture)[1], "\\" => "/")
 end
 
-function getTextureSprite(texture::String)
-    return getSprite(fixTexturePath(texture))
+function getTextureSprite(texture::String, atlas::String="Gameplay")
+    return getSprite(fixTexturePath(texture), atlas)
 end
 
 function setGlobalAlpha!(alpha::Number=1)
@@ -100,72 +125,136 @@ getGlobalAlpha() = drawingAlpha
 
 # Image based #
 
-function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha())
-    Cairo.save(ctx)
+function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing)
+    if tint !== nothing
+        tinted = CairoImageSurface(zeros(UInt32, height, width), Cairo.FORMAT_ARGB32)
+        tintedCtx = CairoContext(tinted)
 
-    rectangle(ctx, x, y, width, height)
-    clip(ctx)
+        # Don't pass tint or alpha
+        drawImage(tintedCtx, surface, x, y, quadX, quadY, width, height)
+        tinted = tintSurfaceMultiplicative(tinted, tint)
 
-    set_source_surface(ctx, surface, x - quadX, y - quadY)
-    pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
+        drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
 
-    paint_with_alpha(ctx, alpha)
+    else
+        Cairo.save(ctx)
 
-    restore(ctx)
+        rectangle(ctx, x, y, width, height)
+        clip(ctx)
+    
+        set_source_surface(ctx, surface, x - quadX, y - quadY)
+        pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
+    
+        paint_with_alpha(ctx, alpha)
+    
+        restore(ctx)
+    end
 end
 
-function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Number, y::Number; alpha::Number=getGlobalAlpha())
+function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Number, y::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing)
     drawImage(ctx, surface, x, y, 0, 0, Int(surface.width), Int(surface.height); alpha=alpha)
 end
 
-drawImage(canvas::Gtk.GtkCanvas, name::String, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha()) = drawImage(canvas, getSprite(name), x, y, quadX, quadY, width, height, alpha=alpha)
-drawImage(ctx::Cairo.CairoContext, name::String, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha()) = drawImage(ctx, getSprite(name), x, y, quadX, quadY, width, height, alpha=alpha)
-drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha()) = drawImage(Gtk.getgc(canvas), sprite.surface, x, y, quadX, quadY, width, height, alpha=alpha)
+drawImage(canvas::Gtk.GtkCanvas, name::String, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing, atlas::String="Gameplay") = drawImage(canvas, getSprite(name, atlas), x, y, quadX, quadY, width, height, alpha=alpha, tint=tint)
+drawImage(ctx::Cairo.CairoContext, name::String, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing, atlas::String="Gameplay") = drawImage(ctx, getSprite(name, atlas), x, y, quadX, quadY, width, height, alpha=alpha, tint=tint)
+drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing) = drawImage(Gtk.getgc(canvas), sprite.surface, x, y, quadX, quadY, width, height, alpha=alpha, tint=tint)
 
-function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha())
-    Cairo.save(ctx)
+function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing)
+    if tint !== nothing
+        tinted = CairoImageSurface(zeros(UInt32, height, width), Cairo.FORMAT_ARGB32)
+        tintedCtx = CairoContext(tinted)
 
-    rectangle(ctx, x, y, width, height)
-    clip(ctx)
+        # Don't pass tint or alpha
+        drawImage(tintedCtx, sprite, 0, 0, quadX, quadY, width, height)
+        tinted = tintSurfaceMultiplicative(tinted, tint)
 
-    set_source_surface(ctx, sprite.surface, x - quadX - sprite.x, y - quadY - sprite.y)
-    pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
+        drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
 
-    paint_with_alpha(ctx, alpha)
+    else
+        Cairo.save(ctx)
 
-    restore(ctx)
+        rectangle(ctx, x, y, width, height)
+        clip(ctx)
+    
+        set_source_surface(ctx, sprite.surface, x - quadX - sprite.x, y - quadY - sprite.y)
+        pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
+    
+        paint_with_alpha(ctx, alpha)
+    
+        restore(ctx)
+    end
 end
 
-drawImage(canvas::Gtk.GtkCanvas, name::String, x::Number, y::Number; alpha::Number=getGlobalAlpha()) = drawImage(canvas, getSprite(name), x, y, alpha=alpha)
-drawImage(ctx::Cairo.CairoContext, name::String, x::Number, y::Number; alpha::Number=getGlobalAlpha()) = drawImage(ctx, getSprite(name), x, y, alpha=alpha)
-drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::Number, y::Number; alpha::Number=getGlobalAlpha()) = drawImage(Gtk.getgc(canvas), image, x, y, alpha=alpha)
+drawImage(canvas::Gtk.GtkCanvas, name::String, x::Number, y::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing, atlas::String="Gameplay") = drawImage(canvas, getSprite(name, atlas), x, y, alpha=alpha, tint=tint)
+drawImage(ctx::Cairo.CairoContext, name::String, x::Number, y::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing, atlas::String="Gameplay") = drawImage(ctx, getSprite(name, atlas), x, y, alpha=alpha, tint=tint)
+drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::Number, y::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing) = drawImage(Gtk.getgc(canvas), sprite, x, y, alpha=alpha, tint=tint)
 
-function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::Number, y::Number; alpha::Number=getGlobalAlpha())
-    drawImage(ctx, sprite, x, y, 0, 0, Int(sprite.width), Int(sprite.height), alpha=alpha)
+function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::Number, y::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing)
+    drawImage(ctx, sprite, x, y, 0, 0, Int(sprite.width), Int(sprite.height), alpha=alpha, tint=tint)
 end
 
-function drawSprite(ctx::Cairo.CairoContext, texture::String, x::Number, y::Number; sx::Number=1, sy::Number=1, rot::Number=0, alpha::Number=getGlobalAlpha())
-    sprite = getTextureSprite(texture)
+# TODO - Only scale 1/-1 works as intended
+function drawSprite(ctx::Cairo.CairoContext, texture::String, x::Number, y::Number; jx::Number=0.5, jy::Number=0.5, sx::Number=1, sy::Number=1, rot::Number=0, alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing, atlas::String="Gameplay")
+    sprite = getTextureSprite(texture, atlas)
 
     width, height = sprite.realWidth, sprite.realHeight
-    drawX, drawY = floor(Int, x - width / 2 - sprite.offsetX) , floor(Int, y - height / 2 - sprite.offsetY)
-
+    drawX, drawY = floor(Int, x - width * jx - sprite.offsetX) , floor(Int, y - height * jy - sprite.offsetY)
+    
     Cairo.save(ctx)
     
     scale(ctx, sx, sy)
-    translate(ctx, sx > 0? 0 : -2 * x, sy > 0? 0 : -2 * y)
+    translate(ctx, sx > 0 ? 0 : -2 * x, sy > 0 ? 0 : -2 * y)
     translate(ctx, drawX, drawY)
     rotate(ctx, rot)
-    drawImage(ctx, sprite, 0, 0, alpha=alpha)
+    drawImage(ctx, sprite, 0, 0, alpha=alpha, tint=tint)
 
     restore(ctx)
+end
+
+# Create image from matrix
+# Bitmap colors are 0 index based (false = 0, true = 1)
+function matrixToSurface(bitmap::Array{T, 2}, colors::Array{rgbaTupleType, 1}=rgbaTupleType[(0.0, 0.0, 0.0, 1.0), (1.0, 1.0, 1.0, 1.0)]) where T <: Integer
+    height, width = size(bitmap)
+    pixels = width * height
+
+    data = Array{Cairo.ARGB32, 1}(undef, pixels)
+
+    ptr = 1
+    for x in 1:width, y in 1:height
+        data[ptr] = Cairo.ARGB32(colors[bitmap[y, x] + 1]...)
+
+        ptr += 1
+    end
+
+    data = permutedims(reshape(data, (height, width)))
+
+    return CairoImageSurface(data)
+end
+
+# Image tinting, super inefficient
+
+function tintSurfaceAdditive(surface::Cairo.CairoSurface, color::rgbaTupleType, width::Number=width(surface), height::Number=height(surface))
+    for x in 1:floor(Int, width), y in 1:floor(Int, height)
+        pixelColor = argb32ToRGBATuple(surface.data[x, y]) ./ 255
+        surface.data[x, y] = normRGBA32Tuple2ARGB32(min.(1.0, pixelColor .+ color))
+    end
+
+    return surface
+end
+
+function tintSurfaceMultiplicative(surface::Cairo.CairoSurface, color::rgbaTupleType, width::Number=width(surface), height::Number=height(surface))
+    for x in 1:floor(Int, width), y in 1:floor(Int, height)
+        pixelColor = argb32ToRGBATuple(surface.data[x, y]) ./ 255
+        surface.data[x, y] = normRGBA32Tuple2ARGB32(pixelColor .* color)
+    end
+
+    return surface
 end
 
 # Shapes #
 
-colorTupleType = Union{NTuple{3, Float64}, NTuple{4, Float64}}
 function setSourceColor(ctx, c::colorTupleType)
-    return length(c) == 3? set_source_rgb(ctx, c...) : set_source_rgba(ctx, c...)
+    return length(c) == 3 ? set_source_rgb(ctx, c...) : set_source_rgba(ctx, c...)
 end
 
 function paintSurface(ctx::Cairo.CairoContext, c::colorTupleType=(1.0, 1.0, 1.0, 1.0))
@@ -188,7 +277,7 @@ end
 clearSurface(surface::Cairo.CairoSurface) = clearSurface(creategc(surface))
 
 # With border
-function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number, h::Number, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0))
+function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number, h::Number, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0, 0.0))
     Cairo.save(ctx)
 
     setSourceColor(ctx, fc)
@@ -202,12 +291,15 @@ end
 
 drawRectangle(ctx::Cairo.CairoContext, rect::Rectangle, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0)) = drawRectangle(ctx, rect.x, rect.y, rect.w, rect.h, fc, rc)
 
-function drawLines(ctx::Cairo.CairoContext, nodes::Array{T, 1}, sc::colorTupleType=(0.0, 0.0, 0.0); filled::Bool=false, fc::colorTupleType=sc) where T <: Tuple{Number, Number}
+function drawLines(ctx::Cairo.CairoContext, nodes::Array{T, 1}, sc::colorTupleType=(0.0, 0.0, 0.0); thickness::Integer=2, filled::Bool=false, fc::colorTupleType=sc) where T <: Tuple{Number, Number}
     if length(nodes) < 2
         return
     end
 
     Cairo.save(ctx)
+
+    set_antialias(ctx, thickness)
+    set_line_width(ctx, thickness)
 
     move_to(ctx, nodes[1]...)
 
@@ -225,6 +317,12 @@ function drawLines(ctx::Cairo.CairoContext, nodes::Array{T, 1}, sc::colorTupleTy
     restore(ctx)
 end
 
+function drawSimpleCurve(ctx::Cairo.CairoContext, curve::SimpleCurve, c::colorTupleType=(0.0, 0.0, 0.0); resolution::Integer=25, thickness::Integer=2)
+    points = [getPoint(curve, i / resolution) for i in 0:resolution]
+
+    drawLines(ctx, points, c, thickness=thickness)
+end
+
 function drawArc(ctx::Cairo.CairoContext, x::Number, y::Number, r::Number, alpha::Number, beta::Number, c::colorTupleType=(0.0, 0.0, 0.0))
     Cairo.save(ctx)
 
@@ -239,26 +337,8 @@ function drawCircle(ctx::Cairo.CairoContext, x::Number, y::Number, r::Number, c:
     drawArc(ctx, x, y, r, 0, 2 * pi, c)
 end
 
-# Make this prettier
-function centeredText(ctx::Cairo.CairoContext, s::String, x::Number, y::Number; fontsize::Number=8, fontface::String="Sans", c::colorTupleType=(0.0, 0.0, 0.0))
-    Cairo.save(ctx);
-
-    setSourceColor(ctx, c)
-    select_font_face(ctx, fontface, Cairo.FONT_SLANT_NORMAL, Cairo.FONT_WEIGHT_NORMAL)
-    set_font_size(ctx, fontsize)
-    extents = text_extents(ctx, s)
-    
-    drawX = x - (extents[3] / 2 + extents[1])
-    drawY = y - (extents[4] / 2 + extents[2])
-    
-    move_to(ctx, drawX, drawY)
-    show_text(ctx, s)
-
-    restore(ctx)
-end
-
 function drawArrow(ctx::Cairo.CairoContext, x1::Number, y1::Number, x2::Number, y2::Number, c::colorTupleType=(0.0, 0.0, 0.0); filled::Bool=true, headLength::Number=15, headTheta::Number=pi / 6)
-    theta = atan2(y2 - y1, x2 - x1)
+    theta = atan(y2 - y1, x2 - x1)
     len = sqrt((x1 - x2)^2 + (y1 - y2)^2)
 
     shaftLen = len - headLength

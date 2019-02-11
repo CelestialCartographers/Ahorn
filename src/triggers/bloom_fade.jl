@@ -2,19 +2,17 @@ module BloomFadeTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Bloom Fade" => Ahorn.EntityPlacement(
         Maple.BloomFadeTrigger,
         "rectangle"
     )
 )
 
-function editingOptions(trigger::Maple.Trigger)
-    if trigger.name == "bloomFadeTrigger"
-        return true, Dict{String, Any}(
-            "positionMode" => Maple.trigger_position_modes
-        )
-    end
+function Ahorn.editingOptions(trigger::Maple.BloomFadeTrigger)
+    return Dict{String, Any}(
+        "positionMode" => Maple.trigger_position_modes
+    )
 end
 
 end

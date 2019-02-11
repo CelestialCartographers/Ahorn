@@ -2,28 +2,58 @@ module Key
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Key" => Ahorn.EntityPlacement(
         Maple.Key
     ),
+    "Key (With Return)" => Ahorn.EntityPlacement(
+        Maple.Key,
+        "point",
+        Dict{String, Any}(),
+        function(entity::Maple.Key)
+            entity.data["nodes"] = [
+                (Int(entity.data["x"]) + 32, Int(entity.data["y"])),
+                (Int(entity.data["x"]) + 64, Int(entity.data["y"]))
+            ]
+        end
+    ),
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "key"
-        x, y = Ahorn.entityTranslation(entity)
+Ahorn.nodeLimits(entity::Maple.Key) = length(get(entity.data, "nodes", [])) == 2 ? (2, 2) : (0, 0)
 
-        return true, Ahorn.Rectangle(x - 8, y - 8, 16, 16)
+sprite = "collectables/key/idle00.png"
+
+function Ahorn.selection(entity::Maple.Key)
+    x, y = Ahorn.position(entity)
+
+    if haskey(entity.data, "nodes")
+        controllX, controllY = Int.(entity.data["nodes"][1])
+        endX, endY = Int.(entity.data["nodes"][2])
+
+        return [
+            Ahorn.getSpriteRectangle(sprite, x, y),
+            Ahorn.getSpriteRectangle(sprite, controllX, controllY),
+            Ahorn.getSpriteRectangle(sprite, endX, endY)
+        ]
+
+    else
+        return Ahorn.getSpriteRectangle(sprite, x, y)
     end
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "key"
-        Ahorn.drawSprite(ctx, "collectables/key/idle00.png", 0, 0)
+function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Key)
+    px, py = Ahorn.position(entity)
+    nodes = get(entity.data, "nodes", Tuple{Int, Int}[])
 
-        return true
+    for node in nodes
+        nx, ny = Int.(node)
+
+        Ahorn.drawArrow(ctx, px, py, nx, ny, Ahorn.colors.selection_selected_fc, headLength=6)
+        Ahorn.drawSprite(ctx, sprite, nx, ny)
+        px, py = nx, ny
     end
-
-    return false
 end
+
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Key, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, 0)
 
 end

@@ -2,7 +2,7 @@ module StopBoostTrigger
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Stop Boost" => Ahorn.EntityPlacement(
         Maple.StopBoostTrigger,
         "rectangle"

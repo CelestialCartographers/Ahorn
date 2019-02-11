@@ -1,12 +1,25 @@
 using LightXML
 
+struct AnimatedTile
+    name::String
+    path::String
+
+    origX::Number
+    origY::Number
+
+    posX::Number
+    posY::Number
+
+    delay::Number
+end
+
 struct Mask
     mask::Array{Int, 2}
 end
 
 # Convert mask string into a 3x3 matrix
 function Mask(s::String)
-    data = replace(replace(s, "-", ""), "x", "2")
+    data = replace(replace(s, "-" => ""), "x" => "2")
 
     return Mask(transpose(reshape(parse.(Int, (collect(data))), (3, 3))))
 end
@@ -27,6 +40,30 @@ function convertTileString(s::String)
     end
 
     return res
+end
+
+function loadAnimatedTilesXML(fn::String)
+    xdoc = parse_file(fn)
+    xroot = root(xdoc)
+
+    animatedTiles = AnimatedTile[]
+
+    for elem in child_elements(xroot)
+        push!(animatedTiles, AnimatedTile(
+            attribute(elem, "name"),
+            attribute(elem, "path"),
+
+            parseNumber(attribute(elem, "origX")),
+            parseNumber(attribute(elem, "origY")),
+
+            parseNumber(attribute(elem, "posX")),
+            parseNumber(attribute(elem, "posY")),
+
+            parseNumber(attribute(elem, "delay"))
+        ))
+    end
+
+    return animatedTiles
 end
 
 function loadTilesetXML(fn::String)
@@ -59,7 +96,7 @@ function loadTilesetXML(fn::String)
             continue
         end
 
-        currMasks = Tuple{Mask, Array{Tuple{Integer, Integer}, 1}}[]
+        currMasks = Tuple{Mask, Array{Tuple{Integer, Integer}, 1}, String}[]
 
         for c in child_elements(set)
             mask = attribute(c, "mask")
@@ -72,7 +109,12 @@ function loadTilesetXML(fn::String)
                 center[id] = convertTileString(tilesString)
 
             else
-                push!(currMasks, (Mask(mask), convertTileString(tilesString)))
+                sprites = attribute(c, "sprites")
+                push!(currMasks, (
+                    Mask(mask),
+                    convertTileString(tilesString),
+                    isa(sprites, String) ? sprites : ""
+                ))
             end
         end
 
@@ -96,6 +138,97 @@ TilerMeta(s::String) = TilerMeta(loadTilesetXML(s)...)
 
 fgTilerMeta = nothing
 bgTilerMeta = nothing
+animatedTilesMeta = nothing
+
+function loadFgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bool=false)
+    path = joinpath(storageDirectory, "XML", "ForegroundTiles.xml")
+
+    if side !== nothing && !loadDefault
+        meta = get(Dict{String, Any}, side.data, "meta")
+        metaPath = get(meta, "ForegroundTiles", "")
+
+        hasRoot, modRoot = getModRoot(fn)
+
+        if !isempty(metaPath) && hasRoot
+            path = joinpath(modRoot, metaPath)
+        end
+    end
+
+    try
+        global fgTilerMeta = TilerMeta(path)
+    
+    catch e
+        if !loadDefault
+            println(Base.stderr, "Failed to load custom ForegroundTiles XML")
+            println(Base.stderr, e)
+
+            loadFgTilerMeta(side, fn, true)
+        end
+    end
+end
+
+function loadBgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bool=false)
+    path = joinpath(storageDirectory, "XML", "BackgroundTiles.xml")
+
+    if side !== nothing && !loadDefault
+        meta = get(Dict{String, Any}, side.data, "meta")
+        metaPath = get(meta, "BackgroundTiles", "")
+
+        hasRoot, modRoot = getModRoot(fn)
+
+        if !isempty(metaPath) && hasRoot
+            path = joinpath(modRoot, metaPath)
+        end
+    end
+
+    try
+        global bgTilerMeta = TilerMeta(path)
+
+    catch e
+        if !loadDefault
+            println(Base.stderr, "Failed to load custom BackgroundTiles XML")
+            println(Base.stderr, e)
+
+            loadBgTilerMeta(side, fn, true)
+        end
+    end
+end
+
+function loadAnimatedTilesMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bool=false)
+    path = joinpath(storageDirectory, "XML", "AnimatedTiles.xml")
+
+    if side !== nothing && !loadDefault
+        meta = get(Dict{String, Any}, side.data, "meta")
+        metaPath = get(meta, "AnimatedTiles", "")
+
+        hasRoot, modRoot = getModRoot(fn)
+
+        if !isempty(metaPath) && hasRoot
+            path = joinpath(modRoot, metaPath)
+        end
+    end
+
+    try
+        global animatedTilesMeta = loadAnimatedTilesXML((path))
+
+    catch e
+        if !loadDefault
+            println(Base.stderr, "Failed to load custom AnimatedTiles XML")
+            println(Base.stderr, e)
+
+            loadAnimatedTilesMeta(side, fn, true)
+        end
+    end
+end
+
+function loadXMLMeta()
+    side = loadedState.side
+    filename = loadedState.filename
+
+    loadFgTilerMeta(side, filename)
+    loadBgTilerMeta(side, filename)
+    loadAnimatedTilesMeta(side, filename)
+end
 
 function getTile(tiles::Tiles, x::Integer, y::Integer)
     return get(tiles.data, (y, x), ' ')
@@ -128,26 +261,26 @@ end
 function getMaskQuads(x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta)
     value = tiles.data[y, x]
 
-    masks = get(meta.masks, value, Tuple{Mask, Array{Tuple{Integer, Integer}, 1}}[])
+    masks = get(meta.masks, value, Tuple{Mask, Array{Tuple{Integer, Integer}, 1}, String}[])
     ignore = get(meta.ignores, value, Char[])
 
     adjacent = get(tiles.data, (y - 1:y + 1, x - 1:x + 1), value)
     adjacent = [checkTile(value, target, ignore) for target in adjacent]
 
     for data in masks
-        mask, quads = data
+        mask, quads, sprites = data
         
         if checkMask(adjacent, mask)
-            return quads
+            return quads, sprites
         end
     end
 
     if checkPadding(tiles, x, y)
-        return get(meta.paddings, value, Tuple{Integer, Integer}[(0, 0)])
+        return get(meta.paddings, value, Tuple{Integer, Integer}[(0, 0)]), ""
         
     else
-        return get(meta.centers, value, Tuple{Integer, Integer}[(0, 0)])
+        return get(meta.centers, value, Tuple{Integer, Integer}[(0, 0)]), ""
     end
     
-    return (5, 12)
+    return Tuple{Integer, Integer}[(5, 12)], ""
 end

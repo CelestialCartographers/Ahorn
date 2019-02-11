@@ -4,7 +4,7 @@
 
 Ahorn is a visual level maker and editor for the game Celeste. It allows editing map binaries, creating new ones, adding rooms, and filling the rooms with anything your heart desires (as long as what your heart desires is possible within the realms of the game). The generated map binaries can be loaded in the stock game or using [Everest](https://github.com/EverestAPI/Everest). For usage without Everest, you can replace a map in `Content/Maps` (remember backups), otherwise, you can place it in `Mods/<yourmodname>/Maps` with Everest and use the custom chapter loading. Using Everest also enables other features like instantly reloading the map using F5 or teleporting to a certain room in the game by clicking on it in Ahorn.
 
-The program is currently in an alpha state, many things are still missing and it is under active development. If you spot something that is missing, it will most likely be added some time in the near future. If you spot a bug or the program crashes, please report it.
+The program is still in an early state, some things are still missing and it is under active development. If you spot something that is missing, it will most likely be added some time in the near future. If you spot a bug or the program crashes, please report it.
 
 Ahorn is based on [Maple](https://github.com/CelestialCartographers/Maple), a thin wrapper around the Celeste map binary format that allows you to generate maps using Julia.
 
@@ -14,11 +14,11 @@ This project is an unofficial map maker and level editor, it is merely a fan pro
 
 ### Windows auto-installer
 
-An easy installer file is available for Windows users. [**Check `#mod_readme` on Discord**](https://discord.gg/PN9f3xh) for a link to the latest installer.
+An easy installer file is available for Windows users. [**Check `#modding_welcome` on Discord**](https://discord.gg/PN9f3xh) for a link to the latest installer.
 
 ### Cross-platform manual installation
 
-First, [install Julia if you haven't already](https://julialang.org/downloads/). You need Julia 0.6.
+First, [install Julia if you haven't already](https://julialang.org/downloads/). You need Julia 1.1, but any newer 1.x version should work as well.
 
 The easiest way to install Ahorn would be to download [the installer `install_ahorn.jl`](https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/install_ahorn.jl) (Right-click the link and press "Save as...") and run it with Julia. Just follow its instructions. Ahorn and Maple are installed using Julia's `Pkg` system. The installer will also download and install required dependencies, so grab yourself a glass of juice while you wait.
 ```sh
@@ -26,9 +26,9 @@ The easiest way to install Ahorn would be to download [the installer `install_ah
 ```
 Upon launching the program for the first time, Ahorn will ask you to select the directory of your celeste installation. It needs Celeste to be installed to be able to extract textures from it, since we are not including them in the program.
 
-The config file can be found in `~/.ahorn`.
+The config file can be found in `%localappdata%/Ahorn` on Windows, otherwise in `~/.config/Ahorn`.
 
-Ahorn and Maple can be updated from within Ahorn, via `Help->Check for Updates`, or like any Julia package using `Pkg.update()`. To uninstall Ahorn, run `Pkg.rm("Ahorn")`, `Pkg.rm("Maple")` and then `Pkg.resolve()` in Julia.
+Ahorn and Maple can be updated from within Ahorn, via `Help->Check for Updates`, or like any Julia package using `Pkg.update()`. To uninstall Ahorn, run `rm Ahorn` and then `gc` in the Julia Package REPL activated to `%localappdata%/Ahorn/env` on Windows or `~/.config/Ahorn/env` otherwise.
 
 ## Usage
 
@@ -36,29 +36,35 @@ The possible actions in Ahorn are listed on the right, just select one to use it
 Hold right click to move around the map. Left click is your main way to place an object or select something. Tools like rectangle or line require holding left click while moving across the screen. Scroll to zoom.
 
 Ahorn supports a couple of keybinds and special mouse functionality, with more to come. The following list might not be comprehensive.
- - q, w: shrink / grow width on selected
- - a, s: shrink / grow height on selected
- - arrow keys: move selected
- - left mouse button over selected: dragging selected
- - holding ctrl + any of the above: use 1 as step size instead of 8 for more fine-grained placements
- - shift selecting keeps previous selection as well
+ - Ctrl + t: New room
+ - Ctrl + shift + t: Configure current room
+ - Ctrl + n: New map
+ - Ctrl + m: Metadata window
+ - Ctrl + shift + alt + s: Open settnings window
+ - q, e: shrink / grow width on selected
+ - a, d: shrink / grow height on selected
+ - Arrow keys: move selected
+ - Left mouse button over selected: dragging selected
+ - Holding ctrl + any of the above: use 1 as step size instead of 8 for more fine-grained placements
+ - Shift selecting keeps previous selection as well
  - Ctrl + f: Focus search field
  - Ctrl + c: Copy selection
  - Ctrl + x: Cut selection
  - Ctrl + v: Paste selection
  - Ctrl + z: Undo changes
  - Ctrl + shift + z: Redo changes
+ - Esc/Enter: Exit search field
  - v, h: vertical / horizontal mirror of decal
  - delete: delete the given node / target
- - n: add node to target (after the targeted node / entity)
- - middle click: pick what's currently under the cursor in the selected layer
+ - n/+: add node to target (after the targeted node / entity)
+ - Middle click: pick what's currently under the cursor in the selected layer
  - Ctrl + number key row 0-9: shortcuts to select tools
- - alt + arrow keys: move a room
- - alt + delete: delete room
- - double click layer name in selection menu: toggle visibility
- - right click entity / trigger with placements / selection tool: open properties menu
- - double click with selections selects all similar targets
- - holding ctrl when doing the above restricts it to targets in a more strict manner
+ - Alt + arrow keys: move a room
+ - Alt + delete: delete room
+ - Double click layer name in selection menu: toggle visibility
+ - Right click entity / trigger with placements / selection tool: open properties menu
+ - Double click with selections selects all similar targets
+ - Holding ctrl when doing the above restricts it to targets in a more strict manner
 
  With Everest installed and Celeste running in debug mode, it supports some more:
  - ctrl + alt + leftclick on a room in Ahorn: teleport to that room in the game
@@ -103,7 +109,7 @@ That's not a question, but please report any bug you find!
 
 **What will you do once the official map maker is out?**
 
-Whenever that happens, we might just continue like before; it might well be that the official editor will not be quite as powerful as Ahorn tries to be. We'll see.
+Whenever that happens, we might just continue like before; it might well be that the official editor will not be quite as powerful as Ahorn tries to be. It might not ever exist. We'll see.
 
 **Why are you writing this in Julia?**
 

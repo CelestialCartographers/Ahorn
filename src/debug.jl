@@ -1,8 +1,10 @@
 module debug
 
-using ..Ahorn
+using ..Ahorn, Maple
 
 config = Dict{String, Any}()
+
+const defaultIgnoredTooltipAttrs = String["x", "y", "width", "height", "originX", "originY", "nodes"]
 
 function setConfig(fn::String, buffertime::Int=0)
     global config = Ahorn.loadConfig(fn, buffertime)
@@ -24,7 +26,7 @@ function reloadTools!()
     Ahorn.loadModule.(Ahorn.loadedTools)
     Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedTools, "tools")
     Ahorn.changeTool!(Ahorn.loadedTools[1])
-    Ahorn.select!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
+    Ahorn.selectRow!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
 
     return true
 end
@@ -37,9 +39,19 @@ function reloadEntities!()
     Ahorn.registerPlacements!(Ahorn.entityPlacements, Ahorn.loadedEntities)
 
     Ahorn.getLayerByName(dr.layers, "entities").redraw = true
-    Ahorn.select!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
+    Ahorn.selectRow!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
+
+    Ahorn.fillPlacementCache!(Ahorn.entityPlacementsCache, Ahorn.entityPlacements)
 
     empty!(Ahorn.entityNameLookup)
+
+    return true
+end
+
+function reloadEffects!()
+    Ahorn.loadModule.(Ahorn.loadedEffects)
+    Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedEffects, "effects")
+    Ahorn.registerPlacements!(Ahorn.effectPlacements, Ahorn.loadedEffects)
 
     return true
 end
@@ -52,19 +64,21 @@ function reloadTriggers!()
     Ahorn.registerPlacements!(Ahorn.triggerPlacements, Ahorn.loadedTriggers)
 
     Ahorn.getLayerByName(dr.layers, "triggers").redraw = true
-    Ahorn.select!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
+    Ahorn.selectRow!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
+
+    Ahorn.fillPlacementCache!(Ahorn.triggerPlacementsCache, Ahorn.triggerPlacements)
 
     return true
 end
 
-function clearMapDrawingCache!(map::Ahorn.Maple.Map=Ahorn.loadedState.map)
+function clearMapDrawingCache!(map::Maple.Map=Ahorn.loadedState.map)
     Ahorn.deleteDrawableRoomCache(map)
     Ahorn.draw(Ahorn.canvas)
 
     return true
 end
 
-function forceDrawWholeMap!(map::Ahorn.Maple.Map=Ahorn.loadedState.map)
+function forceDrawWholeMap!(map::Maple.Map=Ahorn.loadedState.map)
     ctx = Ahorn.Gtk.getgc(Ahorn.canvas)
 
     for room in map.rooms
@@ -76,6 +90,53 @@ function forceDrawWholeMap!(map::Ahorn.Maple.Map=Ahorn.loadedState.map)
     Ahorn.draw(Ahorn.canvas)
 
     return true
+end
+
+function checkTooltipCoverage(ignore::Array{String, 1}=defaultIgnoredTooltipAttrs)
+    missing = Dict{String, Array{String, 1}}()
+
+    for (cache, placements) in ((Ahorn.entityPlacementsCache, Ahorn.entityPlacements), (Ahorn.triggerPlacementsCache, Ahorn.triggerPlacements))
+        for (name, placement) in placements
+            target = Ahorn.getCachedPlacement!(cache, placements, name)
+            key = isa(target, Maple.Entity) ? "entities" : "triggers"
+            tooltips = get(Ahorn.langdata, ["placements", key, target.name, "tooltips"])
+
+            if !haskey(missing, target.name)
+                missing[target.name] = String[]
+            end
+
+            for (attr, value) in target.data
+                if !(attr in missing[target.name]) && !haskey(tooltips, Symbol(attr)) && !(attr in ignore)
+                    push!(missing[target.name], attr)
+                end
+            end
+        end
+    end
+
+    println("-- Missing Tooltips --")
+    
+    for (name, attrs) in missing
+        if !isempty(attrs)
+            println(name)
+        end
+
+        for attr in attrs
+            println("    $attr")
+        end
+    end
+end
+
+function reloadLangdata()
+    return Ahorn.loadLangfile()
+end
+
+# Put on a method definition to time every call of it.
+macro timemachine(expr)
+    @assert expr.head in (:function, :(=))
+    Expr(expr.head, expr.args[1], quote
+        println("Method call: ", $(string(expr.args[1])))
+        @time $(expr.args[2])
+    end) |> esc
 end
 
 end

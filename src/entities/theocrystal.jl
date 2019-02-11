@@ -2,28 +2,20 @@ module TheoCrystal
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Theo Crystal" => Ahorn.EntityPlacement(
         Maple.TheoCrystal
     )
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "theoCrystal"
-        x, y = Ahorn.entityTranslation(entity)
+sprite = "characters/theoCrystal/idle00.png"
 
-        return true, Ahorn.Rectangle(x - 10, y - 20, 20, 20)
-    end
+function Ahorn.selection(entity::Maple.TheoCrystal)
+    x, y = Ahorn.position(entity)
+
+    return Ahorn.getSpriteRectangle(sprite, x, y - 10)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "theoCrystal"
-        Ahorn.drawSprite(ctx, "characters/theoCrystal/idle00.png", 0, -10)
-
-        return true
-    end
-
-    return false
-end
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.TheoCrystal, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, -10)
 
 end

@@ -1,6 +1,6 @@
 module Bucket
 
-using ..Ahorn
+using ..Ahorn, Maple
 
 displayName = "Bucket"
 group = "Brushes"
@@ -14,39 +14,13 @@ material = '0'
 bucketPosition = nothing
 bucketBrush = nothing
 
-function findFill(tiles::Array{Char, 2}, x::Number, y::Number)
-    target = tiles[y, x]
-    stack = Tuple{Number, Number}[(x, y)]
-
-    h, w = size(tiles)
-
-    res = fill(false, (h, w))
-
-    while length(stack) > 0
-        tx, ty = pop!(stack)
-
-        if 1 <=tx <= w && 1 <= ty <= h && !res[ty, tx]
-            if target == tiles[ty, tx]
-                res[ty, tx] = true
-
-                push!(stack, (tx - 1, ty))
-                push!(stack, (tx, ty - 1))
-                push!(stack, (tx + 1, ty))
-                push!(stack, (tx, ty + 1))
-            end
-        end
-    end
-
-    return res
-end
-
-function drawFill(x::Number, y::Number, tiles::Ahorn.Maple.Tiles, layer::Ahorn.Layer)
+function drawFill(x::Number, y::Number, tiles::Maple.Tiles, layer::Ahorn.Layer)
     h, w = size(tiles.data)
 
     if 1 <=x <= w && 1 <= y <= h
         ctx = Ahorn.creategc(layer.surface)
 
-        pixels, ox, oy = Ahorn.shrinkMatrix(findFill(tiles.data, x, y))
+        pixels, ox, oy = Ahorn.shrinkMatrix(Ahorn.findFill(tiles.data, x, y))
         global bucketBrush = Ahorn.Brush("Bucket", pixels, (ox, oy))
 
         Ahorn.drawBrush(bucketBrush, layer, 1, 1)
@@ -66,8 +40,8 @@ function applyFill!(x::Number, y::Number, layer::Ahorn.Layer, material::Char)
     if bucketBrush !== nothing
         Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Bucket ($material)", Ahorn.loadedState.room))
 
+        Maple.updateTileSize!(Ahorn.loadedState.room, '0', '0')
         tiles = Ahorn.roomTiles(layer, Ahorn.loadedState.room)
-
         Ahorn.applyBrush!(bucketBrush, tiles, material, 1, 1)
     end
 end
@@ -112,6 +86,11 @@ function materialSelected(list::Ahorn.ListContainer, selected::String)
     layerName = Ahorn.layerName(targetLayer)
     Ahorn.persistence["brushes_material_$(layerName)"] = tileNames[selected]
     global material = tileNames[selected]
+end
+
+function materialFiltered(list::Ahorn.ListContainer)
+    tileNames = Ahorn.tileNames(targetLayer)
+    Ahorn.selectRow!(list, row -> row[1] == tileNames[material])
 end
 
 function layersChanged(layers::Array{Ahorn.Layer, 1})

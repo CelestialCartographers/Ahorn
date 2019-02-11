@@ -1,6 +1,6 @@
 include("brush.jl")
 
-loadedTools = joinpath.(abs"tools", readdir(abs"tools"))
+const loadedTools = joinpath.(abs"tools", readdir(abs"tools"))
 loadModule.(loadedTools)
 currentTool = nothing
 
@@ -29,33 +29,37 @@ function updateToolDisplayNames!(tools::Array{String, 1})
     )
 end
 
-subtoolList = generateTreeView("Mode", [], sortable=false)
-connectChanged(subtoolList, function(list::ListContainer, selected::String)
+subtoolList = generateTreeView("Mode", Tuple{String}[], sortable=false)
+connectChanged(subtoolList) do list::ListContainer, selected::String
     eventToModule(currentTool, "subToolSelected", list, selected)
-end)
+end
 
-layersList = generateTreeView(("Layer", "Visible"), Tuple{String, Bool}[], sortable=false)
-connectChanged(layersList, function(list::ListContainer, selected::String, visible::Bool)
+layersList = generateTreeView(("Layer",), Tuple{String}[], sortable=false)
+connectChanged(layersList) do list::ListContainer, selected::String
     eventToModule(currentTool, "layerSelected", list, selected)
-    eventToModule(currentTool, "layerSelected", list, selected, visible)
+    eventToModule(currentTool, "layerSelected", list, selected)
     eventToModule(currentTool, "layerSelected", list, materialList, selected)
-    eventToModule(currentTool, "layerSelected", list, materialList, selected, visible)
-end)
-connectDoubleClick(layersList, function(list::ListContainer, selected::String, visible::Bool)
-    dr = getDrawableRoom(loadedState.map, loadedState.room)
-    layer = getLayerByName(dr.layers, selected)
-    layer.visible = !visible
-    dr.rendering.redraw = true
+    eventToModule(currentTool, "layerSelected", list, materialList, selected)
 
-    names = String[row[1] for row in getListData(layersList)]
-    updateLayerList!(names, row -> row[1] == selected)
-    draw(canvas)
-end)
+    updateMaterialFilter!(selected)
+end
 
-materialList = generateTreeView("Material", [], sortable=false)
-connectChanged(materialList, function(list::ListContainer, selected::String)
+materialList = generateTreeView("Material", Tuple{String}[], sortable=false)
+connectChanged(materialList) do list::ListContainer, selected::String
     eventToModule(currentTool, "materialSelected", list, selected)
-end)
+end
+
+function updateMaterialFilter!(layer::String)
+    if get(config, "keep_search_text_per_layer", true)
+        # Force event to trigger by first changing the text to blank
+        searchText = get(persistence, "material_search_$layer", "")
+        Gtk.GLib.@sigatom GAccessor.text(materialFilterEntry, "")
+        Gtk.GLib.@sigatom GAccessor.text(materialFilterEntry, searchText)
+    
+    else
+        Gtk.GLib.@sigatom GAccessor.text(materialFilterEntry, "")
+    end
+end
 
 function changeTool!(tool::String)
     if loadedState.map !== nothing && loadedState.room !== nothing
@@ -98,11 +102,11 @@ function getSortedToolNames(tools::Array{String, 1})
     return String[r[2] for r in res]
 end
 
-toolList = generateTreeView("Tool", String[], sortable=false)
-connectChanged(toolList, function(list::ListContainer, selected::String)
+toolList = generateTreeView("Tool", Tuple{String}[], sortable=false)
+connectChanged(toolList) do list::ListContainer, selected::String
     debug.log("Selected $selected", "TOOLS_SELECTED")
     changeTool!(selected)
-end)
+end
 
 function updateToolList!(list::ListContainer)
     updateTreeView!(list, getSortedToolNames(loadedTools), 1)
@@ -122,7 +126,7 @@ function updateSelectionByCoords!(map::Map, ax::Number, ay::Number)
     room = Maple.getRoomByCoords(map, ax, ay)
 
     if room != false && room.name != loadedState.roomName
-        select!(roomList, row -> row[1] == room.name)
+        selectRow!(roomList, row -> row[1] == room.name)
     
         return true
     end
@@ -130,13 +134,16 @@ function updateSelectionByCoords!(map::Map, ax::Number, ay::Number)
     return false
 end
 
-function selectMaterialList!(m::String)
-    select!(materialList, row -> row[1] == m)
+function notifyMaterialsFiltered(text::String)
+    eventToModule(currentTool, "materialFiltered", materialList)
+    eventToModule(currentTool, "materialFiltered", materialList, text)
 end
 
-function setMaterialList!(materials::Array{String, 1}, selector::Union{Function, Integer, Void}=nothing)
-    Gtk.GLib.@sigatom setproperty!(materialFilterEntry, :text, "")
+function selectMaterialList!(m::String)
+    selectRow!(materialList, row -> row[1] == m)
+end
 
+function setMaterialList!(materials::Array{String, 1}, selector::listViewSelectUnion=nothing)
     if selector !== nothing
         updateTreeView!(materialList, materials, selector)
     
@@ -147,27 +154,19 @@ end
 
 function selectLayer!(layers::Array{Layer, 1}, layer::String, default::String="")
     newLayer = getLayerByName(layers, layer, default)
-    select!(layersList, row -> row[1] == newLayer.name)
+    selectRow!(layersList, row -> row[1] == newLayer.name)
 
     return newLayer
 end
 
-selectLayer!(layers::Array{Layer, 1}, layer::Union{Layer, Void}, default::String="") = selectLayer!(layers, layerName(layer), default)
+selectLayer!(layers::Array{Layer, 1}, layer::Union{Layer, Nothing}, default::String="") = selectLayer!(layers, layerName(layer), default)
 
-function updateLayerList!(names::Array{String, 1}, selector::Union{Function, Integer, Void}=nothing)
-    data = Tuple{String, Bool}[]
-    dr = getDrawableRoom(loadedState.map, loadedState.room)
-
-    for name in names
-        layer = getLayerByName(dr.layers, name)
-        push!(data, (name, layer.visible || layer.dummy))
-    end
-
+function updateLayerList!(names::Array{String, 1}, selector::listViewSelectUnion=getSelected(layersList))
     if selector !== nothing
-        updateTreeView!(layersList, data, selector)
+        updateTreeView!(layersList, names, selector)
     
     else
-        updateTreeView!(layersList, data)
+        updateTreeView!(layersList, names)
     end
 end
 
@@ -224,7 +223,7 @@ function getMouseEventName(event::eventMouse, downEvent::eventMouse)
     handle = mouseHandlers[event.button]
 
     if !isempty(prefix)
-        return prefix * titlecase(handle)
+        return prefix * uppercasefirst(handle)
     
     else
         return handle
@@ -277,48 +276,73 @@ function handleMotion(event::eventMouse, camera::Camera)
     eventToModule(currentTool, "mouseMotionAbs", ax, ay)
 end
 
-function handleRoomModifications(event::eventKey)
-    if modifierAlt() && loadedState.room !== nothing && loadedState.map !== nothing
-        if haskey(moveDirections, event.keyval)
-            History.addSnapshot!(History.RoomSnapshot("Room Movement", loadedState.room))
+function toolChangeCallback(index)
+    sortedToolNames = getSortedToolNames(loadedTools)
+    if length(sortedToolNames) >= index
+        changeTool!(sortedToolNames[index])
+        selectRow!(toolList, index)
 
-            ox, oy = moveDirections[event.keyval] .* 8
-            loadedState.room.position = loadedState.room.position .+ (ox, oy)
-            updateTreeView!(roomList, getTreeData(loadedState.map), row -> row[1] == loadedState.room.name)
-
-            draw(canvas)
-
-            return true
-
-        elseif event.keyval == Gtk.GdkKeySyms.Delete
-            index = findfirst(loadedState.map.rooms, loadedState.room)
-
-            if index != 0 && ask_dialog("Are you sure you want to delete this room? '$(loadedState.room.name)'", window)
-                History.addSnapshot!(History.MapSnapshot("Room Deletion", loadedState.map))
-
-                deleteat!(loadedState.map.rooms, index)
-                updateTreeView!(roomList, getTreeData(loadedState.map))
-                draw(canvas)
-            end
-        end
+        return true
     end
 
     return false
 end
 
-debugKeys = Dict{Number, Tuple{String, Function}}(
-    Gtk.GdkKeySyms.F1 => ("Reloading tools", debug.reloadTools!),
-    Gtk.GdkKeySyms.F2 => ("Reloading entities and triggers", () -> debug.reloadEntities!() && debug.reloadTriggers!()),
-    Gtk.GdkKeySyms.F3 => ("Deleting room render caches", debug.clearMapDrawingCache!),
+function roomMoveCallback(direction::String)
+    keyval = getfield(Gtk.GdkKeySyms, Symbol(direction))
+    History.addSnapshot!(History.RoomSnapshot("Room Movement", loadedState.room))
+    
+    ox, oy = moveDirections[keyval] .* 8
+    loadedState.room.position = loadedState.room.position .+ (ox, oy)
+    updateTreeView!(roomList, getTreeData(loadedState.map), row -> row[1] == loadedState.room.name, updateByReplacement=true)
+
+    draw(canvas)
+
+    return true
+end
+
+function deleteRoomCallback(widget=nothing)
+    index = findfirst(isequal(loadedState.room), loadedState.map.rooms)
+    
+    if index !== nothing && ask_dialog("Are you sure you want to delete this room? '$(loadedState.room.name)'", window)
+        History.addSnapshot!(History.MapSnapshot("Room Deletion", loadedState.map))
+
+        deleteat!(loadedState.map.rooms, index)
+        updateTreeView!(roomList, getTreeData(loadedState.map), updateByReplacement=true)
+        draw(canvas)
+
+        return true
+    end
+
+    return false
+end
+
+debugHotkeys = Tuple{Hotkey, String}[
+    (Hotkey("F1", debug.reloadTools!), "Reloading tools"),
+    (Hotkey("F2", () -> debug.reloadEntities!() && debug.reloadTriggers!()), "Reloading entities and triggers"),
+    (Hotkey("F3", debug.clearMapDrawingCache!), "Deleting room render caches"),
+]
+
+# 10 is ctrl + 0
+toolChangeHotkeys = Hotkey[
+    Hotkey("ctrl + $(i % 10)", () -> toolChangeCallback(i)) for i in 1:10
+]
+
+roomModificationHotkeys = vcat(
+    Hotkey[Hotkey("alt + $key", () -> roomMoveCallback(key)) for key in String["Left", "Up", "Right", "Down"]],
+    Hotkey[Hotkey("alt + Delete", deleteRoomCallback)]
 )
 
 function handleDebugKeys(event::eventKey)
     if get(debug.config, "ENABLE_HOTSWAP_HOTKEYS", false)
-        if haskey(debugKeys, event.keyval)
-            desc, func = debugKeys[event.keyval]
-            println("! $desc")
+        for (hotkey, desc) in debugHotkeys
+            if active(hotkey, event)
+                println("! $desc")
 
-            return func()
+                callback(hotkey)
+
+                return true
+            end
         end
     end
 
@@ -326,31 +350,23 @@ function handleDebugKeys(event::eventKey)
 end
 
 function handleHotkeyToolChange(event::eventKey)
-    if modifierControl() 
-        if Int('0') <= event.keyval <= Int('9')
-            index = event.keyval == Int('0')? 10 : event.keyval - Int('0')
+    return callbackFirstActive(toolChangeHotkeys, event)
+end
 
-            sortedToolNames = getSortedToolNames(loadedTools)
-            if length(sortedToolNames) >= index
-                changeTool!(sortedToolNames[index])
-                select!(toolList, index)
-
-                return true
-            end
-        end
-
-        return false
+function handleRoomModifications(event::eventKey)
+    if loadedState.room !== nothing && loadedState.map !== nothing
+        return callbackFirstActive(roomModificationHotkeys, event)
     end
 
     return false
 end
 
-function handleKeyPressed(event::eventKey)
+function handleKeyPressed(event::eventKey, sendToToolModules::Bool=true)
     # Handle in this order, until one of them consumes the event
     return handleDebugKeys(event) ||
         handleRoomModifications(event) ||
         handleHotkeyToolChange(event) ||
-        eventToModule(currentTool, "keyboard", event)
+        sendToToolModules && eventToModule(currentTool, "keyboard", event)
 end
 
 function handleKeyReleased(event::eventKey)
@@ -366,8 +382,4 @@ function handleRoomChanged(map::Map, room::Room)
     eventToModule(currentTool, "roomChanged", room)
     eventToModule(currentTool, "roomChanged", map, room)
     eventToModule(currentTool, "layersChanged", dr.layers)
-
-    # Update visibility col
-    names = String[row[1] for row in getListData(layersList)]
-    updateLayerList!(names)
 end

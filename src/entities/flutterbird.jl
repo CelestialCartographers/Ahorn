@@ -2,27 +2,32 @@ module FlutterBird
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Flutterbird" => Ahorn.EntityPlacement(
         Maple.Flutterbird
     ),
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "flutterbird"
-        x, y = Ahorn.entityTranslation(entity)
+sprite = "scenery/flutterbird/idle00.png"
 
-        return true, Ahorn.Rectangle(x - 4, y - 8, 8, 8)
-    end
+colors = [
+    (137, 251, 255, 255) ./ 255,
+    (240, 252, 108, 255) ./ 255,
+    (244, 147, 255, 255) ./ 255,
+    (147, 186, 255, 255) ./ 255
+]
+
+function Ahorn.selection(entity::Maple.Flutterbird)
+    x, y = Ahorn.position(entity)
+
+    return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=1.0)
 end
 
-# TODO - Tint later when possible
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "flutterbird"
-        Ahorn.drawSprite(ctx, "scenery/flutterbird/idle00.png", 0, -5)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Flutterbird, room::Maple.Room)
+    rng = Ahorn.getSimpleEntityRng(entity)
+    color = rand(rng, colors)
 
-        return true
-    end
+    Ahorn.drawSprite(ctx, sprite, 0, 0, jx=0.5, jy=1.0, tint=color)
 end
 
 end

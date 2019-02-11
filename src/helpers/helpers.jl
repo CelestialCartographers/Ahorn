@@ -1,0 +1,64 @@
+# Prefer to parse as integer, parse as float if not
+function parseNumber(n::String)
+    try
+        return parse(Int, n)
+
+    catch ArgumentError
+        return parse(Float64, n)
+    end
+end
+
+# Base.isnumber doesn't cover floats
+function isNumber(n::String)
+    try
+        parseNumber(n)
+
+        return true
+
+    catch ArgumentError
+        return false
+    end
+end
+
+function hasExt(fn::String, ext::String, ignorecase::Bool=Sys.iswindows())
+    path, fnext = splitext(fn)
+
+    if ignorecase
+        return lowercase(fnext) == lowercase(ext)
+
+    else
+        return fnext == ext
+    end
+end
+
+function humanizeVariableName(s::String) 
+    text = replace(s, "_" => " ")
+    text = replace(s,  "/" => " ")
+
+    prevUpper = false
+    res = Char[]
+    for c in text
+        thisUpper = isuppercase(c)
+        if thisUpper && !prevUpper
+            push!(res, ' ')
+        end
+
+        prevUpper = thisUpper
+
+        push!(res, c)
+    end
+
+    return titlecase(strip(join(res)))
+end
+
+function useIfApplicable(f, args...)
+    if applicable(f, args...)
+        f(args...)
+
+        return true
+    end
+
+    return false
+end
+
+lerp(n::Number, m::Number, a::Number) = n + (n - m) * a

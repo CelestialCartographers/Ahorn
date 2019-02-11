@@ -3,8 +3,8 @@ module Door
 using ..Ahorn, Maple
 
 textures = ["wood", "metal"]
-placements = Dict{String, Ahorn.EntityPlacement}(
-    "Door ($(titlecase(texture)))" => Ahorn.EntityPlacement(
+const placements = Ahorn.PlacementDict(
+    "Door ($(uppercasefirst(texture)))" => Ahorn.EntityPlacement(
         Maple.Door,
         "point",
         Dict{String, Any}(
@@ -13,37 +13,26 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ) for texture in textures
 )
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "door"
-        return true, Dict{String, Any}(
-            "type" => textures
-        )
-    end
+function doorSprite(entity::Maple.Door)
+    variant = get(entity.data, "type", "wood")
+
+    return variant == "wood" ? "objects/door/door00.png" : "objects/door/metaldoor00.png"
 end
 
-function selection(entity::Maple.Entity)
-    if entity.name == "door"
-        x, y = Ahorn.entityTranslation(entity)
+Ahorn.editingOptions(entity::Maple.Door) = Dict{String, Any}(
+    "type" => textures
+)
 
-        return true, Ahorn.Rectangle(x - 2, y - 24, 4, 24)
-    end
+function Ahorn.selection(entity::Maple.Door)
+    x, y = Ahorn.position(entity)
+    sprite = doorSprite(entity)
+
+    return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=1.0)
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "door"
-        variant = get(entity.data, "type", "wood")
-
-        if variant == "wood"
-            Ahorn.drawSprite(ctx, "objects/door/door00.png", 0, -12)
-
-        else
-            Ahorn.drawSprite(ctx, "objects/door/metaldoor00.png", 0, -12)
-        end
-
-        return true
-    end
-
-    return false
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Door, room::Maple.Room)
+    sprite = doorSprite(entity)
+    Ahorn.drawSprite(ctx, sprite, 0, 0, jx=0.5, jy=1.0)
 end
 
 end

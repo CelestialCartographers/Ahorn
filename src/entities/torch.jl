@@ -2,7 +2,7 @@ module Torch
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Torch" => Ahorn.EntityPlacement(
         Maple.Torch,
         "point",
@@ -19,29 +19,22 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "torch"
-        x, y = Ahorn.entityTranslation(entity)
-
-        return true, Ahorn.Rectangle(x - 6, y - 6, 12, 12)
-    end
+function torchSprite(entity::Maple.Torch)
+    lit = get(entity.data, "startLit", false)
+    
+    return lit ? "objects/temple/litTorch03.png" : "objects/temple/torch00.png"
 end
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "torch"
-        lit = get(entity.data, "startLit", false)
+function Ahorn.selection(entity::Maple.Torch)
+    x, y = Ahorn.position(entity)
+    sprite = torchSprite(entity)
 
-        if lit
-            Ahorn.drawSprite(ctx, "objects/temple/litTorch03.png", 0, 0)
+    return Ahorn.getSpriteRectangle(sprite, x, y)
+end
 
-        else
-            Ahorn.drawSprite(ctx, "objects/temple/torch00.png", 0, 0)
-        end
-
-        return true
-    end
-
-    return false
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Torch, room::Maple.Room)
+    sprite = torchSprite(entity)
+    Ahorn.drawSprite(ctx, sprite, 0, 0)
 end
 
 end

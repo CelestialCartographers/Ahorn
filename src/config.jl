@@ -25,7 +25,7 @@ function saveConfig(c::Config, force::Bool=true)
             JSON.print(fh, c.data, 4)
         end
 
-        mv(c.fn * ".saving", c.fn, remove_destination=true)
+        mv(c.fn * ".saving", c.fn, force=true)
     end
 end
 
@@ -60,7 +60,7 @@ setDefaults!(c::Config, d::Dict{K, V}) where {K, V} = c.data = merge(d, c.data)
 Base.haskey(c::Config, key::String) = haskey(c.data, key)
 
 function Base.setindex!(c::Config, value::V, key::K) where {K, V}
-    prev = haskey(c, key)? c.data[key] : nothing
+    prev = haskey(c, key) ? c.data[key] : nothing
     c.data[key] = value
 
     if value != prev && prev === nothing

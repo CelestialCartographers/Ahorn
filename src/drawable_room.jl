@@ -3,7 +3,7 @@ mutable struct TileStates
     chars::Array{Char, 2}
     rands::Array{Integer, 2}
 
-    TileStates() = new(Matrix{Tuple{Integer, Integer}}(0, 0), Matrix{Char}(0, 0), Matrix{Integer}(0, 0))
+    TileStates() = new(Matrix{Tuple{Integer, Integer}}(undef, 0, 0), Matrix{Char}(undef, 0, 0), Matrix{Integer}(undef, 0, 0))
 end
 
 mutable struct DrawableRoom
@@ -13,15 +13,15 @@ mutable struct DrawableRoom
     fgTileStates::TileStates
     bgTileStates::TileStates
 
-    rendering::Union{Layer, Void}
+    rendering::Union{Layer, Nothing}
     layers::Array{Layer, 1}
 
-    fillColor::colorTupleType
+    fillColor::Union{Nothing, colorTupleType}
 end
 
 Base.size(state::TileStates) = size(state.rands)
 
-getTileStateSeed(name::String, package::String="", fg::Bool=false) = foldl((a, b) -> a + Int(b) * 128, 0, collect(package * (fg? "fg" : "bg") * name))
+getTileStateSeed(name::String, package::String="", fg::Bool=false) = foldl((a, b) -> a + Int(b) * 128, collect(package * (fg ? "fg" : "bg") * name), init=0)
 getTileStateSeed(room::Room, package::String="", fg::Bool=false) = getTileStateSeed(room.name, package, fg)
 
 function updateTileStates!(room::String, package::String, states::TileStates, width::Integer, height::Integer, fg::Bool=false)
@@ -66,6 +66,15 @@ end
 
 redrawRenderingLayer(renderingLayer::Layer, layers::Array{Layer, 1}) = renderingLayer.redraw || any(map(layer -> layer.redraw, layers))
 
+function getRoomBackgroundColor(room::Room)
+    if 0 <= room.color < length(colors.background_room_color_coded_fill)
+        return colors.background_room_color_coded_fill[room.color + 1]
+        
+    else
+        return colors.background_canvas_fill
+    end
+end
+
 function DrawableRoom(map::Map, room::Room)
     return DrawableRoom(
         map,
@@ -77,7 +86,7 @@ function DrawableRoom(map::Map, room::Room)
         Layer("rendering"),
         getDrawingLayers(),
 
-        colors.background_room_fill
+        nothing
     )
 end
 

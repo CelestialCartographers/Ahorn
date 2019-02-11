@@ -1,6 +1,6 @@
 module Brushes
 
-using ..Ahorn
+using ..Ahorn, Maple
 
 displayName = "Brushes"
 group = "Brushes"
@@ -45,17 +45,41 @@ selectedBrush = brushes[1]
 hoveringBrush = nothing
 phantomBrushes = Dict{Tuple{Integer, Integer}, Ahorn.Brush}()
 
-function drawBrushes(layer::Ahorn.Layer, room::Ahorn.Maple.Room)
-    if !isa(hoveringBrush, Void)
+function applyPhantomBrushes()
+    if !isempty(phantomBrushes)
+        Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Brush ($(selectedBrush.name), $material)", Ahorn.loadedState.room))    
+    end
+
+    for (pos, brush) in phantomBrushes
+        x, y = pos
+
+        Maple.updateTileSize!(Ahorn.loadedState.room, '0', '0')
+        roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
+        Ahorn.applyBrush!(brush, roomTiles, material, x, y)
+    end
+
+    if !isempty(phantomBrushes)
+        empty!(phantomBrushes)
+
+        Ahorn.redrawLayer!(targetLayer)
+        Ahorn.redrawLayer!(toolsLayer)
+    end
+end
+
+function drawBrushes(layer::Ahorn.Layer, room::Maple.Room)
+    if !isa(hoveringBrush, Nothing)
         x, y, brush = hoveringBrush
 
         Ahorn.drawBrush(brush, layer, x, y)
     end
 
-    for (pos, brush) in phantomBrushes
-         x, y = pos
+    # Make sure we should actually render the phantom brushes
+    if Ahorn.mouseButtonHeld(0x1)
+        for (pos, brush) in phantomBrushes
+            x, y = pos
 
-         Ahorn.drawBrush(brush, layer, x, y)
+            Ahorn.drawBrush(brush, layer, x, y)
+        end
     end
 end
 
@@ -74,9 +98,11 @@ function setMaterials!(layer::Ahorn.Layer)
 end
 
 function mouseMotion(x::Number, y::Number)
-    global hoveringBrush = (x, y, deepcopy(selectedBrush))
+    if hoveringBrush === nothing || x != hoveringBrush[1] || y != hoveringBrush[2]
+        global hoveringBrush = (x, y, deepcopy(selectedBrush))
 
-    Ahorn.redrawLayer!(toolsLayer)
+        Ahorn.redrawLayer!(toolsLayer)
+    end
 end
 
 function middleClick(x::Number, y::Number)
@@ -94,6 +120,7 @@ function leftClick(x::Number, y::Number)
     layer = Ahorn.layerName(targetLayer)
     Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Brush $(selectedBrush.name)", Ahorn.loadedState.room))
 
+    Maple.updateTileSize!(Ahorn.loadedState.room, '0', '0')
     roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
     Ahorn.applyBrush!(selectedBrush, roomTiles, material, x, y)
 
@@ -121,24 +148,7 @@ function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)
 end
 
 function selectionFinish(rect::Ahorn.Rectangle)
-    if !isempty(phantomBrushes)
-        Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Brush ($(selectedBrush.name), $material)", Ahorn.loadedState.room))    
-    end
-
-    for (pos, brush) in phantomBrushes
-        x, y = pos
-
-        roomTiles = Ahorn.roomTiles(targetLayer, Ahorn.loadedState.room)
-        Ahorn.applyBrush!(brush, roomTiles, material, x, y)
-    end
-
-    if !isempty(phantomBrushes)
-        empty!(phantomBrushes)
-
-        Ahorn.redrawLayer!(targetLayer)
-    end
-
-    Ahorn.redrawLayer!(toolsLayer)
+    applyPhantomBrushes()
 end
 
 function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)
@@ -171,6 +181,11 @@ function materialSelected(list::Ahorn.ListContainer, selected::String)
     layerName = Ahorn.layerName(targetLayer)
     Ahorn.persistence["brushes_material_$(layerName)"] = tileNames[selected]
     global material = tileNames[selected]
+end
+
+function materialFiltered(list::Ahorn.ListContainer)
+    tileNames = Ahorn.tileNames(targetLayer)
+    Ahorn.selectRow!(list, row -> row[1] == tileNames[material])
 end
 
 function layersChanged(layers::Array{Ahorn.Layer, 1})

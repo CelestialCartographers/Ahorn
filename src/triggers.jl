@@ -1,15 +1,22 @@
+function position(trigger::Maple.Trigger)
+    return (
+        floor(Int, trigger.x),
+        floor(Int, trigger.y)
+    )
+end
+
 function renderTrigger(ctx::Cairo.CairoContext, layer::Layer, trigger::Maple.Trigger, room::Maple.Room; alpha::Number=1)
     Cairo.save(ctx)
 
-    x, y = Int(trigger.data["x"]), Int(trigger.data["y"])
-    width, height = Int(trigger.data["width"]), Int(trigger.data["height"])
+    x, y = Int(trigger.x), Int(trigger.y)
+    width, height = Int(trigger.width), Int(trigger.height)
 
     rectangle(ctx, x, y, width, height)
     clip(ctx)
 
     text = humanizeVariableName(trigger.name)
     drawRectangle(ctx, x, y, width, height, colors.trigger_fc, colors.trigger_bc)
-    centeredText(ctx, text, round(Int, x + width / 2), round(Int, y + height / 2))
+    drawCenteredText(ctx, text, x, y, width, height)
 
     restore(ctx)
 end
@@ -33,52 +40,41 @@ function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::
         clip(ctx)
     
         drawRectangle(ctx, nx, ny, width, height, colors.trigger_fc, colors.trigger_bc)
-        centeredText(ctx, text, round(Int, nx + width / 2), round(Int, ny + height / 2))
+        drawCenteredText(ctx, text, nx, ny, width, height)
 
         Cairo.restore(ctx)
     end
 end
 
-function minimumSize(trigger::Maple.Trigger)
-    if get(debug.config, "IGNORE_MINIMUM_SIZE", false)
-        return 0, 0
-    end
-    
-    return 8, 8
-end
+nodeLimits(trigger::Maple.Trigger) = 0, 0
 
-function nodeLimits(trigger::Maple.Trigger)
-    selectionRes = eventToModules(loadedTriggers, "nodeLimits", trigger)
-    
-    if isa(selectionRes, Tuple)
-        success, least, most = selectionRes
+editingOptions(trigger::Maple.Trigger) = Dict{String, Any}()
 
-        if success
-            return least, most
+minimumSize(trigger::Maple.Trigger) = 8, 8
+resizable(trigger::Maple.Trigger) = true, true
+
+function triggerSelection(trigger::Maple.Trigger, room::Maple.Room, node::Integer=0)
+    x, y = Int(trigger.x), Int(trigger.y)
+    width, height = Int(trigger.width), Int(trigger.height)
+    nodes = get(trigger.data, "nodes", Tuple{Integer, Integer}[])
+
+    if isempty(nodes)
+        return Rectangle(x, y, width, height)
+
+    else
+        res = Rectangle[Rectangle(x, y, width, height)]
+
+        for node in nodes
+            nx, ny = Int.(node)
+
+            push!(res, Rectangle(nx, ny, width, height))
         end
+
+        return res
     end
-
-    return 0, 0
 end
 
-function editingOptions(trigger::Maple.Trigger)
-    selectionRes = eventToModules(loadedTriggers, "editingOptions", trigger)
-    
-    if isa(selectionRes, Tuple)
-        success, options = selectionRes
-
-        if success
-            return success, options
-        end
-    end
-
-    return false, Dict{String, Any}()
-end
-
-function canResize(trigger::Maple.Trigger)
-    return true, true
-end
-
-loadedTriggers = joinpath.(abs"triggers", readdir(abs"triggers"))
+const loadedTriggers = joinpath.(abs"triggers", readdir(abs"triggers"))
 loadModule.(loadedTriggers)
-triggerPlacements = Dict{String, EntityPlacement}()
+const triggerPlacements = PlacementDict()
+const triggerPlacementsCache = Dict{String, Trigger}()

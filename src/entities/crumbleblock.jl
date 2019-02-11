@@ -2,62 +2,51 @@ module CrumbleBlock
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
-    "Crumble Blocks" => Ahorn.EntityPlacement(
+const placements = Ahorn.PlacementDict(
+    "Crumble Blocks ($(uppercasefirst(texture)))" => Ahorn.EntityPlacement(
         Maple.CrumbleBlock,
         "rectangle",
-    )
+        Dict{String, Any}(
+            "texture" => texture
+        )
+    ) for texture in Maple.crumble_block_textures
 )
 
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "crumbleBlock"
-        return true, 8, 0
-    end
+Ahorn.editingOptions(entity::Maple.CrumbleBlock) = Dict{String, Any}(
+    "texture" => Maple.crumble_block_textures
+)
+
+Ahorn.minimumSize(entity::Maple.CrumbleBlock) = 8, 0
+Ahorn.resizable(entity::Maple.CrumbleBlock) = true, false
+
+function Ahorn.selection(entity::Maple.CrumbleBlock)
+    x, y = Ahorn.position(entity)
+    width = Int(get(entity.data, "width", 8))
+
+    return Ahorn.Rectangle(x, y, width, 8)
 end
 
-function resizable(entity::Maple.Entity)
-    if entity.name == "crumbleBlock"
-        return true, true, false
-    end
-end
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CrumbleBlock, room::Maple.Room)
+    texture = get(entity.data, "texture", "default")
+    texture = "objects/crumbleBlock/$texture"
 
-function selection(entity::Maple.Entity)
-    if entity.name == "crumbleBlock"
-        x, y = Ahorn.entityTranslation(entity)
+    # Values need to be system specific integer
+    x = Int(get(entity.data, "x", 0))
+    y = Int(get(entity.data, "y", 0))
 
-        width = Int(get(entity.data, "width", 8))
+    width = Int(get(entity.data, "width", 8))
+    tilesWidth = div(width, 8)
 
-        return true, Ahorn.Rectangle(x, y, width, 8)
-    end
-end
+    Ahorn.Cairo.save(ctx)
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "crumbleBlock"
-        texture = get(entity.data, "texture", "wood")
-        texture = texture == "default"? "wood" : texture
+    Ahorn.rectangle(ctx, 0, 0, width, 8)
+    Ahorn.clip(ctx)
 
-        # Values need to be system specific integer
-        x = Int(get(entity.data, "x", 0))
-        y = Int(get(entity.data, "y", 0))
-
-        width = Int(get(entity.data, "width", 8))
-        tilesWidth = div(width, 8)
-
-        Ahorn.Cairo.save(ctx)
-
-        Ahorn.rectangle(ctx, 0, 0, width, 8)
-        Ahorn.clip(ctx)
-
-        for i in 0:ceil(Int, tilesWidth / 4)
-            Ahorn.drawImage(ctx, "objects/crumbleBlock/default", 32 * i, 0, 0, 0, 32, 8)
-        end
-
-        Ahorn.restore(ctx)
-
-        return true
+    for i in 0:ceil(Int, tilesWidth / 4)
+        Ahorn.drawImage(ctx, texture, 32 * i, 0, 0, 0, 32, 8)
     end
 
-    return false
+    Ahorn.restore(ctx)
 end
 
 end

@@ -2,7 +2,7 @@ module Clouds
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Cloud (Normal)" => Ahorn.EntityPlacement(
         Maple.Cloud,
         "point",
@@ -21,33 +21,35 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ),
 )
 
-function selection(entity::Maple.Entity)
-    if entity.name == "cloud"
-        x, y = Ahorn.entityTranslation(entity)
-
-        return true, Ahorn.Rectangle(x - 16, y - 6, 32, 16)
-    end
-end
-
 normalScale = 1.0
 smallScale = 29 / 35
 
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "cloud"
-        fragile = get(entity.data, "fragile", false)
-        small = get(entity.data, "small", false)
+function cloudSprite(entity::Maple.Cloud)
+    fragile = get(entity.data, "fragile", false)
 
-        if fragile
-            Ahorn.drawSprite(ctx, "objects/clouds/fragile00.png", 0, 0, sx=small? smallScale : normalScale)
+    return fragile ? "objects/clouds/fragile00.png" : "objects/clouds/cloud00.png"
+end
 
-        else
-            Ahorn.drawSprite(ctx, "objects/clouds/cloud00.png", 0, 0, sx=small? smallScale : normalScale)
-        end
+function cloudScale(entity::Maple.Cloud)
+    small = get(entity.data, "small", false)
 
-        return true
-    end
+    return small ? smallScale : normalScale
+end
 
-    return false
+function Ahorn.selection(entity::Maple.Cloud)
+    x, y = Ahorn.position(entity)
+
+    sprite = cloudSprite(entity)
+    scaleX = cloudScale(entity)
+
+    return Ahorn.getSpriteRectangle(sprite, x, y, sx=scaleX)
+end
+
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Cloud, room::Maple.Room)
+    sprite = cloudSprite(entity)
+    scaleX = cloudScale(entity)
+
+    Ahorn.drawSprite(ctx, sprite, 0, 0, sx=scaleX)
 end
 
 end

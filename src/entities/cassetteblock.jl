@@ -7,12 +7,11 @@ using ..Ahorn, Maple
 colorNames = Dict{Int, String}(
     0 => "Blue",
     1 => "Rose",
-    # 2 => "Amethyst", 
-    2 => "Emerald",
-    3 => "Marigold"
+	2 => "Bright Sun",
+	3 => "Malachite"
 )
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Cassette Block ($index - $color)" => Ahorn.EntityPlacement(
         Maple.CassetteBlock,
         "rectangle",
@@ -22,64 +21,132 @@ placements = Dict{String, Ahorn.EntityPlacement}(
     ) for (index, color) in colorNames
 )
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "cassetteBlock"
-        return true, Dict{String, Any}(
-            "index" => [0, 1, 2, 3]
-        )
-    end
-end
-
-function minimumSize(entity::Maple.Entity)
-    if entity.name == "cassetteBlock"
-        return true, 16, 16
-    end
-end
-
-function resizable(entity::Maple.Entity)
-    if entity.name == "cassetteBlock"
-        return true, true, true
-    end
-end
-
-function selection(entity::Maple.Entity)
-    if entity.name == "cassetteBlock"
-        x, y = Ahorn.entityTranslation(entity)
-
-        width = Int(get(entity.data, "width", 8))
-        height = Int(get(entity.data, "height", 8))
-
-        return true, Ahorn.Rectangle(x, y, width, height)
-    end
-end
-
-colors = Dict{Integer, Ahorn.colorTupleType}(
-    1 => (240, 73, 190, 1) ./ (255.0, 255.0, 255.0, 1.0),
-    # 2 => (197, 71, 203, 1) ./ (255.0, 255.0, 255.0, 1.0),
-    2 => (28, 80, 51, 1) ./ (255.0, 255.0, 255.0, 1.0),
-    3 => (182, 128, 38, 1) ./ (255.0, 255.0, 255.0, 1.0)
+Ahorn.editingOptions(entity::Maple.CassetteBlock) = Dict{String, Any}(
+    "index" => [0, 1, 2, 3]
 )
 
-defaultColor = (73, 170, 240, 1) ./ (255.0, 255.0, 255.0, 1.0)
+Ahorn.minimumSize(entity::Maple.CassetteBlock) = 16, 16
+Ahorn.resizable(entity::Maple.CassetteBlock) = true, true
+
+Ahorn.selection(entity::Maple.CassetteBlock) = Ahorn.getEntityRectangle(entity)
+
+colors = Dict{Integer, Ahorn.colorTupleType}(
+    1 => (240, 73, 190, 255) ./ 255,
+	2 => (252, 220, 58, 255) ./ 255,
+	3 => (56, 224, 78, 255) ./ 255,
+)
+
+defaultColor = (73, 170, 240, 255) ./ 255
 borderMultiplier = (0.9, 0.9, 0.9, 1)
 
-# Draw tinted once tinted drawing is supported
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "cassetteBlock"
-        x = Int(get(entity.data, "x", 0))
-        y = Int(get(entity.data, "y", 0))
+frame = "objects/cassetteblock/solid"
 
-        width = Int(get(entity.data, "width", 32))
-        height = Int(get(entity.data, "height", 32))
+function getCassetteBlockRectangles(room::Maple.Room)
+    entities = filter(e -> e.name == "cassetteBlock", room.entities)
+    rects = Dict{Integer, Array{Ahorn.Rectangle, 1}}()
 
-        index = Int(get(entity.data, "index", 0))
-        color = get(colors, index, defaultColor)
-        Ahorn.drawRectangle(ctx, 0, 0, width, height, color, color .* borderMultiplier)
+    for e in entities
+        index = get(e.data, "index", 0)
 
-        return true
+        if !haskey(rects, index)
+            rects[index] = Ahorn.Rectangle[]
+        end
+        
+        push!(rects[index], Ahorn.Rectangle(
+            Int(get(e.data, "x", 0)),
+            Int(get(e.data, "y", 0)),
+            Int(get(e.data, "width", 8)),
+            Int(get(e.data, "height", 8))
+        ))
+    end
+        
+    return rects
+end
+
+# Is there a casette block we should connect to at the offset?
+function notAdjacent(entity::Maple.CassetteBlock, ox::Integer, oy::Integer, rects::Array{Ahorn.Rectangle, 1})
+    x, y = Ahorn.position(entity)
+    rect = Ahorn.Rectangle(x + ox + 4, y + oy + 4, 1, 1)
+
+    return !any(Ahorn.checkCollision.(rects, Ref(rect)))
+end
+
+function drawCassetteBlock(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CassetteBlock, room::Maple.Room)
+    cassetteBlockRectangles = getCassetteBlockRectangles(room)
+
+    x, y = Ahorn.position(entity)
+
+    width = Int(get(entity.data, "width", 32))
+    height = Int(get(entity.data, "height", 32))
+
+    tileWidth = ceil(Int, width / 8)
+    tileHeight = ceil(Int, height / 8)
+
+    index = Int(get(entity.data, "index", 0))
+    color = get(colors, index, defaultColor)
+
+    rect = Ahorn.Rectangle(x, y, width, height)
+    rects = get(cassetteBlockRectangles, index, Ahorn.Rectangle[])
+
+    if !(rect in rects)
+        push!(rects, rect)
     end
 
-    return false
+    for x in 1:tileWidth, y in 1:tileHeight
+        drawX, drawY = (x - 1) * 8, (y - 1) * 8
+
+        closedLeft = !notAdjacent(entity, drawX - 8, drawY, rects)
+        closedRight = !notAdjacent(entity, drawX + 8, drawY, rects)
+        closedUp = !notAdjacent(entity, drawX, drawY - 8, rects)
+        closedDown = !notAdjacent(entity, drawX, drawY + 8, rects)
+        completelyClosed = closedLeft && closedRight && closedUp && closedDown
+
+        if completelyClosed
+            if notAdjacent(entity, drawX + 8, drawY - 8, rects)
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 24, 0, 8, 8, tint=color)
+
+            elseif notAdjacent(entity, drawX - 8, drawY - 8, rects)
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 24, 8, 8, 8, tint=color)
+
+            elseif notAdjacent(entity, drawX + 8, drawY + 8, rects)
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 24, 16, 8, 8, tint=color)
+
+            elseif notAdjacent(entity, drawX - 8, drawY + 8, rects)
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 24, 24, 8, 8, tint=color)
+
+            else
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 8, 8, 8, 8, tint=color)
+            end
+
+        else
+            if closedLeft && closedRight && !closedUp && closedDown
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 8, 0, 8, 8, tint=color)
+
+            elseif closedLeft && closedRight && closedUp && !closedDown
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 8, 16, 8, 8, tint=color)
+
+            elseif closedLeft && !closedRight && closedUp && closedDown
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 16, 8, 8, 8, tint=color)
+
+            elseif !closedLeft && closedRight && closedUp && closedDown
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 0, 8, 8, 8, tint=color)
+
+            elseif closedLeft && !closedRight && !closedUp && closedDown
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 16, 0, 8, 8, tint=color)
+
+            elseif !closedLeft && closedRight && !closedUp && closedDown
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 0, 0, 8, 8, tint=color)
+
+            elseif !closedLeft && closedRight && closedUp && !closedDown
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 0, 16, 8, 8, tint=color)
+
+            elseif closedLeft && !closedRight && closedUp && !closedDown
+                Ahorn.drawImage(ctx, frame, drawX, drawY, 16, 16, 8, 8, tint=color)
+            end
+        end
+    end
 end
+
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CassetteBlock, room::Maple.Room) = drawCassetteBlock(ctx, entity, room)
 
 end

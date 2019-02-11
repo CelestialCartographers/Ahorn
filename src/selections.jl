@@ -18,46 +18,24 @@ selectionTargets = Dict{String, Function}(
     "fgDecals" => room -> room.fgDecals
 )
 
-function getSelection(trigger::Maple.Trigger, node::Number=0)
-    x, y = Int(trigger.data["x"]), Int(trigger.data["y"])
-    width, height = Int(trigger.data["width"]), Int(trigger.data["height"])
-    nodes = get(trigger.data, "nodes", Tuple{Integer, Integer}[])
-
-    if isempty(nodes)
-        return true, Rectangle(x, y, width, height)
-
-    else
-        res = Rectangle[Rectangle(x, y, width, height)]
-
-        for node in nodes
-            nx, ny = Int.(node)
-            push!(res, Rectangle(nx, ny, width, height))
-        end
-
-        return true, res
-    end
+function getSelection(trigger::Maple.Trigger, room::Maple.Room, node::Number=0)
+    return triggerSelection(trigger, room, node)
 end
 
-function getSelection(decal::Maple.Decal, node::Number=0)
-    return true, decalSelection(decal)
+function getSelection(decal::Maple.Decal, room::Maple.Room, node::Number=0)
+    return decalSelection(decal)
 end
 
-function getSelection(entity::Maple.Entity, node::Number=0)
-    selectionRes = eventToModules(loadedEntities, "selection", entity) 
-
-    if isa(selectionRes, Tuple)
-        success, rect = selectionRes
-
-        if success
-            return true, rect
-        end
-    end
-
-    return false, false
+function getSelection(entity::Maple.Entity, room::Maple.Room, node::Number=0)
+    return entitySelection(entity, room, node)
 end
 
-function getSelection(target::TileSelection, node::Number=0)
-    return true, target.selection
+function getSelection(target::TileSelection, room::Maple.Room, node::Number=0)
+    return target.selection
+end
+
+function position(target::TileSelection)
+    return target.startX, target.startY
 end
 
 # TODO - Use mouse position and check if its closer to the center as well
@@ -87,20 +65,18 @@ function getSelected(room::Room, name::String, selection::Rectangle)
         targets = selectionTargets[name](room)
 
         for target in targets
-            success, rect = getSelection(target)
+            rect = getSelection(target, room)
 
-            if success
-                if isa(rect, Rectangle)
-                    if checkCollision(selection, rect)
-                        push!(res, (name, rect, target, 0))
-                    end
+            if isa(rect, Rectangle)
+                if checkCollision(selection, rect)
+                    push!(res, (name, rect, target, 0))
+                end
 
-                elseif isa(rect, Array{Rectangle, 1})
-                    for (i, r) in enumerate(rect)
-                        if checkCollision(selection, r)
-                            # The first rect is the main entity itself, followed by the nodes
-                            push!(res, (name, r, target, i - 1))
-                        end
+            elseif isa(rect, Array{Rectangle, 1})
+                for (i, r) in enumerate(rect)
+                    if checkCollision(selection, r)
+                        # The first rect is the main entity itself, followed by the nodes
+                        push!(res, (name, r, target, i - 1))
                     end
                 end
             end
@@ -109,7 +85,7 @@ function getSelected(room::Room, name::String, selection::Rectangle)
     # Tile based selections
     elseif name == "fgTiles" || name == "bgTiles"
         fg = name == "fgTiles"
-        tiles = fg? room.fgTiles.data : room.bgTiles.data
+        tiles = fg ? room.fgTiles.data : room.bgTiles.data
 
         tx, ty = floor(Int, selection.x / 8), floor(Int, selection.y / 8)
         tw, th = ceil(Int, selection.w / 8), ceil(Int, selection.h / 8) 
@@ -126,7 +102,7 @@ function getSelected(room::Room, name::String, selection::Rectangle)
             drawingTiles,
             gridSelection
         )
-
+        
         push!(res, (name, gridSelection, target, 0))
     end
 
@@ -139,8 +115,8 @@ getSelected(room::Room, layer::Layer, selection::Rectangle) = getSelected(room, 
 function getFilteredSelections(selections::Set{Tuple{String, Rectangle, Any, Number}}, rect::Rectangle, room::Room, name::String, func::Function)
     res = Set{Tuple{String, Rectangle, Any, Number}}()
 
-    success, best = hasSelectionAt(selections, rect)
-    if !success
+    best = hasSelectionAt(selections, rect, room)
+    if best == false
         return res
     end
     
@@ -149,20 +125,18 @@ function getFilteredSelections(selections::Set{Tuple{String, Rectangle, Any, Num
         targets = selectionTargets[name](room)
 
         for target in targets
-            success, rect = getSelection(target)
+            rect = getSelection(target, room)
 
-            if success
-                if isa(rect, Rectangle)
+            if isa(rect, Rectangle)
+                if func(best, target)
+                    push!(res, (name, rect, target, 0))
+                end
+
+            elseif isa(rect, Array{Rectangle, 1})
+                for (i, r) in enumerate(rect)
                     if func(best, target)
-                        push!(res, (name, rect, target, 0))
-                    end
-
-                elseif isa(rect, Array{Rectangle, 1})
-                    for (i, r) in enumerate(rect)
-                        if func(best, target)
-                            # The first rect is the main entity itself, followed by the nodes
-                            push!(res, (name, r, target, i - 1))
-                        end
+                        # The first rect is the main entity itself, followed by the nodes
+                        push!(res, (name, r, target, i - 1))
                     end
                 end
             end
@@ -236,24 +210,22 @@ end
 
 getFilterFunction(layer::Layer, strict::Bool=false) = getFilterFunction(layerName(layer), strict)
 
-function hasSelectionAt(selections::Set{Tuple{String, Rectangle, Any, Number}}, rect::Rectangle)
-    for selection in selections
-        layer, box, target, node = selection
-
-        success, targetRect = getSelection(target)
+function hasSelectionAt(selections::Set{Tuple{String, Rectangle, Any, Number}}, rect::Rectangle, room::Maple.Room)
+    for (layer, box, target, node) in selections
+        targetRect = getSelection(target, room)
         if isa(targetRect, Rectangle) && checkCollision(rect, targetRect) && node == 0
-            return true, target
+            return target
 
         elseif isa(targetRect, Array{Rectangle, 1})
             for (i, r) in enumerate(targetRect)
                 if checkCollision(rect, r) && node == i - 1
-                    return true, target
+                    return target
                 end
             end
         end
     end
 
-    return false, false
+    return false
 end
 
 function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}}, room::Room, name::String, rect::Rectangle; retain::Bool=false, best::Bool=false, mass::Bool=false)
@@ -272,7 +244,7 @@ function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}
         for n in selectableLayers
             if mass
                 func = getFilterFunction(n, best)
-                union!(validSelections, getFilteredSelections(retain? selections : unselected, rect, room, n, func))
+                union!(validSelections, getFilteredSelections(retain ? selections : unselected, rect, room, n, func))
 
             else
                 union!(validSelections, getSelected(room, n, rect))
@@ -282,7 +254,7 @@ function updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}
     else
         if mass
             func = getFilterFunction(name, best)
-            union!(validSelections, getFilteredSelections(retain? selections : unselected, rect, room, name, func))
+            union!(validSelections, getFilteredSelections(retain ? selections : unselected, rect, room, name, func))
 
         else
             union!(validSelections, getSelected(room, name, rect))
@@ -307,13 +279,12 @@ end
 function fixSelections(room::Maple.Room, selections::Set{Tuple{String, Rectangle, Any, Number}})
     res = Set{Tuple{String, Rectangle, Any, Number}}()
 
-    for selection in selections
-        layer, box, target, node = selection
+    for (layer, box, target, node) in selections
         if haskey(selectionTargets, layer)
             targets = selectionTargets[layer](room)
 
             index = findfirst(isequal(target), targets)
-            if index > 0
+            if index !== nothing
                 push!(res, (layer, box, targets[index], node))
             end
 
@@ -326,3 +297,26 @@ function fixSelections(room::Maple.Room, selections::Set{Tuple{String, Rectangle
 end
 
 updateSelections!(selections::Set{Tuple{String, Rectangle, Any, Number}}, room::Room, layer::Layer, rect::Rectangle) = updateSelections!(selections, room, layerName(layer), rect)
+
+# TODO - Verify that scales are respected properly
+function getSpriteRectangle(texture::String, x::Number, y::Number; jx::Number=0.5, jy::Number=0.5, sx::Number=1, sy::Number=1)
+    sprite = getTextureSprite(texture)
+    
+    width, height = sprite.width, sprite.height
+    realWidth, realHeight = sprite.realWidth, sprite.realHeight
+
+    drawX, drawY = floor(Int, x - (realWidth * jx + sprite.offsetX) * sx), floor(Int, y - (realHeight * jy + sprite.offsetY) * sy)
+    drawX += sx < 0 ? width * sx : 0
+    drawY += sy < 0 ? height * sy : 0
+
+    return Rectangle(drawX, drawY, sprite.width * abs(sx), sprite.height * abs(sy))
+end
+
+function getEntityRectangle(entity::Maple.Entity)
+    x, y = position(entity)
+
+    width = Int(get(entity.data, "width", 8))
+    height = Int(get(entity.data, "height", 8))
+
+    return Rectangle(x, y, width, height)
+end

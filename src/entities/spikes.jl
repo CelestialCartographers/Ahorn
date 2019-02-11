@@ -2,33 +2,43 @@ module Spikes
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}()
+const placements = Ahorn.PlacementDict()
 
-variants = String["default", "cliffside", "tentacles", "reflection"]
-entities = Dict{String, Function}(
+entities = Dict{String, Type}(
     "up" => Maple.SpikesUp,
     "down" => Maple.SpikesDown,
     "left" => Maple.SpikesLeft,
     "right" => Maple.SpikesRight,
 )
 
-triggerEntities = Dict{String, Function}(
+triggerEntities = Dict{String, Type}(
     "up" => Maple.TriggerSpikesUp,
     "down" => Maple.TriggerSpikesDown,
     "left" => Maple.TriggerSpikesLeft,
     "right" => Maple.TriggerSpikesRight,
 )
 
-triggerEntitiesOrig = Dict{String, Function}(
+triggerEntitiesOrig = Dict{String, Type}(
     "up" => Maple.TriggerSpikesOriginalUp,
     "down" => Maple.TriggerSpikesOriginalDown,
     "left" => Maple.TriggerSpikesOriginalLeft,
     "right" => Maple.TriggerSpikesOriginalRight,
 )
 
-for variant in variants
+normalSpikesUnion = Union{Maple.SpikesUp, Maple.SpikesDown, Maple.SpikesLeft, Maple.SpikesRight}
+triggerSpikesUnion = Union{Maple.TriggerSpikesUp, Maple.TriggerSpikesDown, Maple.TriggerSpikesLeft, Maple.TriggerSpikesRight}
+triggerSpikesOrigUnion = Union{Maple.TriggerSpikesOriginalUp, Maple.TriggerSpikesOriginalDown, Maple.TriggerSpikesOriginalLeft, Maple.TriggerSpikesOriginalRight}
+spikesUnion = Union{normalSpikesUnion, triggerSpikesUnion, triggerSpikesOrigUnion}
+
+triggerSpikeColors = [
+    (242, 90, 16, 255) ./ 255,
+    (255, 0, 0, 255) ./ 255,
+    (242, 16, 103, 255) ./ 255
+]
+
+for variant in Maple.spike_types
     for (dir, entity) in entities
-        key = "Spikes ($(titlecase(dir)), $(titlecase(variant)))"
+        key = "Spikes ($(uppercasefirst(dir)), $(uppercasefirst(variant)))"
         placements[key] = Ahorn.EntityPlacement(
             entity,
             "rectangle",
@@ -40,7 +50,7 @@ for variant in variants
 
     if variant != "tentacles"
         for (dir, entity) in triggerEntitiesOrig
-            key = "Trigger Spikes ($(titlecase(dir)), $(titlecase(variant)))"
+            key = "Trigger Spikes ($(uppercasefirst(dir)), $(uppercasefirst(variant)))"
             placements[key] = Ahorn.EntityPlacement(
                 entity,
                 "rectangle",
@@ -53,26 +63,20 @@ for variant in variants
 end
 
 for (dir, entity) in triggerEntities
-    key = "Trigger Spikes ($(titlecase(dir)), Dust)"
+    key = "Trigger Spikes ($(uppercasefirst(dir)), Dust)"
     placements[key] = Ahorn.EntityPlacement(
         entity,
         "rectangle"
     )
 end
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name in spikeNames
-        return true, Dict{String, Any}(
-            "type" => variants
-        )
+Ahorn.editingOptions(entity::normalSpikesUnion) = Dict{String, Any}(
+    "type" => Maple.spike_types
+)
 
-    elseif entity.name in triggerOriginalNames
-        # Doesn't support tentacles
-        return true, Dict{String, Any}(
-            "type" => String["default", "cliffside", "reflection"]
-        )
-    end
-end
+Ahorn.editingOptions(entity::triggerSpikesOrigUnion) = Dict{String, Any}(
+    "type" => String[variant for variant in Maple.spike_types if variant != "tenctacles"]
+)
 
 directions = Dict{String, String}(
     "spikesUp" => "up",
@@ -145,24 +149,22 @@ triggerRotationOffsets = Dict{String, Tuple{Number, Number}}(
 
 triggerOriginalNames = ["triggerSpikesOriginalDown", "triggerSpikesOriginalLeft", "triggerSpikesOriginalRight", "triggerSpikesOriginalUp"]
 
-function renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
-    if haskey(directions, entity.name)
-        direction = get(directions, entity.name, "up")
-        theta = rotations[direction] - pi / 2
+function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
+    direction = get(directions, entity.name, "up")
+    theta = rotations[direction] - pi / 2
 
-        width = Int(get(entity.data, "width", 0))
-        height = Int(get(entity.data, "height", 0))
+    width = Int(get(entity.data, "width", 0))
+    height = Int(get(entity.data, "height", 0))
 
-        x, y = Ahorn.entityTranslation(entity)
-        cx, cy = x + floor(Int, width / 2) - 8 * (direction == "left"), y + floor(Int, height / 2) - 8 * (direction == "up")
+    x, y = Ahorn.position(entity)
+    cx, cy = x + floor(Int, width / 2) - 8 * (direction == "left"), y + floor(Int, height / 2) - 8 * (direction == "up")
 
-        Ahorn.drawArrow(ctx, cx, cy, cx + cos(theta) * 24, cy + sin(theta) * 24, Ahorn.colors.selection_selected_fc, headLength=6)
-    end
+    Ahorn.drawArrow(ctx, cx, cy, cx + cos(theta) * 24, cy + sin(theta) * 24, Ahorn.colors.selection_selected_fc, headLength=6)
 end
 
-function selection(entity::Maple.Entity)
+function Ahorn.selection(entity::spikesUnion)
     if haskey(directions, entity.name)
-        x, y = Ahorn.entityTranslation(entity)
+        x, y = Ahorn.position(entity)
 
         width = Int(get(entity.data, "width", 8))
         height = Int(get(entity.data, "height", 8))
@@ -176,7 +178,7 @@ function selection(entity::Maple.Entity)
             width = Int(get(entity.data, "width", 16))
             height = Int(get(entity.data, "height", 16))
 
-            return true, Ahorn.Rectangle(x + ox, y + oy, width, height)
+            return Ahorn.Rectangle(x + ox, y + oy, width, height)
 
         else
             width = Int(get(entity.data, "width", 8))
@@ -184,44 +186,31 @@ function selection(entity::Maple.Entity)
 
             ox, oy = offsets[direction]
 
-            return true, Ahorn.Rectangle(x + ox - 4, y + oy - 4, width, height)
+            return Ahorn.Rectangle(x + ox - 4, y + oy - 4, width, height)
         end
     end
 end
 
-function minimumSize(entity::Maple.Entity)
+function Ahorn.minimumSize(entity::spikesUnion)
+    if haskey(directions, entity.name)
+        variant = get(entity.data, "type", "default")
+
+        return variant == "tencacles" ? (16, 16) : (8, 8)
+    end
+end
+
+function Ahorn.resizable(entity::spikesUnion)
     if haskey(directions, entity.name)
         variant = get(entity.data, "type", "default")
         direction = get(directions, entity.name, "up")
 
-        if variant == "tentacles"
-            return true, 16, 16
-
-        else
-            return true, 8, 8
-        end
+        return resizeDirections[direction]
     end
 end
 
-function resizable(entity::Maple.Entity)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
     if haskey(directions, entity.name)
-        variant = get(entity.data, "type", "default")
-        direction = get(directions, entity.name, "up")
-
-        if variant == "tentacles"
-            return true, true, true
-
-        else
-            return true, resizeDirections[direction]...
-        end
-    end
-end
-
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
-    # TODO - Tint trigger spikes
-
-    if haskey(directions, entity.name)
-        variant = entity.name in triggerNames? "trigger" : get(entity.data, "type", "default")
+        variant = entity.name in triggerNames ? "trigger" : get(entity.data, "type", "default")
         direction = get(directions, entity.name, "up")
         triggerOriginalOffset = entity.name in triggerOriginalNames ? triggerOriginalOffsets[direction] : (0, 0)
 
@@ -240,15 +229,21 @@ function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
             end
 
         elseif variant == "trigger"
+            rng = Ahorn.getSimpleEntityRng(entity)
+
             width = get(entity.data, "width", 8)
             height = get(entity.data, "height", 8)
 
             updown = direction == "up" || direction == "down"
 
             for ox in 0:8:width - 8, oy in 0:8:height - 8
+                color1 = rand(rng, triggerSpikeColors)
+                color2 = rand(rng, triggerSpikeColors)
+
                 drawX, drawY = (ox, oy) .+ triggerRotationOffsets[direction] .+ triggerOriginalOffset
-                Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v06.png", drawX, drawY, rot=rotations[direction])
-                Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v03.png", drawX + 3 * updown, drawY + 3 * !updown, rot=rotations[direction])
+
+                Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v06.png", drawX, drawY, rot=rotations[direction], tint=color1)
+                Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v03.png", drawX + 3 * updown, drawY + 3 * !updown, rot=rotations[direction], tint=color2)
             end
 
         else        
@@ -260,11 +255,7 @@ function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
                 Ahorn.drawSprite(ctx, "danger/spikes/$(variant)_$(direction)00.png", drawX, drawY)
             end
         end
-
-        return true
     end
-
-    return false
 end
 
 end

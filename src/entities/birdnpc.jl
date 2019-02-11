@@ -2,7 +2,7 @@ module BirdNPC
 
 using ..Ahorn, Maple
 
-placements = Dict{String, Ahorn.EntityPlacement}(
+const placements = Ahorn.PlacementDict(
     "Bird NPC" => Ahorn.EntityPlacement(
         Maple.Bird
     )
@@ -17,34 +17,27 @@ modeFacingScale = Dict{String, Integer}(
     "superwalljumptutorial" => -1,
     "hyperjumptutorial" => -1,
     "flyaway" => -1,
-    "sleeping" => 1
+    "sleeping" => 1,
+    "none" => -1
 )
 
-function editingOptions(entity::Maple.Entity)
-    if entity.name == "bird"
-        return true, Dict{String, Any}(
-            "mode" => Maple.bird_npc_modes
-        )
-    end
+Ahorn.editingOptions(entity::Maple.Bird) = return Dict{String, Any}(
+    "mode" => Maple.bird_npc_modes
+)
+
+sprite = "characters/bird/crow00.png"
+
+function Ahorn.selection(entity::Maple.Bird)
+    x, y = Ahorn.position(entity)
+
+    return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=1.0)
 end
 
-function selection(entity::Maple.Entity)
-    if entity.name == "bird"
-        x, y = Ahorn.entityTranslation(entity)
-
-        return true, Ahorn.Rectangle(x - 7, y - 12, 15, 13)
-    end
-end
-
-function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
-    if entity.name == "bird"
-        scaleX = modeFacingScale[lowercase(get(entity.data, "mode", "Sleeping"))]
-        Ahorn.drawSprite(ctx, "characters/bird/crow00.png", 0, -12, sx=scaleX)
-
-        return true
-    end
-
-    return false
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Bird, room::Maple.Room)
+    key = lowercase(get(entity.data, "mode", "Sleeping"))
+    scaleX = get(modeFacingScale, key, -1)
+    
+    Ahorn.drawSprite(ctx, sprite, 0, 0, sx=scaleX, jx=0.5, jy=1.0)
 end
 
 end

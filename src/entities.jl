@@ -3,52 +3,61 @@ include("tile_entity.jl")
 # Use the Maple function
 # Then set the data from the placements (such as setting fields IE winged for strawberries)
 struct EntityPlacement
-    func::Function
+    func::Union{Function, Type}
     placement::String
     data::Dict{String, Any}
-    finalizer::Function
+    finalizer::Union{Function, Nothing}
 
-    EntityPlacement(func::Function, placement::String="point", data::Dict{String, Any}=Dict{String, Any}(), finalizer::Function=e -> e) = new(func, placement, data, finalizer)
+    function EntityPlacement(func::Union{Function, Type}, placement::String="point", data::Dict{String, Any}=Dict{String, Any}(), finalizer::Union{Function, Nothing}=nothing)
+        return new(func, placement, data, finalizer)
+    end
 end
+
+const PlacementDict = Dict{String, EntityPlacement}
 
 entityNameLookup = Dict{String, String}()
 
 # The point the entity will be drawn relative too
 # Make sure it returns in Int32/64
-function entityTranslation(entity::Maple.Entity)
+function position(entity::Maple.Entity)
     return (
         floor(Int, get(entity.data, "x", 0)),
         floor(Int, get(entity.data, "y", 0))
     )
 end
 
-function renderEvent(fn::String, func::String, args...)
-    if !haskey(loadedModules, fn)
-        return false
+# Entity is considered to have failed rendering if it returns exactly `false`, `nothing` is considered a success.
+function renderCall(func, args...)
+    if applicable(func, args...)
+        if func(args...) != false
+            return true
+        end
     end
 
-    res = eventToModule(fn, func, args...)
-
-    return !isa(res, Void) && res
+    return false
 end
 
-function attemptEntityRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room, fn::String)
+function attemptEntityRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room)
     Cairo.save(ctx)
 
-    res = renderEvent(fn, "renderAbs", ctx, entity) ||
-        renderEvent(fn, "renderAbs", layer, entity) || 
-        renderEvent(fn, "renderAbs", ctx, entity, room) ||
-        renderEvent(fn, "renderAbs", layer, entity, room)
+    res = renderCall(renderAbs, ctx, entity) ||
+        renderCall(renderAbs, ctx, entity, room)
 
-    translate(ctx, entityTranslation(entity)...)
-    res |= renderEvent(fn, "render", ctx, entity) ||
-        renderEvent(fn, "render", layer, entity) || 
-        renderEvent(fn, "render", ctx, entity, room) ||
-        renderEvent(fn, "render", layer, entity, room)
+    translate(ctx, position(entity)...)
+    res |= renderCall(render, ctx, entity) ||
+        renderCall(render, ctx, entity, room)
 
     Cairo.restore(ctx)
 
     return res
+end
+
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
+    return false
+end
+
+function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
+    return false
 end
 
 function renderEntity(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)
@@ -57,21 +66,7 @@ function renderEntity(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entit
     # Set global alpha here, passing alpha to the entity renderer is not sane
     setGlobalAlpha!(alpha)
 
-    if haskey(entityNameLookup, entity.name)
-        fn = entityNameLookup[entity.name]
-        success = attemptEntityRender(ctx, layer, entity, room, fn)
-
-    else
-        for fn in loadedEntities
-            success = attemptEntityRender(ctx, layer, entity, room, fn)
-
-            if success
-                entityNameLookup[entity.name] = fn
-
-                break
-            end
-        end
-    end
+    success = attemptEntityRender(ctx, layer, entity, room)
 
     # Reset global alpha again
     setGlobalAlpha!(1)
@@ -81,21 +76,33 @@ function renderEntity(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entit
     end
 end
 
+function renderSelected(ctx::Cairo.CairoContext, entity::Maple.Entity)
+    return false
+end
+
+function renderSelectedAbs(ctx::Cairo.CairoContext, entity::Maple.Entity)
+    return false
+end
+
 function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room, fn::String)
     Cairo.save(ctx)
 
-    eventToModule(fn, "renderSelectedAbs", ctx, entity)
-    eventToModule(fn, "renderSelectedAbs", layer, entity) 
-    eventToModule(fn, "renderSelectedAbs", ctx, entity, room)
-    eventToModule(fn, "renderSelectedAbs", layer, entity, room)
+    res = renderCall(renderSelectedAbs, ctx, entity) ||
+        renderCall(renderSelectedAbs, layer, entity) ||
+        renderCall(renderSelectedAbs, ctx, entity, room) ||
+        renderCall(renderSelectedAbs, layer, entity, room)
 
-    translate(ctx, entityTranslation(entity)...)
-    eventToModule(fn, "renderSelected", ctx, entity)
-    eventToModule(fn, "renderSelected", layer, entity) 
-    eventToModule(fn, "renderSelected", ctx, entity, room)
-    eventToModule(fn, "renderSelected", layer, entity, room)
+    translate(ctx, position(entity)...)
+
+    res |= 
+        renderCall(renderSelected, ctx, entity) ||
+        renderCall(renderSelected, layer, entity) ||
+        renderCall(renderSelected, ctx, entity, room) ||
+        renderCall(renderSelected, layer, entity, room)
 
     Cairo.restore(ctx)
+
+    return res
 end
 
 function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)    
@@ -118,80 +125,32 @@ function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Ma
     setGlobalAlpha!(1)
 end
 
-function entityPropertyQuery(entity::Maple.Entity, func::String)
-    if haskey(entityNameLookup, entity.name)
-        return eventToModule(entityNameLookup[entity.name], func, entity)
-
-    else
-        return eventToModules(loadedEntities, func, entity)
-    end
-end
-
-function minimumSize(entity::Maple.Entity)
+# Helper function to respect debug option
+function minimumSizeWrapper(target::Union{Maple.Entity, Maple.Trigger})
     if get(debug.config, "IGNORE_MINIMUM_SIZE", false)
         return 0, 0
     end
     
-    sizeRes = entityPropertyQuery(entity, "minimumSize")
-
-    if isa(sizeRes, Tuple)
-        success, width, height = sizeRes
-
-        if success
-            return width, height
-        end
-    end
-
-    return 0, 0
+    return minimumSize(target)
 end
 
-function canResize(entity::Maple.Entity)
+# Helper function to respect debug option
+function canResizeWrapper(target::Union{Maple.Entity, Maple.Trigger})
     if get(debug.config, "IGNORE_CAN_RESIZE", false)
         return true, true
     end
 
-    resizeRes = entityPropertyQuery(entity, "resizable")
-    
-    if isa(resizeRes, Tuple)
-        success, vertical, horizontal = resizeRes
-
-        if success
-            return vertical, horizontal
-        end
-    end
-
-    return false, false
+    return resizable(target)
 end
 
-function nodeLimits(entity::Maple.Entity)
-    nodeRes = entityPropertyQuery(entity, "nodeLimits")
-    
-    if isa(nodeRes, Tuple)
-        success, least, most = nodeRes
+minimumSize(entity::Maple.Entity) = 8, 8
+resizable(entity::Maple.Entity) = false, false
 
-        if success
-            return least, most
-        end
-    end
+nodeLimits(entity::Maple.Entity) = 0, 0
 
-    return 0, 0
-end
+editingOptions(entity::Maple.Entity) = Dict{String, Any}()
 
-function editingOptions(entity::Maple.Entity)
-    optionsRes = entityPropertyQuery(entity, "editingOptions")
-    
-    if isa(optionsRes, Tuple)
-        success, options = optionsRes
-
-        if success
-            return success, options
-        end
-    end
-
-    return false, Dict{String, Any}()
-end
-
-function registerPlacements!(placements::Dict{String, EntityPlacement}, loaded::Array{String, 1})
+function registerPlacements!(placements::PlacementDict, loaded::Array{String, 1})
     empty!(placements)
 
     for modul in loaded
@@ -215,42 +174,77 @@ function callFinalizer(map::Maple.Map, room::Room, ep::EntityPlacement, target::
     end
 end
 
-function generateEntity(map::Maple.Map, room::Room, ep::EntityPlacement, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
-    # Create the default entity with the correct coords, then merge the extra data in
-    entity = ep.func(x, y)
-    merge!(entity.data, ep.data)
+function updateEntityPosition!(target::Union{Entity, Trigger}, ep::EntityPlacement, map::Maple.Map, room::Room, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
+    merge!(target.data, ep.data)
 
-    if ep.placement == "rectangle"
+    if ep.placement == "point"
+        target.x = x
+        target.y = y
+
+    elseif ep.placement == "rectangle"
         rect = selectionRectangle(x, y, nx, ny)
 
-        resizeW, resizeH = canResize(entity)
-        minW, minH = minimumSize(entity)
+        resizeW, resizeH = canResizeWrapper(target)
+        minW, minH = minimumSizeWrapper(target)
         
-        w = resizeW? max(minW, rect.w - 1) : minW
-        h = resizeH? max(minH, rect.h - 1) : minH
-        entity.data["x"], entity.data["y"] = rect.x, rect.y
-        merge!(entity.data, Dict("width" => w, "height" => h))
+        w = resizeW ? max(minW, rect.w - 1) : minW
+        h = resizeH ? max(minH, rect.h - 1) : minH
+
+        target.x = rect.x
+        target.y = rect.y
+
+        target.width = w
+        target.height = h
 
     elseif ep.placement == "line"
-        merge!(entity.data, Dict("nodes" => [(nx, ny)]))
+        target.x = x
+        target.y = y
+
+        target.nodes = Tuple{Integer, Integer}[(nx, ny)]
     end
 
-    callFinalizer(map, room, ep, entity)
+    if ep.finalizer !== nothing
+        callFinalizer(map, room, ep, target)
+    end
 
-    return entity
+    return target
+end
+
+function generateEntity(map::Maple.Map, room::Room, ep::EntityPlacement, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
+    target = ep.func(x, y)
+
+    return updateEntityPosition!(target, ep, map, room, x, y, nx, ny)
+end
+
+function updateCachedEntityPosition!(cache::Dict{String, T}, placements::PlacementDict, map::Maple.Map, room::Room, name::String, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8) where T
+    target = getCachedPlacement!(cache, placements, name)
+    ep = placements[name]
+
+    return updateEntityPosition!(target, ep, map, room, x, y, nx, ny)
 end
 
 function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger}, ignores::Array{String, 1}=String[])
     addedNodes = false
-    res = ConfigWindow.Option[]
+    res = Form.Option[]
 
-    success, options = editingOptions(entity)
-    horizontalAllowed, verticalAllowed = canResize(entity)
+    options = editingOptions(entity)
+    horizontalAllowed, verticalAllowed = canResizeWrapper(entity)
     nodeRange = nodeLimits(entity)
 
-    for (attr, value) in entity.data
-        keyOptions = get(options, attr, nothing)
+    key = isa(entity, Maple.Entity) ? "entities" : "triggers"
+    tooltips = get(langdata, ["placements", key, entity.name, "tooltips"])
+    names = get(langdata, ["placements", key, entity.name, "names"])
 
+    # Add nothing keys for all Dict editing options
+    # Merge entity data over afterwards, this makes it possible to "store" nothing values for editing later
+    data = merge(
+        Dict{String, Any}(
+            attr => nothing for (attr, value) in options if isa(value, Dict)
+        ),
+        entity.data
+    )
+
+    for (attr, value) in data
         if !horizontalAllowed && attr == "width" || !verticalAllowed && attr == "height"
             continue
         end
@@ -260,32 +254,81 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger}, ignores
             continue
         end
 
+        # Special cased below
+        if attr == "nodes"
+            continue
+        end
+
         if attr in ignores
             continue
         end
 
-        if isa(value, Bool) || isa(value, Char) || isa(value, String)
-            push!(res, ConfigWindow.Option(humanizeVariableName(attr), typeof(value), value, options=keyOptions, dataName=attr))
-
-        elseif isa(value, Integer)
-            push!(res, ConfigWindow.Option(humanizeVariableName(attr), Int64, Int64(value), options=keyOptions, dataName=attr))
-
-        elseif isa(value, Real)
-            push!(res, ConfigWindow.Option(humanizeVariableName(attr), Float64, Float64(value), options=keyOptions, dataName=attr))
-
-        elseif attr == "nodes"
-            push!(res, ConfigWindow.Option("Node X;Node Y", Array{Tuple{Int64, Int64}, 1}, value, options=keyOptions, dataName=attr, rowCount=nodeRange))
-            addedNodes = true
+        if get(debug.config, "TOOLTIP_ENTITY_MISSING", false) && !haskey(tooltips, Symbol(attr))
+            if !(attr in debug.defaultIgnoredTooltipAttrs)
+                println("Missing tooltip for '$(entity.name)' - $attr")
+            end
         end
+
+        name = expandTooltipText(get(names, Symbol(attr), ""))
+        displayName = isempty(name) ? humanizeVariableName(attr) : name
+        tooltip = expandTooltipText(get(tooltips, Symbol(attr), ""))
+        attrOptions = get(options, attr, nothing)
+
+        push!(res, Form.suggestOption(displayName, value, dataName=attr, tooltip=tooltip, choices=attrOptions, editable=true))
     end
 
-    if !addedNodes && nodeRange[2] != 0 && !("nodes" in ignores)
-        push!(res, ConfigWindow.Option("Node X;Node Y", Array{Tuple{Int64, Int64}, 1}, Tuple{Int, Int}[], dataName="nodes", rowCount=nodeRange))
+    if nodeRange[2] != 0 && !("nodes" in ignores)
+        push!(res, Form.ListOption("Node X;Node Y", get(entity.data, "nodes", Tuple{Int, Int}[]), dataName="nodes", minRows=nodeRange[1], maxRows=nodeRange[2]))
     end
 
     return res
 end
 
-loadedEntities = joinpath.(abs"entities", readdir(abs"entities"))
+function selection(entity::Maple.Entity)
+    return false
+end
+
+function entitySelection(entity::Maple.Entity, room::Maple.Room, node::Integer=0)
+    argsList = Tuple[
+        (entity, room),
+        (entity,)
+    ]
+
+    for args in argsList
+        if applicable(selection, args...)
+            return selection(args...)
+        end
+    end
+end
+
+function getSimpleEntityRng(entity::Maple.Entity)
+    x, y = position(entity)
+    seed = abs(x) << ceil(Int, log(2, abs(y) + 1)) | abs(y)
+
+    return MersenneTwister(seed)
+end
+
+function getCachedPlacement!(cache::Dict{String, T}, placements::PlacementDict, name::String, map::Union{Maple.Map, Nothing}=Ahorn.loadedState.map, room::Union{Maple.Room, Nothing}=Ahorn.loadedState.room) where T <: Union{Entity, Trigger}
+    if map !== nothing && room !== nothing
+        if !haskey(cache, name)
+            if haskey(placements, name)
+                cache[name] = generateEntity(map, room, placements[name], 0, 0, 0, 0)
+            end
+        end
+    end
+
+    return get(cache, name, nothing)
+end
+
+function fillPlacementCache!(cache::Dict{String, T}, placements::PlacementDict, map::Union{Maple.Map, Nothing}=Ahorn.loadedState.map, room::Union{Maple.Room, Nothing}=Ahorn.loadedState.room) where T <: Union{Entity, Trigger}
+    empty!(cache)
+
+    for (name, placement) in placements
+        getCachedPlacement!(cache, placements, name, map, room)
+    end
+end
+
+const loadedEntities = joinpath.(abs"entities", readdir(abs"entities"))
 loadModule.(loadedEntities)
-entityPlacements = Dict{String, EntityPlacement}()
+const entityPlacements = PlacementDict()
+const entityPlacementsCache = Dict{String, Entity}()
