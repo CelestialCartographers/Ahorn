@@ -153,7 +153,7 @@ function renderBridge(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Bridge)
     end
 end
 
-function renderFixedBridge(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Bridge)
+function renderFixedBridge(ctx::Ahorn.Cairo.CairoContext, entity::Maple.BridgeFixed)
     x, y = Ahorn.position(entity)
 
     width = get(entity.data, "width", 32)

@@ -38,7 +38,7 @@ goto :end
 
 :found
 
-set PATH=%PATH%;%JULIA_PATH%
+set PATH=%JULIA_PATH%;%PATH%
 echo Using Julia from: %JULIA_PATH%
 
 :run
