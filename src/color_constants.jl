@@ -48,4 +48,7 @@ filler_room_fill = (0.1, 0.4, 0.3, 1.0)
 # Unknown tile color
 unknown_tile_color = (1.0, 0.0, 1.0, 1.0)
 
+# Canvas Font color
+canvas_font_color = (0.0, 0.0, 0.0, 1.0)
+
 end

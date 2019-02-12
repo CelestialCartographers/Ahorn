@@ -90,12 +90,19 @@ function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera
             redrawFunc = get(redrawingFuncs, layer.name, (layer, room) -> true)
 
             # Use DrawableRoom if it accepts it, otherwise just a plain Maple Room
-            success = useIfApplicable(redrawFunc, layer, room, camera) ||
-                useIfApplicable(redrawFunc, layer, room) ||
-                useIfApplicable(redrawFunc, layer, room.room, camera) ||
-                useIfApplicable(redrawFunc, layer, room.room)
+            try
+                success = useIfApplicable(redrawFunc, layer, room, camera) ||
+                    useIfApplicable(redrawFunc, layer, room) ||
+                    useIfApplicable(redrawFunc, layer, room.room, camera) ||
+                    useIfApplicable(redrawFunc, layer, room.room)
 
-            layer.redraw = false
+                layer.redraw = false
+
+            catch 
+                println(Base.stderr, e)
+                println.(Ref(Base.stderr), stacktrace())
+                println(Base.stderr, "---")
+            end
     
             debug.log("Done redrawing $(layer.name)", "DRAWING_VERBOSE")
         end

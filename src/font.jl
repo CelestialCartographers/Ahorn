@@ -34,11 +34,11 @@ end
 
 # Multiline string
 function lineWidth(font::Font, s::AbstractString, replaceMissing::Char=' ')
-    return sum([get(font.charDict, c, replaceMissing)[3] for c in s]) + (length(s) - 1) * font.charSpacing
+    return sum([get(font.charDict, c, font.charDict[replaceMissing])[3] for c in s]) + (length(s) - 1) * font.charSpacing
 end
 
 function lineHeight(font::Font, s::AbstractString, replaceMissing::Char=' ')
-    return maximum([get(font.charDict, c, replaceMissing)[4] for c in s])
+    return maximum([get(font.charDict, c, font.charDict[replaceMissing])[4] for c in s])
 end
 
 function Base.size(font::Font, s::AbstractString, replaceMissing::Char=' ')
@@ -50,10 +50,10 @@ function Base.size(font::Font, s::AbstractString, replaceMissing::Char=' ')
     return width, height
 end
 
-function drawString(ctx::Cairo.CairoContext, font::Font, s::AbstractString, x::Int=0, y::Int=0; replaceMissing::Char=' ', align::Symbol=:left, tint::Union{colorTupleType, Nothing}=nothing)
-    shouldTranslate = x != 0 || y != 0
+function drawString(ctx::Cairo.CairoContext, font::Font, s::AbstractString, x::Int=0, y::Int=0; replaceMissing::Char=' ', align::Symbol=:left, tint::Union{colorTupleType, Nothing}=colors.canvas_font_color)
+    shouldSave = x != 0 || y != 0
 
-    if shouldTranslate
+    if shouldSave
         Cairo.save(ctx)
         Cairo.translate(ctx, x, y)
     end
@@ -69,7 +69,7 @@ function drawString(ctx::Cairo.CairoContext, font::Font, s::AbstractString, x::I
         accX = lineAllignFunc(widest, width)
 
         for c in line
-            quadX, quadY, width, height = get(font.charDict, c, replaceMissing)
+            quadX, quadY, width, height = get(font.charDict, c, font.charDict[replaceMissing])
             drawImage(ctx, font.surface, accX, accY, quadX, quadY, width, height, tint=tint)
 
             accX += width + font.charSpacing
@@ -77,9 +77,8 @@ function drawString(ctx::Cairo.CairoContext, font::Font, s::AbstractString, x::I
 
         accY += lineHeight(font, line, replaceMissing) + font.lineSpacing
     end
-    
 
-    if shouldTranslate
+    if shouldSave
         Cairo.restore(ctx)
     end
 end
@@ -87,7 +86,7 @@ end
 const pico8FontString = raw"""
                 
                 
- !"¤$% ´()*+,-./
+ !"#$% ´()*+,-./
 0123456789:;<=>?
 @abcdefghijklmno
 pqrstuvwxyz[\]^_

@@ -84,7 +84,7 @@ function renderSelectedAbs(ctx::Cairo.CairoContext, entity::Maple.Entity)
     return false
 end
 
-function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room, fn::String)
+function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room)
     Cairo.save(ctx)
 
     res = renderCall(renderSelectedAbs, ctx, entity) ||
@@ -93,7 +93,6 @@ function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, ent
         renderCall(renderSelectedAbs, layer, entity, room)
 
     translate(ctx, position(entity)...)
-
     res |= 
         renderCall(renderSelected, ctx, entity) ||
         renderCall(renderSelected, layer, entity) ||
@@ -109,17 +108,7 @@ function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Ma
     # Set global alpha here, passing alpha to the entity renderer is not sane
     setGlobalAlpha!(alpha)
 
-    # Selection renders are less strict on returning if they have been handled
-    # Assume that we can use the same filename as for `render` call, or all other otherwise
-    if haskey(entityNameLookup, entity.name)
-        fn = entityNameLookup[entity.name]
-        attemptEntitySelectionRender(ctx, layer, entity, room, fn)
-
-    else
-        for fn in loadedEntities
-            attemptEntitySelectionRender(ctx, layer, entity, room, fn)
-        end
-    end
+    success = attemptEntitySelectionRender(ctx, layer, entity, room)
 
     # Reset global alpha again
     setGlobalAlpha!(1)

@@ -603,29 +603,35 @@ function afterRedo(map::Maple.Map)
 end
 
 function finalizeSelections!(targets::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
+    shouldRedraw = false
+
     for selection in targets
         layer, box, target, node = selection
 
         if layer == "fgTiles" || layer == "bgTiles"
             applyTileSelecitonBrush!(target, false)
+            shouldRedraw = true
         end
     end
 
-    if !isempty(targets)
+    if shouldRedraw
         redrawTargetLayer!(targetLayer, targets)
     end
 end
 
 function initSelections!(targets::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
+    shouldRedraw = false
+
     for selection in targets
         layer, box, target, node = selection
 
         if layer == "fgTiles" || layer == "bgTiles"
             applyTileSelecitonBrush!(target, true)
+            shouldRedraw = true
         end
     end
 
-    if !isempty(targets)
+    if shouldRedraw
         redrawTargetLayer!(targetLayer, targets)
     end
 end
@@ -968,9 +974,10 @@ function keyboard(event::Ahorn.eventKey)
         clearResize!()
         mouseMotionAbs(lastX, lastY)
 
-        Ahorn.History.addSnapshot!(snapshot)
         Ahorn.redrawLayer!(toolsLayer)
         redrawTargetLayer!(targetLayer, layersSelected)
+
+        Ahorn.History.addSnapshot!(snapshot)
     end
 
     return true

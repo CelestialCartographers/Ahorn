@@ -1,4 +1,4 @@
-function drawCenteredText(ctx::Cairo.CairoContext, s::String, x::Number, y::Number, width::Number, height::Number; font::Font=pico8Font, tint::Union{colorTupleType, Nothing}=nothing)
+function drawCenteredText(ctx::Cairo.CairoContext, s::String, x::Number, y::Number, width::Number, height::Number; font::Font=pico8Font, tint::Union{colorTupleType, Nothing}=colors.canvas_font_color)
     words = split(s, " ")
     lines::Array{String, 1} = split(words[end], "\n")
     minwidth = max(width - 8, 0)

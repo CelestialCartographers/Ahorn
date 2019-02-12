@@ -131,7 +131,7 @@ function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Numb
         tintedCtx = CairoContext(tinted)
 
         # Don't pass tint or alpha
-        drawImage(tintedCtx, surface, x, y, quadX, quadY, width, height)
+        drawImage(tintedCtx, surface, 0, 0, quadX, quadY, width, height)
         tinted = tintSurfaceMultiplicative(tinted, tint)
 
         drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
@@ -152,7 +152,7 @@ function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Numb
 end
 
 function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Number, y::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing)
-    drawImage(ctx, surface, x, y, 0, 0, Int(surface.width), Int(surface.height); alpha=alpha)
+    drawImage(ctx, surface, x, y, 0, 0, Int(surface.width), Int(surface.height); alpha=alpha, tint=tint)
 end
 
 drawImage(canvas::Gtk.GtkCanvas, name::String, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing, atlas::String="Gameplay") = drawImage(canvas, getSprite(name, atlas), x, y, quadX, quadY, width, height, alpha=alpha, tint=tint)
