@@ -8,7 +8,7 @@ window = nothing
 function spawnWindowIfAbsent!()
     if window === nothing
         icon = Pixbuf(filename = Ahorn.logoFile, width = 256, height = 256, preserve_aspect_ratio = true)
-        version = "Development Build - "
+        version = ""
         try
             local ctx = Pkg.Types.Context()
             local pkg = PackageSpec(name="Ahorn", uuid=ctx.env.project.deps["Ahorn"])

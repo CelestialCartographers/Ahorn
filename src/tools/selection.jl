@@ -273,6 +273,7 @@ function clearDragging!()
     global lastX = -1
     global lastY = -1
     global shouldDrag = false
+    global canDrag = false
 end
 
 function clearResize!()
@@ -324,7 +325,9 @@ function updateSelectionPreviews(x::Integer, y::Integer)
                 rect = Ahorn.Rectangle(x, y, 1, 1)
                 properlyUpdateSelections!(rect, selectionPreviews, best=true)
 
-                sameSelections = previousPreviews == selectionPreviews
+                # TODO - Unhaunt haunted branch, this works for now
+                #sameSelections = previousPreviews == selectionPreviews
+                sameSelections = length(previousPreviews) == length(selectionPreviews) && sort(collect(previousPreviews)) == sort(collect(selectionPreviews))
 
                 if !sameSelections
                     Ahorn.redrawLayer!(toolsLayer)
@@ -352,11 +355,6 @@ function updateResize(x::Integer, y::Integer)
 end
 
 function updateDrag(x::Integer, y::Integer)
-    ctrl = Ahorn.modifierControl()
-    
-    global lastX = ctrl ? x : div(x, 8) * 8
-    global lastY = ctrl ? y : div(y, 8) * 8
-
     if !shouldDrag
         target = Ahorn.hasSelectionAt(selections, Ahorn.Rectangle(x, y, 1, 1), relevantRoom)
         global canDrag = target != false
@@ -385,8 +383,13 @@ function selectionMotionAbs(rect::Ahorn.Rectangle)
 end
 
 function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
-    if !shouldDrag
-        global shouldDrag = canDrag
+    ctrl = Ahorn.modifierControl()
+
+    if !shouldDrag && canDrag && lastX == -1 && lastY == -1
+        global shouldDrag = true
+
+        global lastX = ctrl ? x : div(x1, 8) * 8
+        global lastY = ctrl ? y : div(y1, 8) * 8
 
         if shouldDrag
             Ahorn.History.addSnapshot!(Ahorn.History.MultiSnapshot("Selections", Ahorn.History.Snapshot[
@@ -454,6 +457,9 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
         end
 
     elseif shouldDrag
+        global lastX = ctrl ? x : div(x2, 8) * 8
+        global lastY = ctrl ? y : div(y2, 8) * 8
+
         if dx != 0 || dy != 0
             for selection in selections
                 layer, box, target, node = selection
@@ -471,9 +477,9 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
 end
 
 function mouseMotionAbs(x::Number, y::Number)
+    updateDrag(x, y)
     updateSelectionPreviews(x, y)
     updateResize(x, y)
-    updateDrag(x, y)
 
     updateCursor()
 end

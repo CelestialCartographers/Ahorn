@@ -124,6 +124,8 @@ function createWindow()
         deleteKeyIfEmpty!(targetSide.data["meta"], "mode")
         deleteKeyIfEmpty!(targetSide.data, "meta")
 
+        Ahorn.loadXMLMeta()
+
         name = get(data["meta"], "Name", targetSide.map.package)
         GAccessor.title(Ahorn.window, "$(Ahorn.baseTitle) - $name")
     end

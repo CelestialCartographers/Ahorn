@@ -148,9 +148,10 @@ function loadFgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bo
         metaPath = get(meta, "ForegroundTiles", "")
 
         hasRoot, modRoot = getModRoot(fn)
+        xmlPath = joinpath(modRoot, metaPath)
 
         if !isempty(metaPath) && hasRoot
-            path = joinpath(modRoot, metaPath)
+            path = xmlPath
         end
     end
 
@@ -175,9 +176,10 @@ function loadBgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bo
         metaPath = get(meta, "BackgroundTiles", "")
 
         hasRoot, modRoot = getModRoot(fn)
+        xmlPath = joinpath(modRoot, metaPath)
 
         if !isempty(metaPath) && hasRoot
-            path = joinpath(modRoot, metaPath)
+            path = xmlPath
         end
     end
 
@@ -202,14 +204,15 @@ function loadAnimatedTilesMeta(side::Union{Side, Nothing}, fn::String, loadDefau
         metaPath = get(meta, "AnimatedTiles", "")
 
         hasRoot, modRoot = getModRoot(fn)
+        xmlPath = joinpath(modRoot, metaPath)
 
         if !isempty(metaPath) && hasRoot
-            path = joinpath(modRoot, metaPath)
+            path = xmlPath
         end
     end
 
     try
-        global animatedTilesMeta = loadAnimatedTilesXML((path))
+        global animatedTilesMeta = loadAnimatedTilesXML(path)
 
     catch e
         if !loadDefault
