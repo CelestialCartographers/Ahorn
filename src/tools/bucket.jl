@@ -18,8 +18,6 @@ function drawFill(x::Number, y::Number, tiles::Maple.Tiles, layer::Ahorn.Layer)
     h, w = size(tiles.data)
 
     if 1 <=x <= w && 1 <= y <= h
-        ctx = Ahorn.creategc(layer.surface)
-
         pixels, ox, oy = Ahorn.shrinkMatrix(Ahorn.findFill(tiles.data, x, y))
         global bucketBrush = Ahorn.Brush("Bucket", pixels, (ox, oy))
 
@@ -57,7 +55,7 @@ function setMaterials!(layer::Ahorn.Layer)
     validTiles = Ahorn.validTiles(layer)
     tileNames = Ahorn.tileNames(layer)
 
-    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == get(tileNames, material, nothing))
 end
 
 function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)

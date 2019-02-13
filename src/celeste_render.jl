@@ -90,7 +90,7 @@ function drawTiles(ctx::Cairo.CairoContext, dr::DrawableRoom, fg::Bool=true; alp
     return true
 end
 
-drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha(), useObjectTiles::Bool=false) = drawTiles(creategc(layer.surface), dr, fg, alpha=alpha, useObjectTiles=useObjectTiles)
+drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha(), useObjectTiles::Bool=false) = drawTiles(getSurfaceContext(layer.surface), dr, fg, alpha=alpha, useObjectTiles=useObjectTiles)
 
 function drawParallax(ctx::Cairo.CairoContext, parallax::Maple.Parallax, camera::Camera, fg::Bool=true)
 
@@ -112,7 +112,7 @@ backgroundFuncs = Dict{Type, Function}(
 
 function drawBackground(layer::Layer, dr::DrawableRoom, camera::Camera, fg::Bool=true)
     backdrops = fg ? dr.map.style.foregrounds : dr.map.style.backgrounds
-    ctx = creategc(layer.surface)
+    ctx = getSurfaceContext(layer.surface)
 
     if !fg
         color = something(dr.fillColor, getRoomBackgroundColor(dr.room))
@@ -129,7 +129,7 @@ function drawBackground(layer::Layer, dr::DrawableRoom, camera::Camera, fg::Bool
 end
 
 function drawDecals(layer::Layer, dr::DrawableRoom, fg::Bool=true)
-    ctx = creategc(layer.surface)
+    ctx = getSurfaceContext(layer.surface)
     decals = fg ? dr.room.fgDecals : dr.room.bgDecals
 
     for decal in decals
@@ -140,7 +140,7 @@ function drawDecals(layer::Layer, dr::DrawableRoom, fg::Bool=true)
 end
 
 function drawEntities(layer::Layer, dr::DrawableRoom)
-    ctx = creategc(layer.surface)
+    ctx = getSurfaceContext(layer.surface)
     entities = dr.room.entities
     
     for entity in entities
@@ -151,7 +151,7 @@ function drawEntities(layer::Layer, dr::DrawableRoom)
 end
 
 function drawTriggers(layer::Layer, dr::DrawableRoom)
-    ctx = creategc(layer.surface)
+    ctx = getSurfaceContext(layer.surface)
     triggers = dr.room.triggers
     
     for trigger in triggers
@@ -257,7 +257,7 @@ function drawRoom(ctx::Cairo.CairoContext, camera::Camera, room::DrawableRoom; a
 
     if renderingLayer.redraw
         resetLayer!(renderingLayer, room)
-        renderingCtx = creategc(renderingLayer.surface)
+        renderingCtx = getSurfaceContext(renderingLayer.surface)
 
         renderingLayer.redraw = false
         combineLayers!(renderingCtx, drawingLayers, camera, room)

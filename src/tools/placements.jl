@@ -25,7 +25,7 @@ blacklistedCloneAttrs = ["id", "x", "y"]
 placementLayers = String["entities", "triggers", "fgDecals", "bgDecals"]
 
 function drawPlacements(layer::Ahorn.Layer, room::Ahorn.Room)
-    ctx = Ahorn.creategc(toolsLayer.surface)
+    ctx = Ahorn.getSurfaceContext(toolsLayer.surface)
 
     if selectionRect !== nothing && selectionRect.w > 0 && selectionRect.h > 0
         if isa(material, Ahorn.EntityPlacement) && material.placement == "rectangle" 

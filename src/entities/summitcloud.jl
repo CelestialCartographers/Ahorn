@@ -12,9 +12,11 @@ function Ahorn.selection(entity::Maple.SummitCloud)
     x, y = Ahorn.position(entity)
 
     rng = Ahorn.getSimpleEntityRng(entity)
-    sprite = rand(rng, textures)
 
-    return Ahorn.getSpriteRectangle(sprite, x, y)
+    sprite = rand(rng, textures)
+    scaleX = rand(rng, Int[-1, 1])
+
+    return Ahorn.getSpriteRectangle(sprite, x, y, sx=scaleX, sy=1)
 end
 
 textures = String[
@@ -24,12 +26,15 @@ textures = String[
 ]
 
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SummitCloud, room::Maple.Room)
+    Ahorn.Cairo.save(ctx)
+
     rng = Ahorn.getSimpleEntityRng(entity)
 
-    Ahorn.Cairo.save(ctx)
+    sprite = rand(rng, textures)
+    scaleX = rand(rng, Int[-1, 1])
     
-    Ahorn.Cairo.scale(ctx, rand(rng, Int[-1, 1]), 1)
-    Ahorn.drawSprite(ctx, rand(rng, textures), 0, 0)
+    Ahorn.Cairo.scale(ctx, scaleX, 1)
+    Ahorn.drawSprite(ctx, sprite, 0, 0)
 
     Ahorn.Cairo.restore(ctx)
 end

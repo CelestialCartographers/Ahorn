@@ -15,8 +15,6 @@ line = nothing
 lineBrush = nothing
 
 function drawLine(line::Ahorn.Line, layer::Ahorn.Layer)
-    ctx = Ahorn.creategc(layer.surface)
-
     points = Ahorn.pointsOnLine(line)
     pixels, ox, oy = Ahorn.nodesToBrushPixels(points)
     global lineBrush = Ahorn.Brush("Line", pixels, (ox, oy))
@@ -48,7 +46,7 @@ function setMaterials!(layer::Ahorn.Layer)
     validTiles = Ahorn.validTiles(layer)
     tileNames = Ahorn.tileNames(layer)
 
-    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == get(tileNames, material, nothing))
 end
 
 function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)

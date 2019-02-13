@@ -86,18 +86,19 @@ end
     Gtk.GLib.@sigatom GAccessor.text(widget, "")
 end
 
-function handleFilterKeyPressed(event::Gtk.GdkEventKey)
-    if event.keyval == Gtk.GdkKeySyms.Escape
-        unfocusFilterEntry!()
+function handleFilterKeyPressed(widget::Gtk.GObject, event::Gtk.GdkEventKey)
+    if widget == materialFilterEntry && 
+        if event.keyval == Gtk.GdkKeySyms.Escape
+            unfocusFilterEntry!()
 
-        return true
+            return true
 
-    elseif event.keyval == Gtk.GdkKeySyms.Return
-        unfocusFilterEntry!()
+        elseif event.keyval == Gtk.GdkKeySyms.Return
+            unfocusFilterEntry!()
+            Gtk.GLib.@sigatom GAccessor.text(widget, "")
 
-        Gtk.GLib.@sigatom GAccessor.text(materialFilterEntry, "")
-
-        return true
+            return true
+        end
     end
 
     return false

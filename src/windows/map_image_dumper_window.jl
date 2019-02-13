@@ -15,7 +15,7 @@ function drawMapSurface(m::Maple.Map)
 
     camera = Ahorn.Camera(tlx, tly, 1)
     surface = Cairo.CairoARGBSurface(width, height)
-    ctx = Cairo.creategc(surface)
+    ctx = Cairo.getSurfaceContext(surface)
 
     Ahorn.paintSurface(ctx, (1.0, 1.0, 1.0, 0.0))
     pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
@@ -51,7 +51,7 @@ function dumpMapImageDialog(w)
         map = Ahorn.loadedState.map
 
         surface = drawMapSurface(map)
-        ctx = Cairo.creategc(surface)
+        ctx = Cairo.getSurfaceContext(surface)
     
         surfaceStatus = status(surface)
         if surfaceStatus == Cairo.STATUS_NO_MEMORY

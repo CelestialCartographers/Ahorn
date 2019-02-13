@@ -17,7 +17,7 @@ position = nothing
 
 function drawBrushes(layer::Ahorn.Layer, room::Maple.Room)
     if position !== nothing
-        ctx = Ahorn.creategc(layer.surface)
+        ctx = Ahorn.getSurfaceContext(layer.surface)
 
         Ahorn.drawObjectTile(ctx, position..., material)
     end

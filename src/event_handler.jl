@@ -50,7 +50,8 @@ end
 
 function shouldConsumeKeys()
     try
-        return !isa(GAccessor.focus(window), Gtk.GtkEntryLeaf)
+        focused = GAccessor.focus(window)
+        return !isa(focused, Gtk.GtkEntryLeaf), focused
 
     catch
         return true
@@ -171,7 +172,7 @@ end
 
 function key_press_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
     keyPressed[event.keyval] = (event, true)
-    consume = shouldConsumeKeys()
+    consume, textEntry = shouldConsumeKeys()
 
     # Always handle non specific hotkeys
     handleHotkeys(hotkeys, event)
@@ -183,7 +184,7 @@ function key_press_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
         # Let tools manager handle hotkeys, but not pass it onto the tools
         handleKeyPressed(event, false)
 
-        return handleFilterKeyPressed(event)
+        return handleFilterKeyPressed(textEntry, event)
     end
 
     return consume

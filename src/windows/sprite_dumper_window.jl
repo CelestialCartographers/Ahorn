@@ -23,7 +23,7 @@ function dumpSpritesDialog(w)
                 filename = joinpath(outdir, atlas, name) * ".png"
 
                 surface = Cairo.CairoARGBSurface(sprite.width, sprite.height)
-                ctx = Cairo.creategc(surface)
+                ctx = Cairo.getSurfaceContext(surface)
 
                 Ahorn.drawImage(ctx, sprite, 0, 0, alpha=1.0)
 

@@ -363,20 +363,24 @@ function pixbufFromSurface(surface::Cairo.CairoSurface, alpha::Bool=true)
     return Pixbuf(data=[Ahorn.ARGB(Ahorn.argb32ToRGBATuple(c)...) for c in getSurfaceData(surface)], has_alpha=alpha)
 end
 
+getSurfaceData(surface::Cairo.CairoSurfaceImage) = surface.data
+
 function getSurfaceData(surface::Cairo.CairoSurface)
-    if isa(surface, Cairo.CairoSurfaceImage)
-        return surface.data
+    imageSurface = CairoImageSurface(zeros(UInt32, floor(Int, height(surface)), floor(Int, width(surface))), Cairo.FORMAT_ARGB32)
+    imageSurfaceCtx = CairoContext(imageSurface)
 
-    else
-        imageSurface = CairoImageSurface(zeros(UInt32, floor(Int, height(surface)), floor(Int, width(surface))), Cairo.FORMAT_ARGB32)
-        imageSurfaceCtx = CairoContext(imageSurface)
+    drawImage(imageSurfaceCtx, surface, 0, 0)
 
-        drawImage(imageSurfaceCtx, surface, 0, 0)
-
-        return imageSurface.data
-    end
+    return imageSurface.data
 end
 
+cairoGCCache = Dict{Int, Cairo.CairoContext}()
+
+function getSurfaceContext(surface::Cairo.CairoSurface)
+    get!(cairoGCCache, Int(surface.ptr)) do
+        creategc(surface)
+    end
+end
 
 # Borrowed from Gtk.jl repo, build is not installable yet
 function g_timeout_add(interval::Integer, cb::Function, user_data::CT) where CT

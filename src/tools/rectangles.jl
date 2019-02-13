@@ -17,8 +17,6 @@ selection = nothing
 rectangleBrush = nothing
 
 function drawRectangle(rect::Ahorn.Rectangle, layer::Ahorn.Layer, filled=filled)
-    ctx = Ahorn.creategc(layer.surface)
-
     pixels = fill(true, rect.h, rect.w)
     if !filled
         pixels[2:end - 1, 2:end - 1] .= false
@@ -53,7 +51,7 @@ function setMaterials!(layer::Ahorn.Layer)
     validTiles = Ahorn.validTiles(layer)
     tileNames = Ahorn.tileNames(layer)
 
-    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == get(tileNames, material, nothing))
 end
 
 function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)

@@ -71,7 +71,7 @@ function getRoomBackgroundColor(room::Room)
         return colors.background_room_color_coded_fill[room.color + 1]
         
     else
-        return colors.background_canvas_fill
+        return colors.background_room_fill
     end
 end
 
@@ -91,11 +91,11 @@ function DrawableRoom(map::Map, room::Room)
 end
 
 function destroy(dr::DrawableRoom)
-    ctx = creategc(dr.rendering.surface)
+    ctx = getSurfaceContext(dr.rendering.surface)
     Cairo.destroy(ctx)
 
     for layer in dr.layers
-        ctx = creategc(layer.surface)
+        ctx = getSurfaceContext(layer.surface)
         Cairo.destroy(ctx)
     end
 end

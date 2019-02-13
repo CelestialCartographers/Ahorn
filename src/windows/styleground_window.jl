@@ -15,13 +15,20 @@ function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, co
     sprite = Ahorn.getSprite(texture, "Gameplay")
     rawColor = Ahorn.Form.getValue(colorOption)
 
-    if sprite.width > 0 && sprite.height > 0
+    width, height = sprite.realWidth, sprite.realWidth
+
+    if width > 0 && height > 0
         try
             @assert length(rawColor) == 6
             color = Ahorn.argb32ToRGBATuple(parse(Int, "0x" * rawColor) + 255 << 24) ./ 255.0
 
+            offsetX, offsetY = sprite.offsetX, sprite.offsetY
+
+            set_gtk_property!(canvas, :width_request, width)
+            set_gtk_property!(canvas, :height_request, height)
+
             Ahorn.clearSurface(ctx)
-            Ahorn.drawImage(ctx, sprite, -sprite.offsetX, -sprite.offsetY, tint=color)
+            Ahorn.drawImage(ctx, sprite, -offsetX, -offsetY, tint=color)
 
         catch e
             Ahorn.clearSurface(ctx)

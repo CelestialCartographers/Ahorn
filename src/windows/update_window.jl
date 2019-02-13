@@ -39,7 +39,7 @@ function pkghash()
     end
 end
 
-function updateAhorn(widget::Ahorn.MenuItemsTypes=MenuItem())
+function updateAhorn(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
     ask_dialog("""Would you like to check for updates?
             This will download files required for the update if there is one.
             The window might also freeze for a bit.

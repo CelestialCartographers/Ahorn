@@ -135,7 +135,7 @@ function createWindow()
     return metadataWindow
 end
 
-function configureMetadata(widget::Ahorn.MenuItemsTypes=MenuItem())
+function configureMetadata(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
     if Ahorn.loadedState.side != nothing
         if metadataWindow !== nothing
             Gtk.destroy(metadataWindow)

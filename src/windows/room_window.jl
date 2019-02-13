@@ -252,8 +252,8 @@ function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "u
     end
 end
 
-createRoom(widget::Gtk.GtkMenuItem) = showall(createRoomWindow(true))
-configureRoom(widget::Gtk.GtkMenuItem) = showall(createRoomWindow(false))
+createRoom(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing) = showall(createRoomWindow(true))
+configureRoom(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing) = showall(createRoomWindow(false))
 
 function roomNameValidator(s::String)
     if Ahorn.loadedState.map === nothing || currentRoom === nothing

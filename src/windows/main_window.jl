@@ -6,9 +6,16 @@ set_gtk_property!(canvas, :double_buffered, false)
 scrollableWindowMaterialList = nothing
 scrollableWindowRoomList = nothing
 
+lastCanvasDraw = time()
+
 @guarded draw(canvas) do widget
     if loadedState.map !== nothing && isa(loadedState.map, Map)
         startTime = time()
+        
+        lastDrawDeltaTime = startTime - lastCanvasDraw
+        global lastCanvasDraw = time()
+
+        debug.log("Canvas was last drawn: $lastDrawDeltaTime seconds ago", "DRAWING_CANVAS_DRAW_DURATION")
 
         drawMap(canvas, camera, loadedState.map)
 

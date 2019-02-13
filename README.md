@@ -12,10 +12,6 @@ This project is an unofficial map maker and level editor, it is merely a fan pro
 
 ## Installation
 
-### Windows auto-installer
-
-An easy installer file is available for Windows users. [**Check `#modding_welcome` on Discord**](https://discord.gg/PN9f3xh) for a link to the latest installer.
-
 ### Cross-platform manual installation
 
 First, [install Julia if you haven't already](https://julialang.org/downloads/). You need Julia 1.1, but any newer 1.x version should work as well.
@@ -67,7 +63,7 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - Holding ctrl when doing the above restricts it to targets in a more strict manner
 
  With Everest installed and Celeste running in debug mode, it supports some more:
- - ctrl + alt + leftclick on a room in Ahorn: teleport to that room in the game
+ - Ctrl + alt + leftclick on a room in Ahorn: teleport to that room in the game
 
 If you are serious about making maps, it is highly recommended to use [Everest](https://github.com/EverestAPI/Everest) for the F5 (force map reload) and F6 (open map editor for the current map) features.
 
@@ -116,3 +112,7 @@ Whenever that happens, we might just continue like before; it might well be that
 "because it just happend" ~ @Cruor
 
 Because it's faster than most other languages, because it is a pleasure to write in, and because we wanted to.
+
+## License
+
+Copyright (c) Vexatos and Cruor. All rights reserved. Refer to [LICENSE.md](LICENSE.md).

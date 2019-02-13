@@ -94,7 +94,7 @@ function setMaterials!(layer::Ahorn.Layer)
     validTiles = Ahorn.validTiles(layer)
     tileNames = Ahorn.tileNames(layer)
 
-    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == get(tileNames, material, nothing))
 end
 
 function mouseMotion(x::Number, y::Number)

@@ -57,7 +57,7 @@ function createWindow()
     return settingsWindow
 end
 
-function showSettings(widget::Ahorn.MenuItemsTypes=MenuItem())
+function showSettings(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
     if settingsWindow !== nothing
         Gtk.destroy(settingsWindow)
     end

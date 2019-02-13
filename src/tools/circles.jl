@@ -17,8 +17,6 @@ circle = nothing
 circleBrush = nothing
 
 function drawCircle(circle::Ahorn.Circle, layer::Ahorn.Layer)
-    ctx = Ahorn.creategc(layer.surface)
-
     points = Ahorn.pointsOnCircle(circle, filled=filled)
     pixels, ox, oy = Ahorn.nodesToBrushPixels(points)
     global circleBrush = Ahorn.Brush("Circle", pixels, (ox, oy))
@@ -50,7 +48,7 @@ function setMaterials!(layer::Ahorn.Layer)
     validTiles = Ahorn.validTiles(layer)
     tileNames = Ahorn.tileNames(layer)
 
-    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == tileNames[material])
+    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == get(tileNames, material, nothing))
 end
 
 function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)

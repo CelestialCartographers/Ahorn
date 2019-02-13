@@ -189,7 +189,7 @@ function rotationOffset(ctx::CairoContext, brush::Brush)
 end
 
 function drawBrush(brush::Brush, layer::Layer, x::Number, y::Number, thickness::Integer=2)
-    ctx = creategc(layer.surface)
+    ctx = getSurfaceContext(layer.surface)
 
     ox, oy = brush.offset
 

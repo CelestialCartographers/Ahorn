@@ -52,8 +52,8 @@ function copySelections(cut::Bool=false)
         empty!(selections)
     end
 
+    toolsLayer.redraw = true
     redrawTargetLayer!(targetLayer, selectionsClipboard)
-    Ahorn.redrawLayer!(toolsLayer)
 
     return cut
 end
@@ -186,8 +186,8 @@ function pasteSelections()
     empty!(selections)
     union!(selections, newSelections)
 
+    toolsLayer.redraw = true
     redrawTargetLayer!(targetLayer, selections)
-    Ahorn.redrawLayer!(toolsLayer)
 
     return true
 end
@@ -209,7 +209,7 @@ hotkeys = Ahorn.Hotkey[
 
 function drawSelections(layer::Ahorn.Layer, room::Ahorn.Room)
     drawnTargets = Set()
-    ctx = Ahorn.creategc(toolsLayer.surface)
+    ctx = Ahorn.getSurfaceContext(toolsLayer.surface)
 
     if selectionRect !== nothing && selectionRect.w > 0 && selectionRect.h > 0 && !shouldDrag
         Ahorn.drawRectangle(ctx, selectionRect, Ahorn.colors.selection_selection_fc, Ahorn.colors.selection_selection_bc)
@@ -385,13 +385,13 @@ end
 function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
     ctrl = Ahorn.modifierControl()
 
-    if !shouldDrag && canDrag && lastX == -1 && lastY == -1
-        global shouldDrag = true
-
+    if lastX == -1 && lastY == -1
         global lastX = ctrl ? x : div(x1, 8) * 8
         global lastY = ctrl ? y : div(y1, 8) * 8
 
-        if shouldDrag
+        if !shouldDrag && canDrag
+            global shouldDrag = true
+
             Ahorn.History.addSnapshot!(Ahorn.History.MultiSnapshot("Selections", Ahorn.History.Snapshot[
                 Ahorn.History.RoomSnapshot("Selections", Ahorn.loadedState.room),
                 Ahorn.History.SelectionSnapshot("Selections", relevantRoom, selections)
@@ -450,7 +450,7 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
 
                     Ahorn.History.addSnapshot!(snapshot)
 
-                    Ahorn.redrawLayer!(toolsLayer)
+                    toolsLayer.redraw = true
                     Ahorn.redrawLayer!(Ahorn.getLayerByName(drawingLayers, layer))
                 end
             end
@@ -470,8 +470,9 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
                 end
             end
 
-            Ahorn.redrawLayer!(toolsLayer)
-            redrawTargetLayer!(targetLayer, selections, String["fgTiles", "bgTiles"])
+            toolsLayer.redraw = true
+            redrawTargetLayer!(targetLayer, selections, String["fgTiles", "bgTiles"], onlyMark=true)
+            Ahorn.redrawCanvas!()
         end
     end
 end
@@ -515,15 +516,19 @@ function getLayersSelected(selections::Set{Tuple{String, Ahorn.Rectangle, Any, N
     return unique([selection[1] for selection in selections])
 end
 
-function redrawTargetLayer!(layer::Ahorn.Layer, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}, ignore::Array{String, 1}=String[])
-    redrawTargetLayer!(layer, getLayersSelected(selections), ignore)
+function redrawTargetLayer!(layer::Ahorn.Layer, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}, ignore::Array{String, 1}=String[]; onlyMark::Bool=false)
+    redrawTargetLayer!(layer, getLayersSelected(selections), ignore, onlyMark=onlyMark)
 end
 
-function redrawTargetLayer!(layer::Ahorn.Layer, layers::Array{String, 1}, ignore::Array{String, 1}=String[])
+function redrawTargetLayer!(layer::Ahorn.Layer, layers::Array{String, 1}, ignore::Array{String, 1}=String[]; onlyMark::Bool=false)
     needsRedraw = filter(v -> !(v in ignore), layers)
 
     for layer in needsRedraw
-        Ahorn.redrawLayer!(drawingLayers, layer)
+        Ahorn.getLayerByName(drawingLayers, layer).redraw = true
+    end
+
+    if !isempty(needsRedraw) || onlyMark
+        Ahorn.redrawCanvas!()
     end
 end
 
@@ -718,7 +723,7 @@ function applyGridMovement!(decal::Maple.Decal, gridSize::Integer, directionX::I
     applyMovement!(decal, ox - decal.x, oy - decal.y)
 end
 
-function applyGridMovement(target::Ahorn.TileSelection, gridSize::Integer, directionX::Integer, directionY::Integer, node::Integer=0)
+function applyGridMovement!(target::Ahorn.TileSelection, gridSize::Integer, directionX::Integer, directionY::Integer, node::Integer=0)
     ox, oy = gridSnapped(target.offsetX, gridSize, directionX), gridSnapped(target.offsetY, gridSize, directionY)
 
     applyMovement!(target, ox - target.offsetX, oy - target.offsetY)
@@ -980,7 +985,7 @@ function keyboard(event::Ahorn.eventKey)
         clearResize!()
         mouseMotionAbs(lastX, lastY)
 
-        Ahorn.redrawLayer!(toolsLayer)
+        toolsLayer.redraw = true
         redrawTargetLayer!(targetLayer, layersSelected)
 
         Ahorn.History.addSnapshot!(snapshot)
