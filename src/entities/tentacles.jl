@@ -13,10 +13,18 @@ const placements = Ahorn.PlacementDict(
     )
 )
 
+# Maple definition doesn't have "Fake keys"
+fearDistance = Dict{String, String}(
+    "None" => "",
+    "Close" => "close",
+    "Medium" => "medium",
+    "Far" => "far"
+)
+
 Ahorn.nodeLimits(entity::Maple.Tentacles) = 1, -1
 
 Ahorn.editingOptions(entity::Maple.Tentacles) = Dict{String, Any}(
-    "fear_distance" => Maple.tentacle_fear_distance
+    "fear_distance" => fearDistance
 )
 
 function Ahorn.selection(entity::Maple.Tentacles)

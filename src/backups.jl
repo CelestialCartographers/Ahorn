@@ -100,11 +100,12 @@ function openBackupDialog()
     end
 end
 
-function initBackup(config::Ahorn.Config)
+function initBackup(persistence::Ahorn.Config)
     active = get(Ahorn.config, "backup_enabled", true)
+    showDialog = get(Ahorn.config, "backup_dialog_enabled", true)
 
     if active
-        if get(config, "currently_running", true)
+        if get(persistence, "currently_running", true) && showDialog
             @async begin
                 if ask_dialog("Ahorn did not shut down properly.\nDo you want to restore from automatic backup?", Ahorn.window)
                     openBackupDialog()
@@ -118,8 +119,8 @@ function initBackup(config::Ahorn.Config)
         end
     end
 
-    config["currently_running"] = true
-    Ahorn.saveConfig(config, true)
+    persistence["currently_running"] = true
+    Ahorn.saveConfig(persistence, true)
 end
 
 end

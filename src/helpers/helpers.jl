@@ -33,7 +33,7 @@ end
 
 function humanizeVariableName(s::String) 
     text = replace(s, "_" => " ")
-    text = replace(s,  "/" => " ")
+    text = replace(text,  "/" => " ")
 
     prevUpper = false
     res = Char[]

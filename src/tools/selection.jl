@@ -168,7 +168,7 @@ function pasteSelections()
             target.data["x"] += offsetX
             target.data["y"] += offsetY
 
-            target.id = Maple.nextTriggerId()
+            target.id = Maple.nextEntityId()
 
             push!(room.triggers, target)
 
@@ -386,8 +386,8 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
     ctrl = Ahorn.modifierControl()
 
     if lastX == -1 && lastY == -1
-        global lastX = ctrl ? x : div(x1, 8) * 8
-        global lastY = ctrl ? y : div(y1, 8) * 8
+        global lastX = ctrl ? x1 : div(x1, 8) * 8
+        global lastY = ctrl ? y1 : div(y1, 8) * 8
 
         if !shouldDrag && canDrag
             global shouldDrag = true
@@ -457,8 +457,8 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
         end
 
     elseif shouldDrag
-        global lastX = ctrl ? x : div(x2, 8) * 8
-        global lastY = ctrl ? y : div(y2, 8) * 8
+        global lastX = ctrl ? x2 : div(x2, 8) * 8
+        global lastY = ctrl ? y2 : div(y2, 8) * 8
 
         if dx != 0 || dy != 0
             for selection in selections

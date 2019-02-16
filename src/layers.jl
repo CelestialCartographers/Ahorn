@@ -98,7 +98,7 @@ function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera
 
                 layer.redraw = false
 
-            catch 
+            catch e
                 println(Base.stderr, e)
                 println.(Ref(Base.stderr), stacktrace())
                 println(Base.stderr, "---")

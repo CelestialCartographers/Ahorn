@@ -76,7 +76,9 @@ function loadTilesetXML(fn::String)
     center = Dict{Char, Array{Tuple{Integer, Integer}, 1}}()
     ignores = Dict{Char, Array{Char, 1}}()
 
-    for set in child_elements(xroot)
+    orderedElements = sort(collect(child_elements(xroot)), by=set -> attribute(set, "copy") !== nothing)
+
+    for set in orderedElements
         id = attribute(set, "id")[1] # Char doesn't work on 1 length string?
         path = attribute(set, "path")
         copyTileset = attribute(set, "copy")
@@ -84,16 +86,14 @@ function loadTilesetXML(fn::String)
 
         paths[id] = "tilesets/$path"
 
-        if ignore != nothing
+        if ignore !== nothing
             ignores[id] = collect(ignore)
         end
 
-        if copyTileset != nothing
-            padding[id] = padding[copyTileset[1]]
-            center[id] = center[copyTileset[1]]
-            masks[id] = masks[copyTileset[1]]
-
-            continue
+        if copyTileset !== nothing
+            padding[id] = deepcopy(padding[copyTileset[1]])
+            center[id] = deepcopy(center[copyTileset[1]])
+            masks[id] = deepcopy(masks[copyTileset[1]])
         end
 
         currMasks = Tuple{Mask, Array{Tuple{Integer, Integer}, 1}, String}[]
@@ -118,10 +118,11 @@ function loadTilesetXML(fn::String)
             end
         end
 
-        masks[id] = currMasks
-        sort!(masks[id], by=m -> sortScore(m[1]), rev=false)
+        if !isempty(currMasks)
+            masks[id] = currMasks
+            sort!(masks[id], by=m -> sortScore(m[1]), rev=false)
+        end
     end
-
 
     return paths, masks, padding, center, ignores
 end

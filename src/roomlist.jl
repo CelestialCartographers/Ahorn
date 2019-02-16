@@ -20,6 +20,10 @@ roomList = generateTreeView(
                 else
                     room.name = v
                     store[row, col] = v
+
+                    loadedState.room = room
+                    loadedState.roomName = v
+                    persistence["files_lastroom"] = v
                 end
             end
         end,
