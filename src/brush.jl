@@ -68,8 +68,8 @@ end
 function nodesToBrushPixels(nodes::Array{nodeType, 1})
     # Take one pass through to make the output as small as possible
     # Lowest and highest
-    lx, ly = nodes[1]
-    hx, hy = nodes[1]
+    lx = ly = typemax(Int)
+    hx = hy = typemin(Int)
 
     for node in nodes
         x, y = node

@@ -1,7 +1,7 @@
 mutable struct TileStates
     quads::Array{Tuple{Integer, Integer}, 2}
     chars::Array{Char, 2}
-    rands::Array{Integer, 2}
+    rands::Array{UInt8, 2}
 
     TileStates() = new(Matrix{Tuple{Integer, Integer}}(undef, 0, 0), Matrix{Char}(undef, 0, 0), Matrix{Integer}(undef, 0, 0))
 end
@@ -30,7 +30,7 @@ function updateTileStates!(room::String, package::String, states::TileStates, wi
 
     states.quads = fill((-1, -1), (height, width))
     states.chars = fill('0', (height, width))
-    states.rands = rand(rng, 1:4, (height, width))
+    states.rands = rand(rng, 0:255, (height, width))
 end
 
 updateTileStates!(room::Room, package::String, states::TileStates, width::Integer, height::Integer, fg::Bool=false) = updateTileStates!(room.name, package, states, width, height, fg)

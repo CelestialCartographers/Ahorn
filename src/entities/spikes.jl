@@ -195,7 +195,7 @@ function Ahorn.minimumSize(entity::spikesUnion)
     if haskey(directions, entity.name)
         variant = get(entity.data, "type", "default")
 
-        return variant == "tencacles" ? (16, 16) : (8, 8)
+        return variant == "tentacles" ? (16, 16) : (8, 8)
     end
 end
 
@@ -220,12 +220,12 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
 
             for ox in 0:16:width - 16, oy in 0:16:height - 16
                 drawX, drawY = (ox, oy) .+ (16, 16) .* rotationOffsets[direction] .+ triggerOriginalOffset
-                Ahorn.drawSprite(ctx, "danger/tentacles00.png", drawX, drawY, rot=rotations[direction])
+                Ahorn.drawSprite(ctx, "danger/tentacles00", drawX, drawY, rot=rotations[direction])
             end
 
             if width / 8 % 2 == 1 || height / 8 % 2 == 1
                 drawX, drawY = (width - 16, height - 16) .+ (16, 16) .* rotationOffsets[direction] .+ triggerOriginalOffset
-                Ahorn.drawSprite(ctx, "danger/tentacles00.png", drawX, drawY, rot=rotations[direction])
+                Ahorn.drawSprite(ctx, "danger/tentacles00", drawX, drawY, rot=rotations[direction])
             end
 
         elseif variant == "trigger"
@@ -242,8 +242,8 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
 
                 drawX, drawY = (ox, oy) .+ triggerRotationOffsets[direction] .+ triggerOriginalOffset
 
-                Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v06.png", drawX, drawY, rot=rotations[direction], tint=color1)
-                Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v03.png", drawX + 3 * updown, drawY + 3 * !updown, rot=rotations[direction], tint=color2)
+                Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v06", drawX, drawY, rot=rotations[direction], tint=color1)
+                Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v03", drawX + 3 * updown, drawY + 3 * !updown, rot=rotations[direction], tint=color2)
             end
 
         else        
@@ -252,7 +252,7 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
 
             for ox in 0:8:width - 8, oy in 0:8:height - 8
                 drawX, drawY = (ox, oy) .+ offsets[direction] .+ triggerOriginalOffset
-                Ahorn.drawSprite(ctx, "danger/spikes/$(variant)_$(direction)00.png", drawX, drawY)
+                Ahorn.drawSprite(ctx, "danger/spikes/$(variant)_$(direction)00", drawX, drawY)
             end
         end
     end

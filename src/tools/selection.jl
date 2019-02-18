@@ -173,6 +173,9 @@ function pasteSelections()
             push!(room.triggers, target)
 
         elseif layer == "fgTiles" || layer == "bgTiles"
+            target.offsetX += offsetX
+            target.offsetY += offsetY
+
             target.selection = Ahorn.Rectangle(
                 target.selection.x + offsetX,
                 target.selection.y + offsetY,

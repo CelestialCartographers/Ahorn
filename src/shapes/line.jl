@@ -1,4 +1,4 @@
-tolerance = 10.0^-10
+const tolerance = 10.0^-10
 
 struct Line
     x1::Number
@@ -35,10 +35,10 @@ function pointsOnLine(line::Line)
     velX = cos(theta)
     velY = sin(theta)
 
-    velX = isapprox(velX, 0, atol = tolerance) ? 0 : velX
-    velY = isapprox(velY, 0, atol = tolerance) ? 0 : velY
+    velX = isapprox(velX, 0, atol=tolerance) ? 0 : velX
+    velY = isapprox(velY, 0, atol=tolerance) ? 0 : velY
 
-    while velX != 0 && !isapprox(x, x2, atol = tolerance) || velY != 0 && !isapprox(y, y2, atol = tolerance)
+    while velX != 0 && !isapprox(x, x2, atol=tolerance) || velY != 0 && !isapprox(y, y2, atol=tolerance)
         dx = rayDelta(x, velX)
         dy = rayDelta(y, velY)
 
