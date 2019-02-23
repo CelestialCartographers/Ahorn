@@ -49,8 +49,8 @@ function renderTrail(ctx, x::Number, y::Number, width::Number, height::Number)
     end
 
     for i in 2:tilesHeight - 1
-        Ahorn.drawImage(ctx, trailFrame, x + 2, y + (i - 1) * 8, 0, 6, 8, 8)
-        Ahorn.drawImage(ctx, trailFrame, x + width - 8, y + (i - 1) * 8, 14, 6, 8, 8)
+        Ahorn.drawImage(ctx, trailFrame, x + 2, y + (i - 1) * 8, 0, 6, 6, 8)
+        Ahorn.drawImage(ctx, trailFrame, x + width - 8, y + (i - 1) * 8, 14, 6, 6, 8)
     end
 
     for i in 2:tilesWidth - 1, j in 2:tilesHeight - 1

@@ -55,7 +55,7 @@ function generatePreview!(layer::Ahorn.Layer, material::Any, x::Integer, y::Inte
 
             placementsCache = layer.name == "entities" ? Ahorn.entityPlacementsCache : Ahorn.triggerPlacementsCache
             placements = layer.name == "entities" ? Ahorn.entityPlacements : Ahorn.triggerPlacements
-            
+
             if materialName !== nothing
                 return Ahorn.updateCachedEntityPosition!(placementsCache, placements, Ahorn.loadedState.map, Ahorn.loadedState.room, materialName, x, y, nx, ny)
 
@@ -207,43 +207,54 @@ function materialFiltered(list::Ahorn.ListContainer)
     Ahorn.selectRow!(list, row -> row[1] == materialName)
 end
 
+function updatePreviewGhost(x::Number, y::Number)
+    targetX, targetY = x, y
+
+    if !Ahorn.modifierControl()
+        targetX = x * 8 - 8
+        targetY = y * 8 - 8
+    end
+
+    prevGhost = deepcopy(previewGhost)
+    newGhost = generatePreview!(targetLayer, material, targetX, targetY, sx=scaleX, sy=scaleY)
+
+    if newGhost != prevGhost
+        # No need to redraw if the target is on the same tile
+        if isa(prevGhost, Maple.Entity) || isa(prevGhost, Maple.Trigger)
+            if newGhost.data["x"] == prevGhost.data["x"] && newGhost.data["y"] == prevGhost.data["y"]
+                return false
+            end
+        end
+
+        if isa(prevGhost, Maple.Decal)
+            if newGhost.x == prevGhost.x && newGhost.y == prevGhost.y
+                return false
+            end
+        end
+
+        global previewGhost = newGhost
+        Ahorn.redrawLayer!(toolsLayer)
+
+        return true
+    end
+end
+
 function mouseMotion(x::Number, y::Number)
     if !Ahorn.modifierControl() && selectionRect === nothing
-        prevGhost = deepcopy(previewGhost)
-        newGhost = generatePreview!(targetLayer, material, x * 8 - 8, y * 8 - 8, sx=scaleX, sy=scaleY)
-
-        if newGhost != prevGhost
-            # No need to redraw if the target is on the same tile
-            if isa(prevGhost, Maple.Entity) || isa(prevGhost, Maple.Trigger)
-                if newGhost.data["x"] == prevGhost.data["x"] && newGhost.data["y"] == prevGhost.data["y"]
-                    return false
-                end
-            end
-
-            if isa(prevGhost, Maple.Decal)
-                if newGhost.x == prevGhost.x && newGhost.y == prevGhost.y
-                    return false
-                end
-            end
-
-            global previewGhost = newGhost
-
-            Ahorn.redrawLayer!(toolsLayer)
-        end
+        updatePreviewGhost(x, y)
     end
 end
 
 function mouseMotionAbs(x::Number, y::Number)
     if Ahorn.modifierControl() && selectionRect === nothing
-        prevGhost = deepcopy(previewGhost)
-        newGhost = generatePreview!(targetLayer, material, x, y, sx=scaleX, sy=scaleY)
-
-        if newGhost != prevGhost
-            global previewGhost = newGhost
-
-            Ahorn.redrawLayer!(toolsLayer)
-        end
+        updatePreviewGhost(x, y)
     end
+end
+
+function placementFunc(target::Union{Maple.Entity, Maple.Trigger})
+    constructor = isa(target, Maple.Entity) ? Maple.Entity : Maple.Trigger
+
+    return (x::Number, y::Number) -> constructor(target.name, x=x, y=y)
 end
 
 function middleClickAbs(x::Number, y::Number)
@@ -260,9 +271,7 @@ function middleClickAbs(x::Number, y::Number)
             Ahorn.persistence["placements_placements_decal"] = material
 
         elseif name == "entities" || name == "triggers"
-            func = name == "entities" ? Maple.Entity : Maple.Trigger
             horizontal, vertical = Ahorn.canResizeWrapper(target)
-
             placementType = horizontal || vertical ? "rectangle" : "point"
 
             # Fake a entity/trigger of the target
@@ -271,14 +280,14 @@ function middleClickAbs(x::Number, y::Number)
 
             global materialName = nothing
             global material = Ahorn.EntityPlacement(
-                (x, y) -> func(target.name, x=x, y=y),
+                placementFunc(target),
                 placementType,
                 merge(
                     Dict{String, Any}((k, v) for (k, v) in deepcopy(target.data) if !(k in blacklistedCloneAttrs)),
                     Dict{String, Any}("__x" => target.data["x"], "__y" => target.data["y"])
                 ),
-                function(entity)
-                    nodes = get(entity.data, "nodes", [])
+                function(entity::Union{Maple.Entity, Maple.Trigger})
+                    nodes = get(entity.data, "nodes", Tuple{Integer, Integer}[])
                     if length(nodes) > 0
                         x, y = entity.data["x"], entity.data["y"]
                         origx, origy = entity.data["__x"], entity.data["__y"]
@@ -296,7 +305,12 @@ function middleClickAbs(x::Number, y::Number)
                     delete!(entity.data, "__y")
                 end
             )
+
+            global clonedEntity = nothing
+            updatePreviewGhost(x, y)
         end
+
+        Ahorn.redrawLayer!(toolsLayer)
     end
 end
 

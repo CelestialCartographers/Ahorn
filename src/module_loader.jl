@@ -36,8 +36,6 @@ function eventToModule(modul::Module, funcname::String, args...)
             try
                 res = func(args...)
 
-                #println(("S", modul, funcname, typeof.(args)..., res))
-
                 return res
 
             catch e
