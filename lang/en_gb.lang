@@ -118,14 +118,15 @@ placements.entities.moveBlock.tooltips.direction=Determines the direction the mo
 placements.entities.switchGate.tooltips.persistent=Will stay open once activated, even if the player dies.
 placements.entities.switchGate.tooltips.sprite=Changes the visual appearance of the switch gate.
 
-#Dream Block
+# Dream Block
 placements.entities.dreamBlock.tooltips.fastMoving=Changes the dream block between two speeds.
+placements.entities.dreamBlock.tooltips.oneUse=Determines whether the dream block should disappear after one use.
 
-#Cliffside Flag
+# Cliffside Flag
 placements.entities.cliffside_flag.tooltips.index=Changes the visual appearance of the flag.
 
 # Cloud
-placements.entities.cloud.tooltips.fragile=Determines if the cloud will temporarily disappear after being touched.
+placements.entities.cloud.tooltips.fragile=Determines whether the cloud will temporarily disappear after being touched.
 placements.entities.cloud.tooltips.small=Reduces the surface area of the cloud.
 
 # Dash Switch Horizontal

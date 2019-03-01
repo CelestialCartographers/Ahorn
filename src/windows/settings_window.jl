@@ -62,14 +62,7 @@ function showSettings(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
         Gtk.destroy(settingsWindow)
     end
 
-    try
-        global settingsWindow = createWindow()
-
-    catch e
-        println(Base.stderr, e)
-        println.(Ref(Base.stderr), stacktrace())
-        println(Base.stderr, "---")
-    end
+    @Ahorn.catchall global settingsWindow = createWindow()
 
     showall(settingsWindow)
 end

@@ -5,8 +5,9 @@ mutable struct Layer
     visible::Bool
     selectable::Bool
     dummy::Bool
+    clearOnReset::Bool
 
-    Layer(name::String, surface::Cairo.CairoSurface=CairoARGBSurface(0, 0); redraw::Bool=true, visible::Bool=true, selectable::Bool=true, dummy::Bool=false) = new(name, surface, redraw, visible, selectable, dummy)
+    Layer(name::String, surface::Cairo.CairoSurface=CairoARGBSurface(0, 0); redraw::Bool=true, visible::Bool=true, selectable::Bool=true, dummy::Bool=false, clearOnReset::Bool=true) = new(name, surface, redraw, visible, selectable, dummy, clearOnReset)
 end
 
 include("drawable_room.jl")
@@ -52,7 +53,9 @@ function resetLayer!(layer::Layer, room::Room)
         layer.surface = CairoARGBSurface(room.size...)
     end
 
-    clearSurface(layer.surface)
+    if layer.clearOnReset
+        clearSurface(layer.surface)
+    end
 end
 
 resetLayer!(layer::Layer, room::DrawableRoom) = resetLayer!(layer, room.room)
@@ -90,18 +93,13 @@ function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera
             redrawFunc = get(redrawingFuncs, layer.name, (layer, room) -> true)
 
             # Use DrawableRoom if it accepts it, otherwise just a plain Maple Room
-            try
+            @catchall begin
                 success = useIfApplicable(redrawFunc, layer, room, camera) ||
                     useIfApplicable(redrawFunc, layer, room) ||
                     useIfApplicable(redrawFunc, layer, room.room, camera) ||
                     useIfApplicable(redrawFunc, layer, room.room)
 
                 layer.redraw = false
-
-            catch e
-                println(Base.stderr, e)
-                println.(Ref(Base.stderr), stacktrace())
-                println(Base.stderr, "---")
             end
     
             debug.log("Done redrawing $(layer.name)", "DRAWING_VERBOSE")

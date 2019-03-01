@@ -20,17 +20,34 @@ function drawObjectTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tile::I
     drawImage(ctx, "tilesets/scenery", drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
 end
 
-function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates; alpha::Number=getGlobalAlpha())
+tileDrawPosition(x::Integer, y::Integer) = (x - 1) * 8, (y - 1) * 8
+
+function getTileData(x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates)
     tileValue = tiles.data[y, x]
 
-    if tileValue != '0'
-        drawX, drawY = (x - 1) * 8, (y - 1) * 8
-        
-        if haskey(meta.paths, tileValue)
-            imagePath = meta.paths[tileValue]
-            quads, sprite = getMaskQuads(x, y, tiles, meta)
+    if haskey(meta.paths, tileValue)
+        imagePath = meta.paths[tileValue]
+        quads, sprite = getMaskQuads(x, y, tiles, meta)
 
-            quadX, quadY = quads[Integer(mod1(states.rands[y, x], length(quads)))]
+        return quads[Integer(mod1(states.rands[y, x], length(quads)))], sprite, imagePath
+    end
+
+    return nothing, nothing, nothing
+end
+
+function tileNeedsUpdate(tileValue::Char, x::Integer, y::Integer, quad::Tuple{Integer, Integer}, states::TileStates)
+    return tileValue != states.chars[y, x] || states.quads[y, x] != quad
+end
+
+function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates; alpha::Number=getGlobalAlpha())
+    tileValue = tiles.data[y, x]
+    drawX, drawY = tileDrawPosition(x, y)
+
+    if tileValue != '0'
+        quad, sprite, imagePath = getTileData(x, y, tiles, meta, states)
+        
+        if quad !== nothing
+            quadX, quadY = quad
 
             if !isempty(sprite)
                 animatedMeta = filter(m -> m.name == sprite, animatedTilesMeta)[1]
@@ -38,25 +55,35 @@ function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles,
 
                 if !isempty(frames)
                     frame = frames[Integer(mod1(states.rands[y, x], length(frames)))]
-                    sprite = getSprite(frame, "Gameplay")
+                    frameSprite = getSprite(frame, "Gameplay")
 
-                    ox = animatedMeta.posX - sprite.offsetX
-                    oy = animatedMeta.posY - sprite.offsetY
+                    ox = animatedMeta.posX - frameSprite.offsetX
+                    oy = animatedMeta.posY - frameSprite.offsetY
 
+                    # TODO - What do we actually have to clear here?
+                    #clearArea(ctx, drawX + ox, drawY + oy, 8, 8)
                     drawImage(ctx, frame, drawX + ox, drawY + oy, alpha=alpha)
                 end
             end
 
-            if tileValue != states.chars[y, x] || states.quads[y, x] != (quadX, quadY)
+            if tileNeedsUpdate(tileValue, x, y, quad, states)
+                clearArea(ctx, drawX, drawY, 8, 8)
                 drawImage(ctx, imagePath, drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
 
-                states.quads[y, x] = (quadX, quadY)
+                states.quads[y, x] = quad
             end
 
         else
             drawRectangle(ctx, drawX, drawY, 8, 8, colors.unknown_tile_color, (0.0, 0.0, 0.0, 0.0))
         end
+    
+    else
+        if states.chars[y, x] != '0'
+            clearArea(ctx, drawX, drawY, 8, 8)
+        end
     end
+
+    states.chars[y, x] = tileValue
 end
 
 function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, objtiles::ObjectTiles, meta::TilerMeta, states::TileStates, width::Integer, height::Integer; alpha::Number=getGlobalAlpha(), fg::Bool=true, useObjectTiles::Bool=false)

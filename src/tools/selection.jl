@@ -157,16 +157,24 @@ function pasteSelections()
             push!(room.bgDecals, target)
 
         elseif layer == "entities" && node == 0
-            target.data["x"] += offsetX
-            target.data["y"] += offsetY
+            target.x += offsetX
+            target.y += offsetY
+
+            if haskey(target.data, "nodes")
+                target.nodes = Tuple{Integer, Integer}[(x + offsetX, y + offsetY) for (x, y) in target.nodes]
+            end
 
             target.id = Maple.nextEntityId()
 
             push!(room.entities, target)
 
         elseif layer == "triggers" && node == 0
-            target.data["x"] += offsetX
-            target.data["y"] += offsetY
+            target.x += offsetX
+            target.y += offsetY
+
+            if haskey(target.data, "nodes")
+                target.nodes = Tuple{Integer, Integer}[(x + offsetX, y + offsetY) for (x, y) in target.nodes]
+            end
 
             target.id = Maple.nextEntityId()
 

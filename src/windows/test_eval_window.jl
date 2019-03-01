@@ -8,18 +8,13 @@ evalWindow = nothing
 function evalCode(button, textField)
     text = Ahorn.getTextViewText(textField)
 
-    try
-        expr = Meta.parse(strip(text))
+    @Ahorn.catchall begin
+        expr = Meta.parse("begin;" * strip(text) * "; end")
         res = Base.eval(Ahorn, expr)
 
         if res !== nothing
             println(res)
         end
-
-    catch e
-        println(Base.stderr, e)
-        println.(Ref(Base.stderr), stacktrace())
-        println(Base.stderr, "---")
     end
 end
 

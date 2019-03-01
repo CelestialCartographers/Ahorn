@@ -1,6 +1,7 @@
 module Spinner
 
 using ..Ahorn, Maple
+using Random
 
 function rotatingSpinnerFinalizer(entity::Maple.RotateSpinner)
     x, y = Int(entity.data["x"]), Int(entity.data["y"])
@@ -97,6 +98,18 @@ for speed in speeds, dusty in false:true
     )
 end
 
+const textureCache = Dict{String, Array{String, 1}}()
+
+function getTextureAnimations(texture::String)
+    get!(textureCache, texture) do
+        Ahorn.findTextureAnimations(texture, Ahorn.getAtlas("Gameplay"))
+    end
+end
+
+function randomTextureAnimation(texture::String, rng::MersenneTwister)
+    return rand(rng, getTextureAnimations(texture))
+end
+
 Ahorn.editingOptions(entity::Maple.Spinner) = Dict{String, Any}(
     "color" => crystalSpinnerColors
 )
@@ -131,12 +144,14 @@ end
 function renderMovingSpinner(ctx::Ahorn.Cairo.CairoContext, entity::movingSpinner, x::Number, y::Number)
     dusty = get(entity.data, "dust", false)
 
+    rng = Ahorn.getSimpleEntityRng(entity)
+
     if dusty
-        Ahorn.drawSprite(ctx, "danger/dustcreature/base00.png", x, y)
-        Ahorn.drawSprite(ctx, "danger/dustcreature/center00.png", x, y)
+        Ahorn.drawSprite(ctx, randomTextureAnimation("danger/dustcreature/base", rng), x, y)
+        Ahorn.drawSprite(ctx, randomTextureAnimation("danger/dustcreature/center", rng), x, y)
 
     else
-        Ahorn.drawSprite(ctx, "danger/blade00.png", x, y)
+        Ahorn.drawSprite(ctx, "danger/blade00", x, y)
     end
 end
 
@@ -146,13 +161,15 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Spinner, room
     dusty = get(entity.data, "dust", false)
     color = lowercase(get(entity.data, "color", "blue"))
 
+    rng = Ahorn.getSimpleEntityRng(entity)
+
     if dusty
-        Ahorn.drawSprite(ctx, "danger/dustcreature/base00.png", 0, 0)
-        Ahorn.drawSprite(ctx, "danger/dustcreature/center00.png", 0, 0)
+        Ahorn.drawSprite(ctx, randomTextureAnimation("danger/dustcreature/base", rng), 0, 0)
+        Ahorn.drawSprite(ctx, randomTextureAnimation("danger/dustcreature/center", rng), 0, 0)
 
     else
         color = color == "core" ? "blue" : color
-        Ahorn.drawSprite(ctx, "danger/crystal/fg_$(color)03.png", 0, 0)
+        Ahorn.drawSprite(ctx, randomTextureAnimation("danger/crystal/fg_$color", rng), 0, 0)
     end
 end
 

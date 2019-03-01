@@ -9,7 +9,7 @@ function lastMapDir()
 end
 
 function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::String=lastMapDir())
-    try
+    @Ahorn.catchall begin
         filename = openDialog("Select map binary", window, ["*.bin"], folder=folder)
 
         # Did we actually select a file?
@@ -46,11 +46,6 @@ function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::Strin
                 return true
             end
         end
-
-    catch e
-        println(Base.stderr, e)
-        println.(Ref(Base.stderr), stacktrace())
-        println(Base.stderr, "---")
     end
 
     return false

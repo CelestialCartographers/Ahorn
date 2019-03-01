@@ -56,6 +56,7 @@ camera = Camera(0, 0, 4)
 sleep(0)
 
 include("helpers/helpers.jl")
+include("helpers/macros.jl")
 include("lang.jl")
 include("validation_entry.jl")
 include("mods.jl")

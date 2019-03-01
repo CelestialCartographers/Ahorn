@@ -108,7 +108,7 @@ function undo!(map::Maple.Map=currentMap())
 
         history.skip = true
         snapshot = pop!(history)
-        restoreSnapshot!(map, snapshot)
+        @Ahorn.catchall restoreSnapshot!(map, snapshot)
         res = true
     end
 
@@ -137,7 +137,7 @@ function redo!(map::Maple.Map=currentMap())
             history.index -= 1
         end
 
-        restoreSnapshot!(map, snapshot)
+        @Ahorn.catchall restoreSnapshot!(map, snapshot)
         res = true
     end
 

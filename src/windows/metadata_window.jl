@@ -141,14 +141,7 @@ function configureMetadata(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
             Gtk.destroy(metadataWindow)
         end
 
-        try
-            global metadataWindow = createWindow()
-
-        catch e
-            println(Base.stderr, e)
-            println.(Ref(Base.stderr), stacktrace())
-            println(Base.stderr, "---")
-        end
+        @Ahorn.catchall global metadataWindow = createWindow()
 
         showall(metadataWindow)
     end

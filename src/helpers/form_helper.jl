@@ -288,7 +288,7 @@ struct ListOption <: Option
     columns::Integer
 
     function ListOption(name::String, data::Array{T, 1}; dataName::String=name, tooltip::String="", editable::Bool=true, minRows::Integer=-1, maxRows::Integer=-1, columns::Integer=4) where T <: Tuple
-        try
+        @Ahorn.catchall begin
             headers = tuple(string.(split(name, ';'))...)
             container = Ahorn.generateTreeView(headers, data, sortable=false, editable=fill(editable, length(headers)), callbacks=Array{Ahorn.listViewCallbackUnion, 1}(fill(columnEditCallback, length(headers))))
             scrollableWindow = ScrolledWindow(vexpand=true, hscrollbar_policy=Gtk.GtkPolicyType.NEVER)
@@ -298,11 +298,6 @@ struct ListOption <: Option
             removeButton = Button("Delete row")
 
             return new(name, dataName, container, scrollableWindow, addButton, removeButton, editable, minRows, maxRows, columns)
-
-        catch e
-            println(Base.stderr, e)
-            println.(Ref(Base.stderr), stacktrace())
-            println(Base.stderr, "---")
         end
     end
 end

@@ -15,7 +15,7 @@ function Ahorn.selection(entity::Maple.SoundSource)
 end
 
 Ahorn.editingOptions(entity::Maple.SoundSource) = Dict{String, Any}(
-    "sound" => sort(collect(values(Maple.Songs.songs)))
+    "sound" => EnvironmentSounds.sounds
 )
 
 Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SoundSource, room::Maple.Room) = Ahorn.drawImage(ctx, Ahorn.Assets.speaker, -12, -12)

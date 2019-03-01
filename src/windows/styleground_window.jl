@@ -676,7 +676,7 @@ function createStylegroundWindow(widget::Ahorn.MenuItemsTypes)
         info_dialog("No map is currently loaded.", Ahorn.window)
 
     else
-        try
+        @Ahorn.catchall begin
             map = Ahorn.loadedState.map
 
             Maple.expandStylegroundApplies!(map.style)
@@ -699,17 +699,16 @@ function createStylegroundWindow(widget::Ahorn.MenuItemsTypes)
 
             push!(box, notebook)
 
+            if stylegroundWindow !== nothing
+                Gtk.destroy(stylegroundWindow)
+            end
+
             window = Window("$(Ahorn.baseTitle) - Stylegrounds", -1, -1, true, icon=Ahorn.windowIcon)
             push!(window, box)
 
             showall(window)
 
-            return window
-
-        catch e
-            println(Base.stderr, e)
-            println.(Ref(Base.stderr), stacktrace())
-            println(Base.stderr, "---")
+            global stylegroundWindow = window
         end
     end
 end

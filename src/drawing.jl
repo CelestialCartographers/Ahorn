@@ -262,7 +262,20 @@ function paintSurface(ctx::Cairo.CairoContext, c::colorTupleType=(1.0, 1.0, 1.0,
     paint(ctx)
 end
 
-paintSurface(surface::Cairo.CairoSurface, c::colorTupleType=(1.0, 1.0, 1.0, 1.0)) = paintSurface(creategc(surface), c)
+paintSurface(surface::Cairo.CairoSurface, c::colorTupleType=(1.0, 1.0, 1.0, 1.0)) = paintSurface(getSurfaceContext(surface), c)
+
+function clearArea(ctx::Cairo.CairoContext, x::Integer, y::Integer, width::Integer, height::Integer)
+    Cairo.save(ctx)
+
+    setSourceColor(ctx, (0.0, 0.0, 0.0, 1.0))
+    set_operator(ctx, Cairo.OPERATOR_CLEAR)
+    rectangle(ctx, x, y, width, height)
+    fill(ctx)
+
+    restore(ctx)
+end
+
+clearSurface(surface::Cairo.CairoSurface, x::Integer, y::Integer, width::Integer, height::Integer) = clearSurface(getSurfaceContext(surface), x, y, width, height)
 
 function clearSurface(ctx::Cairo.CairoContext)
     Cairo.save(ctx)
@@ -274,7 +287,7 @@ function clearSurface(ctx::Cairo.CairoContext)
     restore(ctx)
 end
 
-clearSurface(surface::Cairo.CairoSurface) = clearSurface(creategc(surface))
+clearSurface(surface::Cairo.CairoSurface) = clearSurface(getSurfaceContext(surface))
 
 # With border
 function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number, h::Number, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0, 0.0))

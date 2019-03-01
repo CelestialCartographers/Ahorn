@@ -67,15 +67,10 @@ function startAutomaticBackup()
     global backupTimer = Timer(0, interval=backupRate) do timer
         side = Ahorn.loadedState.side
 
-        try
+        @Ahorn.catchall begin
             if side !== nothing
                 backup(side)
             end
-
-        catch e
-            println(Base.stderr, e)
-            println.(Ref(Base.stderr), stacktrace())
-            println(Base.stderr, "---")
         end
     end
 end
@@ -104,19 +99,17 @@ function initBackup(persistence::Ahorn.Config)
     active = get(Ahorn.config, "backup_enabled", true)
     showDialog = get(Ahorn.config, "backup_dialog_enabled", true)
 
-    if active
-        if get(persistence, "currently_running", true) && showDialog
-            @async begin
-                if ask_dialog("Ahorn did not shut down properly.\nDo you want to restore from automatic backup?", Ahorn.window)
-                    openBackupDialog()
-                end
-
-                startAutomaticBackup()
+    if active && showDialog && get(persistence, "currently_running", false)
+        @async begin
+            if ask_dialog("Ahorn did not shut down properly.\nDo you want to restore from automatic backup?", Ahorn.window)
+                openBackupDialog()
             end
 
-        else
             startAutomaticBackup()
         end
+
+    else
+        startAutomaticBackup()
     end
 
     persistence["currently_running"] = true

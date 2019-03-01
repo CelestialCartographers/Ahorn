@@ -269,7 +269,7 @@ function getMaskQuads(x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta)
     ignore = get(meta.ignores, value, Char[])
 
     adjacent = get(tiles.data, (y - 1:y + 1, x - 1:x + 1), value)
-    adjacent = [checkTile(value, target, ignore) for target in adjacent]
+    adjacent = Bool[checkTile(value, target, ignore) for target in adjacent]
 
     for data in masks
         mask, quads, sprites = data
