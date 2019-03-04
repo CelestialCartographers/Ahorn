@@ -10,8 +10,8 @@
 
 # Strawberry
 placements.entities.strawberry.tooltips.winged=The strawberry attempts to vertically rise offscreen when the player dashes.
-placements.entities.strawberry.tooltips.checkpointID=Manually determine what checkpoint section strawberries are visually grouped up in, showing up on the start menu during gameplay and level select. Overrides Everest's automatic berry IDs. (Default= -1)
-placements.entities.strawberry.tooltips.order=Manually determine what order strawberries are visually placed in on the start menu during gameplay and level select. Overrides Everest's automatic berry IDs. (Default= -1)
+placements.entities.strawberry.tooltips.checkpointID=Manually determine what checkpoint section strawberries are visually grouped up in, showing up on the start menu during gameplay and level select. Overrides Everest's automatic berry IDs, and is required when playing on the vanilla game. (Default= -1)
+placements.entities.strawberry.tooltips.order=Manually determine what order strawberries are visually placed in on the start menu during gameplay and level select. Overrides Everest's automatic berry IDs, and is required when playing on the vanilla game. (Default= -1)
 
 # Golden Strawberry
 placements.entities.goldenBerry.tooltips.winged=The strawberry attempts to vertically rise offscreen when the player dashes.
@@ -43,7 +43,7 @@ placements.entities.infiniteStar.tooltips.singleUse=Determines whether the feath
 # Chapter Checkpoint
 placements.entities.checkpoint.tooltips.inventory=Determines the player's inventory when loading from the given chapter.\n Automatic keeps the inventory from Metadata\n Prologue: 0 dashes, Dream blocks disabled, wearing a backpack, ground refills enabled\n Default: 1 dash, Dream blocks enabled, wearing a backpack, ground refills enabled\n OldSite: 1 dash, Dream blocks disabled, wearing a backpack, ground refills enabled\n CH6End: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills enabled\n TheSummit: 2 dashes, Dream blocks enabled, not wearing a backpack, ground refills enabled\n Core: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills disabled
 placements.entities.checkpoint.tooltips.dreaming=Determines the dreaming state when loading from the given chapter.\nAutomatic keeps the dreaming state from Metadata.
-placements.entities.checkpoint.tooltips.checkpointID=Manually determine the order in which the checkpoints are placed on the level selection screen. Overrides Everest's automatic checkpoint system. (Default= -1)
+placements.entities.checkpoint.tooltips.checkpointID=Manually determine the order in which the checkpoints are placed on the level selection screen. Overrides Everest's automatic checkpoint system, and is required to start from the checkpoint on the vanilla game. (Default= -1)
 placements.entities.checkpoint.tooltips.allowOrigin=Whether the Checkpoint shouldn't be special cased and automatically set by Everest if position is (0, 0).
 
 # Rotate Spinner
@@ -285,7 +285,7 @@ placements.entities.hahaha.tooltips.triggerLaughSfx=Whether the laugh should als
 # Badeline Boss Moving Block
 placements.entities.finalBossMovingBlock.tooltips.nodeIndex=The node index of the Badeline boss this should fall down on.
 
-# Everest Core Message
+# Core Message (Everest)
 placements.entities.everest/coreMessage.tooltips.line=Which line of the dialogue to use.
 placements.entities.everest/coreMessage.tooltips.dialog=The dialogue key to use.
 
@@ -307,7 +307,7 @@ placements.entities.conditionBlock.tooltips.tileType=Determines the visual appea
 # -- Triggers -- 
 
 # Credits Trigger
-placements.triggers.creditsTrigger.tooltips.event=The event this will trigger.
+placements.triggers.creditsTrigger.tooltips.event=The event this will trigger. A complete list is currently not available, see the original Chapter 7.
 
 # Bloom Fade Trigger
 placements.triggers.bloomFadeTrigger.tooltips.positionMode=Determines which direction the bloom fades towards.
@@ -318,20 +318,20 @@ placements.triggers.oshiroTrigger.tooltips.state=Triggers whether Oshiro spawns 
 # Music Fade Trigger
 placements.triggers.musicFadeTrigger.tooltips.direction=The direction the music fades in.
 
-# Everest Flag Trigger
+# Flag Trigger (Everest)
 placements.triggers.everest/flagTrigger.tooltips.state=The value to set for the flag.
 placements.triggers.everest/flagTrigger.tooltips.flag=The name of the flag to modify.
 placements.triggers.everest/flagTrigger.tooltips.only_once=Whether the trigger should only work once.
 placements.triggers.everest/flagTrigger.tooltips.mode=Determines how the trigger will activate.
 placements.triggers.everest/flagTrigger.tooltips.death_count=Determines how many deaths are required to activate the trigger. (Default= -1)
 
-# Everest Lava Blocker Trigger
+# Lava Blocker Trigger (Everest)
 placements.triggers.everest/lavaBlockerTrigger.tooltips.canReenter=Whether the trigger should still be functional after leaving it once.
 
-# Everest Core Mode Trigger
+# Core Mode Trigger (Everest)
 placements.triggers.everest/coreModeTrigger.tooltips.mode=The core mode that should be used when the trigger is entered.
 
-# Everest Change Inventory Trigger
+# Change Inventory Trigger (Everest)
 placements.triggers.everest/changeInventoryTrigger.tooltips.inventory=The inventory the player should get when the trigger is entered.
 
 # Camera Advanced Target Trigger
@@ -693,7 +693,7 @@ meta_window.mode.names.HeartIsEnd=End Level on Heart
 meta_window.mode.names.SeekerSlowdown=Seeker Slowdown
 
 meta_window.mode.tooltips.IgnoreLevelAudioLayerData=Whether the layer data set on individual rooms should be ignored.
-meta_window.mode.tooltips.Inventory=Your inventory starting the map. Changes the player's abilities.\n Prologue: 0 dashes, Dream blocks disabled, wearing a backpack, ground refills enabled\n Default: 1 dash, Dream blocks enabled, wearing a backpack, ground refills enabled\n OldSite: 1 dash, Dream blocks disabled, wearing a backpack, ground refills enabled\n CH6End: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills enabled\n TheSummit: 2 dashes, Dream blocks enabled, not wearing a backpack, ground refills enabled\n Core: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills disabled
-meta_window.mode.tooltips.StartLevel=The room to start the map in. By default, it will pick the room closest to absolute (0, 0).
-meta_window.mode.tooltips.HeartIsEnd=Whether collecting a heart counts as the end of the level. The easiest way to end a level.
+meta_window.mode.tooltips.Inventory=Your inventory starting the map. Changes the player's abilities. Added by Everest.\n Prologue: 0 dashes, Dream blocks disabled, wearing a backpack, ground refills enabled\n Default: 1 dash, Dream blocks enabled, wearing a backpack, ground refills enabled\n OldSite: 1 dash, Dream blocks disabled, wearing a backpack, ground refills enabled\n CH6End: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills enabled\n TheSummit: 2 dashes, Dream blocks enabled, not wearing a backpack, ground refills enabled\n Core: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills disabled
+meta_window.mode.tooltips.StartLevel=The room to start the map in. By default, it will pick the room closest to absolute (0, 0). Added by Everest.
+meta_window.mode.tooltips.HeartIsEnd=Whether collecting a heart counts as the end of the level. The easiest way to end a level. Added by Everest.
 meta_window.mode.tooltips.SeekerSlowdown=Whether Seekers should be able to slow down time when attacking the player or not.
