@@ -32,7 +32,7 @@ Ahorn.editingOptions(entity::Maple.ChapterCheckpoint) = Dict{String, Any}(
             "Automatic" => nothing
         ),
         Dict{String, Any}(
-            inventory => inventory for inventory in Maple.core_modes
+            mode => mode for mode in Maple.core_modes
         )
     ),
 )
