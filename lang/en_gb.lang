@@ -663,7 +663,7 @@ meta_window.meta.names.ForegroundTiles=Foreground Tiles
 meta_window.meta.names.BackgroundTiles=Background Tiles
 meta_window.meta.names.Sprites=Sprites
 meta_window.meta.names.Portraits=Portraits
-meta_window.meta.names.OverrideASideMeta=Override A-Side's Meta
+meta_window.meta.names.OverrideASideMeta=Override A-Side Meta
 
 meta_window.meta.tooltips.Icon=Texture to display on the title banner in level selection representing the map.
 meta_window.meta.tooltips.Interlude=Whether the map is an interlude chapter. No B-sides, deaths aren't counted.
@@ -685,7 +685,7 @@ meta_window.meta.tooltips.ForegroundTiles=The XML file to use for custom Foregro
 meta_window.meta.tooltips.BackgroundTiles=The XML file to use for custom Background Tiles. Relative to mod root, temporarily used in place of the vanilla XML.
 meta_window.meta.tooltips.Sprites=The XML file to use for custom Sprites. Relative to mod root, temporarily used in place of the vanilla XML.
 meta_window.meta.tooltips.Portraits=The XML file to use for custom Portraits. Relative to mod root, temporarily used in place of the vanilla XML.
-meta_window.meta.tooltips.OverrideASideMeta=Whether to overwrite metadata of A-Side.
+meta_window.meta.tooltips.OverrideASideMeta=Whether to overwrite the metadata of the A Side.
 
 
 meta_window.mode.names.IgnoreLevelAudioLayerData=Ignore Room Audio Layer Data
@@ -693,11 +693,11 @@ meta_window.mode.names.Inventory=Starting Inventory
 meta_window.mode.names.StartLevel=Starting Room
 meta_window.mode.names.HeartIsEnd=End Level on Heart
 meta_window.mode.names.SeekerSlowdown=Seeker Slowdown
-meta_window.mode.names.TheoInBubble=Theo In Bubble
+meta_window.mode.names.TheoInBubble=Theo In Booster
 
 meta_window.mode.tooltips.IgnoreLevelAudioLayerData=Whether the layer data set on individual rooms should be ignored.
 meta_window.mode.tooltips.Inventory=Your inventory starting the map. Changes the player's abilities.\n Prologue: 0 dashes, Dream blocks disabled, wearing a backpack, ground refills enabled\n Default: 1 dash, Dream blocks enabled, wearing a backpack, ground refills enabled\n OldSite: 1 dash, Dream blocks disabled, wearing a backpack, ground refills enabled\n CH6End: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills enabled\n TheSummit: 2 dashes, Dream blocks enabled, not wearing a backpack, ground refills enabled\n Core: 2 dashes, Dream blocks enabled, wearing a backpack, ground refills disabled
 meta_window.mode.tooltips.StartLevel=The room to start the map in. By default, it will pick the room closest to absolute (0, 0).
 meta_window.mode.tooltips.HeartIsEnd=Whether collecting a heart counts as the end of the level. The easiest way to end a level.
 meta_window.mode.tooltips.SeekerSlowdown=Whether Seekers should be able to slow down time when attacking the player or not.
-meta_window.mode.tooltips.TheoInBubble=Whether player is allowed to hold crystal Theo in the bubble or not.
+meta_window.mode.tooltips.TheoInBubble=Whether player is allowed to hold crystal Theo while in a booster or not.
