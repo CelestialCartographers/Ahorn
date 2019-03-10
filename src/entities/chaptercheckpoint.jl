@@ -26,7 +26,15 @@ Ahorn.editingOptions(entity::Maple.ChapterCheckpoint) = Dict{String, Any}(
         Dict{String, Any}(
             inventory => inventory for inventory in Maple.inventories 
         )
-    )
+    ),
+    "coreMode" => merge(
+        Dict{String, Any}(
+            "Automatic" => nothing
+        ),
+        Dict{String, Any}(
+            mode => mode for mode in Maple.core_modes
+        )
+    ),
 )
 
 Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.ChapterCheckpoint, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, offsetY)
