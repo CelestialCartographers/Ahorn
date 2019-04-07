@@ -2,13 +2,11 @@ module CassetteBlock
 
 using ..Ahorn, Maple
 
-# Index 2 and 3 doesn't appear in the game
-# Everest makes them function, and recolors index 2
-colorNames = Dict{Int, String}(
-    0 => "Blue",
-    1 => "Rose",
-	2 => "Bright Sun",
-	3 => "Malachite"
+colorNames = Dict{String, Int}(
+    "Blue" => 0,
+    "Rose" => 1,
+    "Bright Sun" => 2,
+    "Malachite" => 3
 )
 
 const placements = Ahorn.PlacementDict(
@@ -18,12 +16,13 @@ const placements = Ahorn.PlacementDict(
         Dict{String, Any}(
             "index" => index,
         )
-    ) for (index, color) in colorNames
+    ) for (color, index) in colorNames
 )
 
 Ahorn.editingOptions(entity::Maple.CassetteBlock) = Dict{String, Any}(
-    "index" => [0, 1, 2, 3]
+    "index" => colorNames
 )
+
 
 Ahorn.minimumSize(entity::Maple.CassetteBlock) = 16, 16
 Ahorn.resizable(entity::Maple.CassetteBlock) = true, true

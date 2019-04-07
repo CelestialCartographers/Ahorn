@@ -18,6 +18,11 @@ modeDropdownOptions = Dict{String, Any}(
     "StartLevel" => String[]
 )
 
+audiostateDropdownOptions = Dict{String, Any}(
+    "Music" => sort(collect(values(Maple.Songs.songs))),
+    "Ambience" => sort(collect(values(Maple.AmbientSounds.sounds)))
+)
+
 metaFieldOrder = String[
     "Name", "SID", "Icon",
     "CompleteScreenName", "CassetteCheckpointIndex",
@@ -32,6 +37,7 @@ metaFieldOrder = String[
 ]
 
 modeFieldOrder = String[]
+audiostateFieldOrder = String[]
 
 function getOptions(data::Dict{String, Any}, dropdownOptions::Dict{String, Any}, langdata::Ahorn.LangData)
     res = Ahorn.Form.Option[]
@@ -94,9 +100,13 @@ function createWindow()
     modeLangdata = get(langdata, :mode)
     modeData = merge(Maple.default_mode, get(Dict{String, Any}, metaData, "mode"))
 
+    audiostateLangdata = get(langdata, :audiostate)
+    audiostateData = merge(Maple.default_audiostate, get(Dict{String, Any}, modeData, "audiostate"))
+
     if !displayCustomValues
         filter!(p -> haskey(Maple.default_meta, p.first), metaData)
         filter!(p -> haskey(Maple.default_mode, p.first), modeData)
+        filter!(p -> haskey(Maple.default_audiostate, p.first), audiostateData)
     end
 
     modeOptions = getOptions(modeData, modeDropdownOptions, modeLangdata)
@@ -105,13 +115,17 @@ function createWindow()
     metaOptions = getOptions(metaData, metaDropdownOptions, metaLangdata)
     metaSection = Ahorn.Form.Section("Meta", metaOptions, dataName="meta", fieldOrder=metaFieldOrder)
 
+    audiostateOptions = getOptions(audiostateData, audiostateDropdownOptions, audiostateLangdata)
+    audiostateSection = Ahorn.Form.Section("Audio", audiostateOptions, dataName="audiostate", fieldOrder=metaFieldOrder)
+
     sections = Ahorn.Form.Section[
-        metaSection, modeSection
+        metaSection, modeSection, audiostateSection
     ]
 
     function callback(data::Dict{String, Dict{String, Any}})
         addKeyIfAbsent!(targetSide.data, "meta")
         addKeyIfAbsent!(targetSide.data["meta"], "mode")
+        addKeyIfAbsent!(targetSide.data["meta"]["mode"], "audiostate")
 
         for (attr, value) in data["meta"]
             writeIfExists!(targetSide.data["meta"], attr, value)
@@ -121,6 +135,11 @@ function createWindow()
             writeIfExists!(targetSide.data["meta"]["mode"], attr, value)
         end
 
+        for (attr, value) in data["audiostate"]
+            writeIfExists!(targetSide.data["meta"]["mode"]["audiostate"], attr, value)
+        end
+
+        deleteKeyIfEmpty!(targetSide.data["meta"]["mode"], "audiostate")
         deleteKeyIfEmpty!(targetSide.data["meta"], "mode")
         deleteKeyIfEmpty!(targetSide.data, "meta")
 

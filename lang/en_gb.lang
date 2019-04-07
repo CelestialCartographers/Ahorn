@@ -232,7 +232,7 @@ placements.entities.spikesRight.tooltips.type=Determines the visual appearance o
 placements.entities.spikesUp.tooltips.type=Determines the visual appearance of the spike.
 
 # Cassette Block
-placements.entities.cassetteBlock.tooltips.index=The table of nodes that the player travels through once the cassette is collected.
+placements.entities.cassetteBlock.tooltips.index=The colour of the cassette block.
 
 # Temple Gate
 placements.entities.templeGate.tooltips.sprite=Determines the visual appearance of the gate.
@@ -701,3 +701,10 @@ meta_window.mode.tooltips.StartLevel=The room to start the map in. By default, i
 meta_window.mode.tooltips.HeartIsEnd=Whether collecting a heart counts as the end of the level. The easiest way to end a level.
 meta_window.mode.tooltips.SeekerSlowdown=Whether Seekers should be able to slow down time when attacking the player or not.
 meta_window.mode.tooltips.TheoInBubble=Whether player is allowed to hold crystal Theo while in a booster or not.
+
+
+meta_window.audiostate.names.Ambience=Ambience
+meta_window.audiostate.names.Music=Music
+
+meta_window.audiostate.tooltips.Ambience=The ambience music track for the map.
+meta_window.audiostate.tooltips.Music=The default music track for the map. Music track set in room overrides this value.
