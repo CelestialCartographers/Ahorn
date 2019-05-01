@@ -15,7 +15,7 @@ function drawMapSurface(m::Maple.Map)
 
     camera = Ahorn.Camera(tlx, tly, 1)
     surface = Cairo.CairoARGBSurface(width, height)
-    ctx = Cairo.getSurfaceContext(surface)
+    ctx = Ahorn.getSurfaceContext(surface)
 
     Ahorn.paintSurface(ctx, (1.0, 1.0, 1.0, 0.0))
     pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
@@ -27,41 +27,41 @@ function drawMapSurface(m::Maple.Map)
         Ahorn.getLayerByName(dr.layers, "triggers").visible = false
         Ahorn.getLayerByName(dr.layers, "tools").visible = false
 
-        alpha = 1.0
-        Ahorn.drawRoom(ctx, camera, dr, alpha=alpha)
+        Ahorn.drawRoom(ctx, camera, dr, alpha=1.0)
     end
 
-    # Destroy the dummy renders
-    rooms = Ahorn.getDrawableRooms(dummyMap)
-    Ahorn.destroy.(rooms)
+    Ahorn.deleteDrawableRoomCache(dummyMap)
 
     return surface
 end
 
-function dumpMapImageDialog(w)
+function dumpMapImageDialog(w=nothing)
     celesteDir = get(Ahorn.config, "celeste_dir", "")
     targetDir = ispath(celesteDir) ? celesteDir : pwd()
     
-    filename = ""
-    cd(targetDir) do
-        filename = Ahorn.saveDialog("Save as", Ahorn.window, ["*.png"])
-    end
+    map = Ahorn.loadedState.map
 
-    if filename != ""
-        map = Ahorn.loadedState.map
+    if isa(map, Map)
+        filename = Ahorn.saveDialog("Save as", Ahorn.window, ["*.png"], folder=targetDir)
 
-        surface = drawMapSurface(map)
-        ctx = Cairo.getSurfaceContext(surface)
-    
-        surfaceStatus = status(surface)
-        if surfaceStatus == Cairo.STATUS_NO_MEMORY
-            warn_dialog("Not enough memory to save image.", Ahorn.window)
+        if filename != "" && isa(map, Map)
+            surface = drawMapSurface(map)
+            ctx = Ahorn.getSurfaceContext(surface)
+        
+            surfaceStatus = Cairo.status(surface)
+            if surfaceStatus == Cairo.STATUS_NO_MEMORY
+                warn_dialog("Not enough memory to save image.", Ahorn.window)
+
+            else
+                fn = Ahorn.hasExt(filename, ".png") ? filename : filename * ".png"
+                open(io -> write_to_png(surface, io), fn, "w")
+            end
+
+            Cairo.destroy(ctx)
         end
 
-        fn = Ahorn.hasExt(filename, ".png") ? filename : filename * ".png"
-        open(io -> write_to_png(surface, io), fn, "w")
-
-        Cairo.destroy(ctx)
+    else
+        warn_dialog("No map is currently loaded.", Ahorn.window)
     end
 end
 

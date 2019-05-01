@@ -48,6 +48,11 @@ layerName(l::Layer) = l.name
 layerName(l::Nothing) = ""
 
 function resetLayer!(layer::Layer, room::Room)
+    if layer.surface.ptr == C_NULL
+        print("Null surface")
+        layer.surface = CairoARGBSurface(room.size...)
+    end
+
     if (Int(width(layer.surface)), Int(height(layer.surface))) != room.size
         Cairo.destroy(layer.surface)
         layer.surface = CairoARGBSurface(room.size...)

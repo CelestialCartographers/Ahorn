@@ -222,6 +222,12 @@ function drawSelections(layer::Ahorn.Layer, room::Ahorn.Room)
     drawnTargets = Set()
     ctx = Ahorn.getSurfaceContext(toolsLayer.surface)
 
+    # Prone to errors with weird pointers, bandaid fix for now
+    # This might not actually be needed, but i'm keeping it for now
+    if ctx.surface.ptr == C_NULL || ctx.ptr == C_NULL
+        return true
+    end
+
     if selectionRect !== nothing && selectionRect.w > 0 && selectionRect.h > 0 && !shouldDrag
         Ahorn.drawRectangle(ctx, selectionRect, Ahorn.colors.selection_selection_fc, Ahorn.colors.selection_selection_bc)
     end
@@ -298,12 +304,13 @@ function cleanup()
 
     global selectionRect = Ahorn.Rectangle(0, 0, 0, 0)
     global relevantRoom = Ahorn.loadedState.room
+    global targetLayer = nothing
+    global toolsLayer = nothing
+    global drawingLayers = Ahorn.Layer[]
 
     clearDragging!()
     clearResize!()
     updateCursor()
-
-    Ahorn.redrawLayer!(toolsLayer)
 end
 
 function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)

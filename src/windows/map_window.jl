@@ -18,6 +18,7 @@ function createNewMap(widget=nothing)
         loadedState.side = Side(loadedState.map, Dict{String, Any}())
         
         updateTreeView!(roomList, getTreeData(loadedState.map))
+        handleRoomChanged(loadedState.map, loadedState.room)
         
         GAccessor.title(window, "$baseTitle - $name")
 

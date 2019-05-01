@@ -1,4 +1,7 @@
 function displayMainWindow()
+    initConfigs()
+    initLoadedState()
+
     windowTitle = baseTitle
     if loadedState.map !== nothing
         windowTitle = "$baseTitle - $(Maple.getSideName(loadedState.side))"
@@ -6,8 +9,6 @@ function displayMainWindow()
 
     # Everything else should be ready, safe to make the window
     global window = Window(windowTitle, 1280, 720, true, true, icon=windowIcon, gravity=GdkGravity.GDK_GRAVITY_CENTER)
-
-    initConfigs()
 
     disableLoadingScreen = get(debug.config, "DISABLE_LOADING_SCREEN", false)
     progressDialog = nothing
@@ -22,8 +23,6 @@ function displayMainWindow()
 
         showall(progressDialog)
     end
-
-    @progress initLoadedState() "Loading previous map information..." progressDialog
     
     configured = configureCelesteDir()
     if !configured

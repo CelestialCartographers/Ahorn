@@ -38,6 +38,7 @@ function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::Strin
                 loadXMLMeta()
 
                 updateTreeView!(roomList, getTreeData(loadedState.map), 1)
+                handleRoomChanged(loadedState.map, loadedState.room)
 
                 GAccessor.title(window, "$baseTitle - $(Maple.getSideName(loadedState.side))")
 

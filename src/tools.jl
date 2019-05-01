@@ -373,13 +373,15 @@ function handleKeyReleased(event::eventKey)
 
 end
 
-function handleRoomChanged(map::Map, room::Room)
-    dr = getDrawableRoom(map, room)
-
+function handleRoomChanged(map::Map, room::Union{Nothing, Room})
     # Clean up tools layer before notifying about room change
     eventToModule(currentTool, "cleanup")
 
-    eventToModule(currentTool, "roomChanged", room)
-    eventToModule(currentTool, "roomChanged", map, room)
-    eventToModule(currentTool, "layersChanged", dr.layers)
+    if isa(room, Room)
+        dr = getDrawableRoom(map, room)
+
+        eventToModule(currentTool, "roomChanged", room)
+        eventToModule(currentTool, "roomChanged", map, room)
+        eventToModule(currentTool, "layersChanged", dr.layers)
+    end
 end
