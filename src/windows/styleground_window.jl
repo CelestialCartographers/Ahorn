@@ -7,7 +7,7 @@ stylegroundWindow = nothing
 effectSectionGrid = nothing
 effectOptions = nothing
 
-effectFieldOrder = ["name", "only", "exclude", "fg"]
+effectFieldOrder = ["name", "only", "exclude", "fg", "flag", "notflag"]
 
 function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, colorOption::Ahorn.Form.Option)
     ctx = Gtk.getgc(canvas)
@@ -86,10 +86,19 @@ parallaxFields = Dict{String, Any}(
     "loopx" => true,
     "loopy" => true,
 
+    "flag" => "",
+    "notflag" => "",
+
     "blendmode" => "additive",
     "instantIn" => false,
     "instantOut" => false,
     "fadeIn" => false
+)
+
+# Additional fields to add when creating an Effect
+effectFields = Dict{String, Any}(
+    "flag" => "",
+    "notflag" => ""
 )
 
 # Fake fields that are not set in the data, but makes sense to have options for
@@ -104,7 +113,7 @@ effectTemplates = Dict{String, Dict{String, Any}}(
 function updateEffectTemplates()
     for effect in Ahorn.effectPlacements
         e = effect()
-        effectTemplates[e.name] = e.data
+        effectTemplates[e.name] = merge(effectFields, e.data)
     end
 end
 
@@ -538,7 +547,10 @@ function getEffectGrid(map::Maple.Map)
     downButton = Button("↓")
 
     # Placeholder effect 
-    templateEffect = Ahorn.effectPlacements[1]()
+    updateEffectTemplates()
+    templateEffectName = Ahorn.effectPlacements[1]().name
+    templateEffectData = effectTemplates[templateEffectName]
+    templateEffect = Effect(templateEffectName, templateEffectData)
     updateEffectSectionGrid(grid, templateEffect, true)
 
     function effectRowHandler(list, row)
