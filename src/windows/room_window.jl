@@ -179,6 +179,15 @@ function markForRedraw(room::Maple.Room, map::Maple.Map)
     end
 end
 
+function updateTemplateRoom(creating::Bool=true)
+        # Copy all fields from the selected room if we are creating new one
+        if creating && Ahorn.loadedState.room !== nothing
+            global templateRoom = deepcopy(Ahorn.loadedState.room)
+        end
+
+        global currentRoom = creating ? templateRoom : Ahorn.loadedState.room
+end
+
 function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "use_simple_room_values", true))
     if Ahorn.loadedState.map === nothing
         info_dialog("No map is currently loaded.", Ahorn.window)
@@ -187,12 +196,7 @@ function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "u
         info_dialog("Cannot edit non existing room.", Ahorn.window)
 
     else
-        # Copy all fields from the selected room if we are creating new one
-        if creating && Ahorn.loadedState.room !== nothing
-            global templateRoom = deepcopy(Ahorn.loadedState.room)
-        end
-
-        global currentRoom = creating ? templateRoom : Ahorn.loadedState.room
+        updateTemplateRoom(creating)
         title = creating ? "$(Ahorn.baseTitle) - Create Room" : "$(Ahorn.baseTitle) - $(currentRoom.name)"
 
         langdata = get(Ahorn.langdata, :room_window)
@@ -201,14 +205,11 @@ function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "u
         buttonText = creating ? "Add Room" : "Update Room"
 
         function callback(data::Dict{String, Any})
+            updateTemplateRoom(creating)
             currentMap = Ahorn.loadedState.map
-
-            snapshotDesc = (creating ? "Created room" : "Updated room ") * data["name"]
-            Ahorn.History.addSnapshot!(Ahorn.History.MapSnapshot(snapshotDesc, currentMap))
 
             handleSimpleValues!(data, simple)
             handleFakeKeys!(data)
-            handleCheckpoint!(currentRoom, data["checkpoint"])
             
             exitEarly = handleRoomSize(data, simple, roomWindow) ||
                 handleMusicTrack(data, roomWindow) ||
@@ -218,6 +219,10 @@ function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "u
                 return false
             end
 
+            snapshotDesc = (creating ? "Created room" : "Updated room ") * data["name"]
+            Ahorn.History.addSnapshot!(Ahorn.History.MapSnapshot(snapshotDesc, currentMap))
+
+            handleCheckpoint!(currentRoom, data["checkpoint"])
             handleRoomValues!(currentRoom, data)
 
             if creating

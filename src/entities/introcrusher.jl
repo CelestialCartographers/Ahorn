@@ -20,7 +20,8 @@ Ahorn.editingOptions(entity::Maple.IntroCrusher) = Dict{String, Any}(
 
 Ahorn.nodeLimits(entity::Maple.IntroCrusher) = 1, 1
 
-Ahorn.minimumSize(entity::Maple.IntroCrusher) = 8, 8
+# The Intro Crusher functionality only works if the entity is >= 22 wide
+Ahorn.minimumSize(entity::Maple.IntroCrusher) = 24, 8
 Ahorn.resizable(entity::Maple.IntroCrusher) = true, true
 
 function Ahorn.selection(entity::Maple.IntroCrusher)
