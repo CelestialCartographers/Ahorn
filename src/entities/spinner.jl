@@ -85,15 +85,11 @@ for speed in speeds, dusty in false:true
     key = (dusty ? "Dust Sprite" : "Blade") * " (Track, $(uppercasefirst(speed)))"
     placements[key] = Ahorn.EntityPlacement(
         Maple.TrackSpinner,
-        "point",
+        "line",
         Dict{String, Any}(
             "dust" => dusty,
             "speed" => speed
-        ),
-        function(entity::Maple.TrackSpinner)
-            x, y = Int(entity.data["x"]), Int(entity.data["y"])
-            entity.data["nodes"] = [(x + 32, y)]
-        end
+        )
     )
 end
 

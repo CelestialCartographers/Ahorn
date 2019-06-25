@@ -155,7 +155,7 @@ function textRenderer(editable::Bool=false, callback::Tuple{GtkListStore, Intege
 end
 
 correctTupleType(::Type{Bool}) = Bool
-correctTupleType(::Type{<: Integer})= Int64
+correctTupleType(::Type{<: Integer}) = Int64
 correctTupleType(::Type{<: Real}) = Float64
 correctTupleType(type::Type{T}) where T = type
 

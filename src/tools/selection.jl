@@ -888,7 +888,7 @@ function handleAddNodes(event::Ahorn.eventKey)
 
         if name == "entities" || name == "triggers"
             least, most = Ahorn.nodeLimits(target)
-            nodes = get(target.data, "nodes", [])
+            nodes = get(target.data, "nodes", Tuple{Int, Int}[])
 
             if most == -1 || length(nodes) + 1 <= most
                 x, y = target.data["x"], target.data["y"]
