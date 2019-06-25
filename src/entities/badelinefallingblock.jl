@@ -2,9 +2,6 @@ module BadelineFallingBlock
 
 using ..Ahorn, Maple
 
-# We place a FallingBlock with some preset data instead
-# But it might still exist from loading base game maps
-
 const placements = Ahorn.PlacementDict(
     "Badeline Boss Falling Block" => Ahorn.EntityPlacement(
         Maple.BadelineFallingBlock,
@@ -12,12 +9,12 @@ const placements = Ahorn.PlacementDict(
     )
 )
 
-Ahorn.minimumSize(entity::Maple.Entity{:finalBossFallingBlock}) = 8, 8
-Ahorn.resizable(entity::Maple.Entity{:finalBossFallingBlock}) = true, true
+Ahorn.minimumSize(entity::Maple.BadelineFallingBlock) = 8, 8
+Ahorn.resizable(entity::Maple.BadelineFallingBlock) = true, true
 
-Ahorn.selection(entity::Maple.Entity{:finalBossFallingBlock}) = Ahorn.getEntityRectangle(entity)
+Ahorn.selection(entity::Maple.BadelineFallingBlock) = Ahorn.getEntityRectangle(entity)
 
-function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity{:finalBossFallingBlock}, room::Maple.Room)
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.BadelineFallingBlock, room::Maple.Room)
     Ahorn.drawTileEntity(ctx, room, entity, material='g')
 end
 

@@ -196,7 +196,6 @@ placements.entities.lamp.tooltips.broken=Changes the visual appearance of the la
 placements.entities.fallingBlock.tooltips.climbFall=After a delay, the block will physically fall down until it comes into contact with another block.
 placements.entities.fallingBlock.tooltips.tiletype=Changes the visual appearance of the falling block.
 placements.entities.fallingBlock.tooltips.behind=Whether the block should visually be further behind in the scene or not.
-placements.entities.fallingBlock.tooltips.finalBoss=Falling blocks that are tied to the final boss being hit.
 
 # Fake Wall
 placements.entities.fakeWall.tooltips.tiletype=Changes the visual appearance of the wall.
