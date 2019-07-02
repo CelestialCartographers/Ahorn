@@ -10,9 +10,10 @@ function dumpSpritesDialog(w)
     targetDir = ispath(celesteDir) ? celesteDir : pwd()
     
     outdir = Ahorn.saveDialog("Save as", Ahorn.window, action=GtkFileChooserAction.SELECT_FOLDER, folder=targetDir)
+    useRealSize = get(Ahorn.debug.config, "SPRITE_DUMPER_REAL_SIZE", true)
 
     if outdir != ""
-        for (atlas, sprites) in Ahorn.atlases
+        for (atlas, sprites) in Ahorn.atlases            
             for (name, spriteHolder) in sprites
                 sprite = spriteHolder.sprite
 
@@ -22,10 +23,16 @@ function dumpSpritesDialog(w)
                 
                 filename = joinpath(outdir, atlas, name) * ".png"
 
-                surface = Cairo.CairoARGBSurface(sprite.width, sprite.height)
-                ctx = Cairo.getSurfaceContext(surface)
+                width = useRealSize ? sprite.realWidth : sprite.width
+                height = useRealSize ? sprite.realHeight : sprite.height
 
-                Ahorn.drawImage(ctx, sprite, 0, 0, alpha=1.0)
+                offsetX = useRealSize ? -sprite.offsetX : 0
+                offsetY = useRealSize ? -sprite.offsetY : 0
+
+                surface = Cairo.CairoARGBSurface(width, height)
+                ctx = Ahorn.getSurfaceContext(surface)
+
+                Ahorn.drawImage(ctx, sprite, offsetX, offsetY, alpha=1.0)
 
                 mkpath(dirname(filename))
                 open(io -> Cairo.write_to_png(surface, io), filename, "w")

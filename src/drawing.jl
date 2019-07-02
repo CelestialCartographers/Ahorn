@@ -1,3 +1,5 @@
+using YAML
+
 include("extract_sprites_meta.jl")
 
 atlases = Dict{String, Dict{String, SpriteHolder}}()
@@ -40,23 +42,74 @@ function getSpriteSurface(resource::String, filename::String, atlas::String="Gam
     end
 end
 
-function addSprite!(resource::String, filename::String=""; atlas::String="Gameplay", force::Bool=false)
-    atlas = getAtlas(atlas)
+function getSpriteMeta(resource::String, filename::String, atlas::String="Gameplay")
+    # If we have a filename use that, otherwise look for the resource
+    filename = isempty(filename) ? findExternalSprite(resource) : filename
+    filename = isa(filename, String) ? filename : ""
 
-    if !haskey(atlas, resource) || atlas[resource].sprite.width == 0 || atlas[resource].sprite.height == 0 || mtime(atlas[resource].path) > atlas[resource].readtime || force
+    if isfile(filename)
+        if hasExt(filename, ".png")
+            yamlFilename = splitext(filename)[1] * ".meta.yaml"
+
+            if isfile(yamlFilename)
+                return open(YAML.load, yamlFilename)
+            end
+
+        elseif hasExt(filename, ".zip")
+            res = nothing
+            zipfh = ZipFile.Reader(filename)
+
+            # Cheaper to fix resource name than every filename from zip
+            # Always uses Unix path
+            resourcePath = "Graphics/Atlases/$atlas/" * splitext(resource)[1] * ".meta.yaml"
+
+            for file in zipfh.files
+                if file.name == resourcePath
+                    res = YAML.load(String(read(file)))
+
+                    break
+                end
+            end
+            
+            close(zipfh)
+
+            return res
+        end
+
+    else
+        return nothing
+    end
+end
+
+function addSprite!(resource::String, filename::String=""; atlas::String="Gameplay", force::Bool=false)
+    spriteAtlas = getAtlas(atlas)
+
+    if !haskey(spriteAtlas, resource) || spriteAtlas[resource].sprite.width == 0 || spriteAtlas[resource].sprite.height == 0 || mtime(spriteAtlas[resource].path) > spriteAtlas[resource].readtime || force
         surface, filename = getSpriteSurface(resource, filename)
-        atlas[resource] = SpriteHolder(
+        meta = getSpriteMeta(resource, filename, atlas)
+        hasMeta = meta !== nothing
+        
+        imWidth = Int(width(surface))
+        imHeight = Int(height(surface))
+
+        realWidth = hasMeta ? get(meta, "Width", imWidth) : imWidth
+        realHeight = hasMeta ? get(meta, "Height", imHeight) : imHeight
+
+        offsetX = hasMeta ? -get(meta, "X", 0) : 0
+        offsetY = hasMeta ? -get(meta, "Y", 0) : 0
+
+        spriteAtlas[resource] = SpriteHolder(
             Sprite(
                 0,
                 0,
         
-                Int(width(surface)),
-                Int(height(surface)),
+                imWidth,
+                imHeight,
         
-                0,
-                0,
-                Int(width(surface)),
-                Int(height(surface)),
+                offsetX,
+                offsetY,
+                realWidth,
+                realHeight,
         
                 surface,
                 filename
@@ -67,7 +120,7 @@ function addSprite!(resource::String, filename::String=""; atlas::String="Gamepl
         )
     end
 
-    return atlas[resource].sprite
+    return spriteAtlas[resource].sprite
 end
 
 function getAtlas(atlas::String="Gameplay")

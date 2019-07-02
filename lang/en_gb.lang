@@ -212,7 +212,7 @@ placements.entities.spinner.tooltips.dust=Changes the spinner into a dust sprite
 
 # Intro Crusher
 placements.entities.introCrusher.tooltips.tiletype=Determines the visual appearance of the wall.
-placements.entities.introCrusher.tooltips.flags=If any of the flags are set the entity will rest at its end node instead.
+placements.entities.introCrusher.tooltips.flags=If any of the flags are set, the entity will rest at its end node instead.
 
 # Dash Block
 placements.entities.dashBlock.tooltips.canDash=Whether the player can break the block by dashing into it.
@@ -519,6 +519,7 @@ settings.debug.names.TOOLS_SELECTED=Log selected tool
 settings.debug.names.ENABLE_HOTSWAP_HOTKEYS=Enable hotswap hotkeys
 settings.debug.names.DRAWING_VERBOSE=Verbose drawing
 settings.debug.names.DISABLE_LOADING_SCREEN=Disable loading screen
+settings.debug.names.SPRITE_DUMPER_REAL_SIZE=Sprite dumper: Use real size
 
 settings.debug.tooltips.DEBUG_MENU_DROPDOWN=Activate the Debug menu dropdown for various functionality useful for developing Ahorn. (Requires restart)
 settings.debug.tooltips.IGNORE_MINIMUM_SIZE=Ignore the minimum size of entities and triggers when resizing them. Can cause major visual weirdness.
@@ -532,6 +533,7 @@ settings.debug.tooltips.TOOLS_SELECTED=Log whenever a tool is selected.
 settings.debug.tooltips.ENABLE_HOTSWAP_HOTKEYS=Enable hotkeys for Ahorn code development: F1 for hotswapping tools, F2 for hotswapping entities and triggers, and F3 for deleting the room render cache.
 settings.debug.tooltips.DRAWING_VERBOSE=Verbosely log when redrawing layers.
 settings.debug.tooltips.DISABLE_LOADING_SCREEN=Disables the loading screen. Faster startup, but window will appear unresponsive.
+settings.debug.tooltips.SPRITE_DUMPER_REAL_SIZE=Whether the sprite dumper should use the real size of the sprite or cut off unused blank space.
 
 
 # -- Room Window Displaynames and Tooltips --

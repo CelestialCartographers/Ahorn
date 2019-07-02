@@ -68,7 +68,10 @@ function displayMainWindow()
     @progress showall(window) "Waiting for main window..." progressDialog
 
     visible(window, true)
-    Gtk.destroy(progressDialog)
+
+    if progressDialog !== nothing
+        Gtk.destroy(progressDialog)
+    end
     
     interactiveWorkaround(window)
 end
