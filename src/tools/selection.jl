@@ -164,7 +164,7 @@ function pasteSelections()
                 target.nodes = Tuple{Integer, Integer}[(x + offsetX, y + offsetY) for (x, y) in target.nodes]
             end
 
-            target.id = Maple.nextEntityId()
+            target.id = Ahorn.EntityIds.nextId()
 
             push!(room.entities, target)
 
@@ -176,7 +176,7 @@ function pasteSelections()
                 target.nodes = Tuple{Integer, Integer}[(x + offsetX, y + offsetY) for (x, y) in target.nodes]
             end
 
-            target.id = Maple.nextEntityId()
+            target.id = Ahorn.EntityIds.nextId()
 
             push!(room.triggers, target)
 

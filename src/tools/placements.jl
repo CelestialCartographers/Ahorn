@@ -89,7 +89,7 @@ function pushPreview!(layer::Ahorn.Layer, room::Maple.Room, preview::Any)
 
     # Update the id when we place the entity/trigger
     if name == "entities" || name == "triggers"
-        preview.id = Maple.nextEntityId()
+        preview.id = Ahorn.EntityIds.nextId()
     end
 
     # Make sure we don't have the same referance,

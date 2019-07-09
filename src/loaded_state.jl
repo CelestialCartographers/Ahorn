@@ -16,6 +16,10 @@ function LoadedState(roomName::String, filename::String)
         side = loadSide(filename)
         map = side.map
         room = getRoomByName(map, roomName)
+
+        if map !== nothing
+            EntityIds.updateValidIds(map)
+        end
     end
 
     return LoadedState(roomName, filename, isa(room, Maple.Room) ? room : nothing, side, map, hash(side))

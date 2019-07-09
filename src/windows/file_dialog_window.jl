@@ -35,6 +35,8 @@ function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::Strin
                 
                 packageName = loadedState.map.package
 
+                EntityIds.updateValidIds(loadedState.map)
+
                 loadXMLMeta()
 
                 updateTreeView!(roomList, getTreeData(loadedState.map), 1)
@@ -82,6 +84,7 @@ function saveFile(side::Side, filename::String)
     try
         PreSaveSanitizers.sortRoomNames(side, config)
         PreSaveSanitizers.warnMissingDecals(side, config)
+        PreSaveSanitizers.warnDuplicateIds(side, config)
 
         loadedState.lastSavedHash = hash(side)
 

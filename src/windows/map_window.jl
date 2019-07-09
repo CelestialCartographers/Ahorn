@@ -16,6 +16,8 @@ function createNewMap(widget=nothing)
 
         loadedState.map = Map(name)
         loadedState.side = Side(loadedState.map, Dict{String, Any}())
+
+        EntityIds.updateValidIds(loadedState.map)
         
         updateTreeView!(roomList, getTreeData(loadedState.map))
         handleRoomChanged(loadedState.map, loadedState.room)
