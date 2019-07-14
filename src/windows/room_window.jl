@@ -97,13 +97,18 @@ function createCheckpoint(room::Maple.Room)
     return Maple.ChapterCheckpoint(Int.(room.size ./ 2)..., allowOrigin=true)
 end
 
-# Remove all instances of checkpoints
-# Add new one if the room should have one
 function handleCheckpoint!(room::Maple.Room, add::Bool=false)
+    checkpoints = filter(e -> e.name == "checkpoint", room.entities)
+
     filter!(e -> e.name != "checkpoint", room.entities)
 
     if add
-        push!(room.entities, createCheckpoint(room))
+        if isempty(checkpoints)
+            push!(room.entities, createCheckpoint(room))
+
+        else
+            push!(room.entities, checkpoints[1])
+        end
     end
 end
 
