@@ -5,8 +5,11 @@ macro catchall(expr)
 
         catch e
             println(Base.stderr, e)
-            println.(Ref(Base.stderr), stacktrace())
-            println(Base.stderr, "---")
+            
+            for (exc, bt) in Base.catch_stack()
+                showerror(Base.stderr, exc, bt)
+                println()
+            end
         end
     end
 end

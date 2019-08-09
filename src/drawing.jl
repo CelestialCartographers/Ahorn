@@ -52,11 +52,20 @@ function getSpriteMeta(resource::String, filename::String, atlas::String="Gamepl
             yamlFilename = splitext(filename)[1] * ".meta.yaml"
 
             if isfile(yamlFilename)
-                return open(YAML.load, yamlFilename)
+                try
+                    data = open(YAML.load, yamlFilename)
+
+                    return true, data
+
+                catch
+                    return false, "Invalid YAML file"
+                end
             end
 
         elseif hasExt(filename, ".zip")
+            success = true
             res = nothing
+            
             zipfh = ZipFile.Reader(filename)
 
             # Cheaper to fix resource name than every filename from zip
@@ -65,7 +74,13 @@ function getSpriteMeta(resource::String, filename::String, atlas::String="Gamepl
 
             for file in zipfh.files
                 if file.name == resourcePath
-                    res = YAML.load(String(read(file)))
+                    try
+                        res = YAML.load(String(read(file)))
+
+                    catch
+                        res = "Invalid YAML data"
+                        success = false
+                    end
 
                     break
                 end
@@ -73,12 +88,11 @@ function getSpriteMeta(resource::String, filename::String, atlas::String="Gamepl
             
             close(zipfh)
 
-            return res
+            return success, res
         end
-
-    else
-        return nothing
     end
+    
+    return false, false
 end
 
 function addSprite!(resource::String, filename::String=""; atlas::String="Gameplay", force::Bool=false)
@@ -86,8 +100,12 @@ function addSprite!(resource::String, filename::String=""; atlas::String="Gamepl
 
     if !haskey(spriteAtlas, resource) || spriteAtlas[resource].sprite.width == 0 || spriteAtlas[resource].sprite.height == 0 || mtime(spriteAtlas[resource].path) > spriteAtlas[resource].readtime || force
         surface, filename = getSpriteSurface(resource, filename)
-        meta = getSpriteMeta(resource, filename, atlas)
-        hasMeta = meta !== nothing
+        success, meta = getSpriteMeta(resource, filename, atlas)
+        hasMeta = isa(meta, Dict)
+
+        if !success && isa(meta, String)
+            println(Base.stderr, "Problem with YAML file for resource '$resource', at file '$filename' - '$meta'")
+        end
         
         imWidth = Int(width(surface))
         imHeight = Int(height(surface))
