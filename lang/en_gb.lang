@@ -272,7 +272,7 @@ placements.entities.crushBlock.tooltips.axes=Determines which sides of the Kevin
 placements.entities.crushBlock.tooltips.chillout=Whether the block should have the large face and get tired after being hit.
 
 # Big Waterfall
-placements.entities.bigWaterfall.tooltips.layer=Where the waterfall should render.\nFG is in the foreground\nBG is in the background and parallaxes.
+placements.entities.bigWaterfall.tooltips.layer=Where the waterfall should render.\nFG is in the foreground.\nBG is in the background and parallaxes.
 
 # Sound Source
 placements.entities.soundSource.tooltips.sound=The sound event that will be played.

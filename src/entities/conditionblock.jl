@@ -11,7 +11,7 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 Ahorn.editingOptions(entity::Maple.ConditionBlock) = Dict{String, Any}(
-    "tiletype" => Ahorn.tiletypeEditingOptions(),
+    "tileType" => Ahorn.tiletypeEditingOptions(),
     "condition" => Maple.condition_block_conditions
 )
 

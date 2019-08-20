@@ -128,11 +128,11 @@ function renderMovingSpinner(ctx::Ahorn.Cairo.CairoContext, entity::movingSpinne
     dusty = get(entity.data, "dust", false)
 
     if dusty
-        Ahorn.drawSprite(ctx, "danger/dustcreature/base00.png", x, y)
-        Ahorn.drawSprite(ctx, "danger/dustcreature/center00.png", x, y)
+        Ahorn.drawSprite(ctx, "danger/dustcreature/base00", x, y)
+        Ahorn.drawSprite(ctx, "danger/dustcreature/center00", x, y)
 
     else
-        Ahorn.drawSprite(ctx, "danger/blade00.png", x, y)
+        Ahorn.drawSprite(ctx, "danger/blade00", x, y)
     end
 end
 
@@ -143,12 +143,12 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Spinner, room
     color = lowercase(get(entity.data, "color", "blue"))
 
     if dusty
-        Ahorn.drawSprite(ctx, "danger/dustcreature/base00.png", 0, 0)
-        Ahorn.drawSprite(ctx, "danger/dustcreature/center00.png", 0, 0)
+        Ahorn.drawSprite(ctx, "danger/dustcreature/base00", 0, 0)
+        Ahorn.drawSprite(ctx, "danger/dustcreature/center00", 0, 0)
 
     else
         color = color == "core" ? "blue" : color
-        Ahorn.drawSprite(ctx, "danger/crystal/fg_$(color)03.png", 0, 0)
+        Ahorn.drawSprite(ctx, "danger/crystal/fg_$(color)03", 0, 0)
     end
 end
 

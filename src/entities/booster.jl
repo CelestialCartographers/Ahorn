@@ -15,10 +15,10 @@ function boosterSprite(entity::Maple.Booster)
     red = get(entity.data, "red", false)
     
     if red
-        return "objects/booster/boosterRed00.png"
+        return "objects/booster/boosterRed00"
 
     else
-        return "objects/booster/booster00.png"
+        return "objects/booster/booster00"
     end
 end
 
