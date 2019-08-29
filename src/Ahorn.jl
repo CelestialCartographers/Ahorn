@@ -105,6 +105,7 @@ include("tools.jl")
 include("menubar.jl")
 include("backups.jl")
 include("loading_spinner.jl")
+include("object_tile_names.jl")
 
 # Time Machine workaround
 sleep(0)

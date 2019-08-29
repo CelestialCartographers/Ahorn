@@ -15,6 +15,25 @@ material = -1
 
 position = nothing
 
+function idToDisplayName(id::Int)
+    return get(Ahorn.ObjectTileNames.names, id, string(id))
+end
+
+function displayNameToId(name::String)
+    for (k, v) in Ahorn.ObjectTileNames.names
+        if v == name
+            return k
+        end
+    end
+
+    try
+        return parse(Int, name)
+
+    catch
+        return -1
+    end
+end
+
 function drawBrushes(layer::Ahorn.Layer, room::Maple.Room)
     if position !== nothing
         ctx = Ahorn.getSurfaceContext(layer.surface)
@@ -30,7 +49,7 @@ function cleanup()
 end
 
 function setMaterials!(layer::Ahorn.Layer)
-    materials = Integer[-1]
+    materials = String[Ahorn.ObjectTileNames.names[-1]]
     objSprite = Ahorn.getSprite("tilesets/scenery", "Gameplay")
 
     width = objSprite.realWidth
@@ -49,12 +68,12 @@ function setMaterials!(layer::Ahorn.Layer)
     for x in 0:cellWidth - 1
         for y in 0:cellHeight - 1
             if !all(data[x * 8 + 1:x * 8 + 8, y * 8 + 1:y * 8 + 8] .== 0)
-                push!(materials, y * cellWidth + x)
+                push!(materials, idToDisplayName(y * cellWidth + x))
             end
         end
     end
 
-    Ahorn.setMaterialList!(string.(sort(materials)), row -> row[1] == string(material))
+    Ahorn.setMaterialList!(sort(materials), row -> row[1] == string(material))
 end
 
 function mouseMotion(x::Number, y::Number)
@@ -105,13 +124,17 @@ function layerSelected(list::Ahorn.ListContainer, materials::Ahorn.ListContainer
 end
 
 function materialSelected(list::Ahorn.ListContainer, selected::String)
-    Ahorn.persistence["objtiles_material"] = selected
+    selectedId = displayNameToId(selected)
 
-    global material = parse(Int, selected)
+    Ahorn.persistence["objtiles_material"] = selectedId
+
+    global material = selectedId
 end
 
 function materialFiltered(list::Ahorn.ListContainer)
-    Ahorn.selectRow!(list, row -> row[1] == string(material))
+    targetName = idToDisplayName(material)
+
+    Ahorn.selectRow!(list, row -> row[1] == targetName)
 end
 
 function layersChanged(layers::Array{Ahorn.Layer, 1})
