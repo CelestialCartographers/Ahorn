@@ -19,7 +19,8 @@ roomFieldOrder = String[
 
 dropdownOptions = Dict{String, Any}(
     "music" => sort(collect(keys(Maple.Songs.songs))),
-    "windPattern" => sort(Maple.wind_patterns)
+    "windPattern" => sort(Maple.wind_patterns),
+    "color" => collect(0:length(Ahorn.colors.background_room_color_coded_fill) - 1)
 )
 
 # Symbols reads and sets values on the room, other values are stored in data dict
@@ -86,15 +87,20 @@ function getOptions(room::Maple.Room, dropdownOptions::Dict{String, Any}, langda
 end
 
 function createCheckpoint(room::Maple.Room)
+    x, y = Int.(room.size ./ 2)
+
     for entity in room.entities
         if entity.name == "player"
             x, y = Int(get(entity.data, "x", 0)), Int(get(entity.data, "y", 0))
 
-            return Maple.ChapterCheckpoint(x, y, allowOrigin=true)
+            break
         end
     end
 
-    return Maple.ChapterCheckpoint(Int.(room.size ./ 2)..., allowOrigin=true)
+    checkpoint = Maple.ChapterCheckpoint(x, y, allowOrigin=true)
+    checkpoint.id = Ahorn.EntityIds.nextId()
+
+    return checkpoint
 end
 
 function handleCheckpoint!(room::Maple.Room, add::Bool=false)
