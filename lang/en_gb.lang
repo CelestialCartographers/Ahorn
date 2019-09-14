@@ -354,6 +354,9 @@ placements.entities.lightning.tooltips.perLevel=Whether the lightning ignores th
 # Fling Bird
 placements.entities.flingBird.tooltips.waiting=Whether the bird should visually look like it is tired and waiting to grab the player.
 
+# Fling Bird Intro
+placements.entities.flingBirdIntro.tooltips.crashes=Determines which cutscene is played after the bird is caught.
+
 # Lightning Breaker Box
 placements.entities.lightningBlock.tooltips.music_session=Whether the music should be stored in session when box is broken.
 placements.entities.lightningBlock.tooltips.flipX=Whether the sprite should be vertically mirrored.

@@ -14,13 +14,13 @@ function Ahorn.selection(entity::Maple.LightningBreakerBox)
     x, y = Ahorn.position(entity)
     scaleX = get(entity, "flipX", false) ? -1 : 1
 
-    return Ahorn.getSpriteRectangle(sprite, x, y, sx=scaleX)
+    return Ahorn.getSpriteRectangle(sprite, x, y, sx=scaleX, jx=0.25, jy=0.25)
 end
 
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.LightningBreakerBox, room::Maple.Room)
     scaleX = get(entity, "flipX", false) ? -1 : 1
 
-    Ahorn.drawSprite(ctx, sprite, 0, 0, sx=scaleX)
+    Ahorn.drawSprite(ctx, sprite, 0, 0, sx=scaleX, jx=0.25, jy=0.25)
 end
 
 end
