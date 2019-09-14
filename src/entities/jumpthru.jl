@@ -2,7 +2,7 @@ module JumpThru
 
 using ..Ahorn, Maple
 
-textures = ["wood", "dream", "temple", "templeB", "cliffside", "reflection", "core"]
+textures = ["wood", "dream", "temple", "templeB", "cliffside", "reflection", "core", "moon"]
 const placements = Ahorn.PlacementDict(
     "Jump Through ($(uppercasefirst(texture)))" => Ahorn.EntityPlacement(
         Maple.JumpThru,

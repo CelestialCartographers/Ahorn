@@ -2,15 +2,28 @@ module Checkpoint
 
 using ..Ahorn, Maple
 
-sprite = "objects/checkpoint/flag16.png"
+function getBgSprite(entity::Maple.ChapterCheckpoint)
+    bg = get(entity, "bg", "")
+    name = "objects/checkpoint/bg/$bg"
 
-# Custom offset to render nicely
-offsetY = -16
+    if !isempty(bg)
+        backgroundSprite = Ahorn.getSprite(name, "Gameplay")
+
+        if backgroundSprite.width != 0 && backgroundSprite.height != 0
+            return true, name
+        end
+    end
+
+    return false, false
+end
+
+bgFallback = "objects/checkpoint/bg/1"
+flashSprite = "objects/checkpoint/flash04"
 
 function Ahorn.selection(entity::Maple.ChapterCheckpoint)
     x, y = Ahorn.position(entity)
 
-    return Ahorn.getSpriteRectangle(sprite, x, y + offsetY)
+    return Ahorn.getSpriteRectangle(bgFallback, x, y, jx=0.5, jy=1.0)
 end
 
 Ahorn.editingOptions(entity::Maple.ChapterCheckpoint) = Dict{String, Any}(
@@ -37,6 +50,14 @@ Ahorn.editingOptions(entity::Maple.ChapterCheckpoint) = Dict{String, Any}(
     ),
 )
 
-Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.ChapterCheckpoint, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, offsetY)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.ChapterCheckpoint, room::Maple.Room)
+    exists, bgSprite = getBgSprite(entity)
+
+    if exists
+        Ahorn.drawSprite(ctx, bgSprite, 0, 0, jx=0.5, jy=1.0)
+    end
+
+    Ahorn.drawSprite(ctx, flashSprite, 0, 0, jx=0.5, jy=1.0)
+end
 
 end

@@ -16,10 +16,14 @@ modeFacingScale = Dict{String, Integer}(
     "dreamjumptutorial" => 1,
     "superwalljumptutorial" => -1,
     "hyperjumptutorial" => -1,
+    "movetonodes" => -1,
+    "waitforlightningoff" => -1,
     "flyaway" => -1,
     "sleeping" => 1,
     "none" => -1
 )
+
+Ahorn.nodeLimits(entity::Maple.Bird) = 0, -1
 
 Ahorn.editingOptions(entity::Maple.Bird) = return Dict{String, Any}(
     "mode" => Maple.bird_npc_modes

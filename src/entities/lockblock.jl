@@ -2,34 +2,25 @@ module Lockblock
 
 using ..Ahorn, Maple
 
-const placements = Ahorn.PlacementDict(
-    "Locked Door (Wood)" => Ahorn.EntityPlacement(
-        Maple.LockBlock,
-        "point",
-        Dict{String, Any}(
-            "sprite" => "wood"
-        )
-    ),
-    "Locked Door (Temple A)" => Ahorn.EntityPlacement(
-        Maple.LockBlock,
-        "point",
-        Dict{String, Any}(
-            "sprite" => "temple_a"
-        )
-    ),
-    "Locked Door (Temple B)" => Ahorn.EntityPlacement(
-        Maple.LockBlock,
-        "point",
-        Dict{String, Any}(
-            "sprite" => "temple_b"
-        )
-    )
+sprites = Dict{String, String}(
+    "wood" => "objects/door/lockdoor00",
+    "temple_a" => "objects/door/lockdoorTempleA00",
+    "temple_b" => "objects/door/lockdoorTempleB00",
+    "moon" => "objects/door/moonDoor10"
 )
 
-sprites = Dict{String, String}(
-    "wood" => "objects/door/lockdoor00.png",
-    "temple_a" => "objects/door/lockdoorTempleA00.png",
-    "temple_b" => "objects/door/lockdoorTempleB00.png",
+const placements = Ahorn.PlacementDict(
+    "Locked Door ($(Ahorn.humanizeVariableName(sprite)))" => Ahorn.EntityPlacement(
+        Maple.LockBlock,
+        "point",
+        Dict{String, Any}(
+            "sprite" => sprite
+        )
+    ) for (sprite, texture) in sprites
+)
+
+Ahorn.editingOptions(entity::Maple.LockBlock) = Dict{String, Any}(
+    "sprite" => sort(collect(keys(sprites)))
 )
 
 function Ahorn.selection(entity::Maple.LockBlock)

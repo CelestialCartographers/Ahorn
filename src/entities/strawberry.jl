@@ -9,6 +9,13 @@ const placements = Ahorn.PlacementDict(
     "Golden Strawberry" => Ahorn.EntityPlacement(
         Maple.GoldenStrawberry
     ),
+    "Space Berry" => Ahorn.EntityPlacement(
+        Maple.Strawberry,
+        "point",
+        Dict{String, Any}(
+            "moon" => true
+        )
+    ),
 
     "Strawberry (Winged)" => Ahorn.EntityPlacement(
         Maple.Strawberry,
@@ -33,27 +40,34 @@ const placements = Ahorn.PlacementDict(
 
 strawberryUnion = Union{Maple.Strawberry, Maple.GoldenStrawberry, Maple.GoldenStrawberryNoDash}
 
-# name, winged, has pips
-sprites = Dict{Tuple{String, Bool, Bool}, String}(
-    ("strawberry", false, false) => "collectables/strawberry/normal00.png",
-    ("strawberry", true, false) => "collectables/strawberry/wings01.png",
-    ("strawberry", false, true) => "collectables/ghostberry/idle00.png",
-    ("strawberry", true, true) => "collectables/ghostberry/wings01.png",
+# name, winged, has pips, moon
+sprites = Dict{Tuple{String, Bool, Bool, Bool}, String}(
+    ("strawberry", false, false, false) => "collectables/strawberry/normal00",
+    ("strawberry", true, false, false) => "collectables/strawberry/wings01",
+    ("strawberry", false, true, false) => "collectables/ghostberry/idle00",
+    ("strawberry", true, true, false) => "collectables/ghostberry/wings01",
 
-    ("goldenBerry", false, false) => "collectables/goldberry/idle00.png",
-    ("goldenBerry", true, false) => "collectables/goldberry/wings01.png",
-    ("goldenBerry", false, true) => "collectables/ghostgoldberry/idle00.png",
-    ("goldenBerry", true, true) => "collectables/ghostgoldberry/wings01.png",
+    ("strawberry", false, false, true) => "collectables/moonBerry/normal00",
+    ("strawberry", true, false, true) => "collectables/moonBerry/ghost00",
+    ("strawberry", false, true, true) => "collectables/moonBerry/ghost00",
+    ("strawberry", true, true, true) => "collectables/moonBerry/ghost00",
 
-    ("memorialTextController", true, false) => "collectables/goldberry/wings01.png",
-    ("memorialTextController", true, true) => "collectables/goldberry/wings01.png",
+    ("goldenBerry", false, false, false) => "collectables/goldberry/idle00",
+    ("goldenBerry", true, false, false) => "collectables/goldberry/wings01",
+    ("goldenBerry", false, true, false) => "collectables/ghostgoldberry/idle00",
+    ("goldenBerry", true, true, false) => "collectables/ghostgoldberry/wings01",
+
+    ("memorialTextController", true, false, false) => "collectables/goldberry/wings01",
+    ("memorialTextController", true, true, false) => "collectables/goldberry/wings01",
 )
 
 seeds = Dict{String, String}(
-    "strawberry" => "collectables/strawberry/seed00.png",
-    "goldenBerry" => "collectables/goldberry/seed00.png",
-    "memorialTextController" => "collectables/goldberry/seed00.png",
+    "strawberry" => "collectables/strawberry/seed00",
+    "goldenBerry" => "collectables/goldberry/seed00",
+    "memorialTextController" => "collectables/goldberry/seed00",
 )
+
+fallback = "collectables/strawberry/normal00"
 
 Ahorn.nodeLimits(entity::strawberryUnion) = 0, -1
 
@@ -61,10 +75,11 @@ function Ahorn.selection(entity::strawberryUnion)
     x, y = Ahorn.position(entity)
 
     nodes = get(entity.data, "nodes", ())
+    moon = get(entity.data, "moon", false)
     winged = get(entity.data, "winged", false) || entity.name == "memorialTextController"
     hasPips = length(nodes) > 0
 
-    sprite = sprites[(entity.name, winged, hasPips)]
+    sprite = sprites[(entity.name, winged, hasPips, moon)]
     seedSprite = seeds[entity.name]
 
     res = Ahorn.Rectangle[Ahorn.getSpriteRectangle(sprite, x, y)]
@@ -92,10 +107,11 @@ function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::strawberryUnion,
     x, y = Ahorn.position(entity)
 
     nodes = get(entity.data, "nodes", ())
+    moon = get(entity.data, "moon", false)
     winged = get(entity.data, "winged", false) || entity.name == "memorialTextController"
     hasPips = length(nodes) > 0
 
-    sprite = sprites[(entity.name, winged, hasPips)]
+    sprite = sprites[(entity.name, winged, hasPips, moon)]
     seedSprite = seeds[entity.name]
 
     for node in nodes

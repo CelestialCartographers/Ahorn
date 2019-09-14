@@ -1,21 +1,21 @@
-module SpaceJam
+module Lightning
 
 using ..Ahorn, Maple
 
 const placements = Ahorn.PlacementDict(
-    "Space Jam" => Ahorn.EntityPlacement(
-        Maple.DreamBlock,
+    "Lightning" => Ahorn.EntityPlacement(
+        Maple.Lightning,
         "rectangle"
     )
 )
 
 
-Ahorn.nodeLimits(entity::Maple.DreamBlock) = 0, 1
+Ahorn.nodeLimits(entity::Maple.Lightning) = 0, 1
 
-Ahorn.minimumSize(entity::Maple.DreamBlock) = 8, 8
-Ahorn.resizable(entity::Maple.DreamBlock) = true, true
+Ahorn.minimumSize(entity::Maple.Lightning) = 8, 8
+Ahorn.resizable(entity::Maple.Lightning) = true, true
 
-function Ahorn.selection(entity::Maple.DreamBlock)
+function Ahorn.selection(entity::Maple.Lightning)
     x, y = Ahorn.position(entity)
 
     width = Int(get(entity.data, "width", 8))
@@ -31,18 +31,18 @@ function Ahorn.selection(entity::Maple.DreamBlock)
     end
 end
 
-function renderSpaceJam(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number)
+function renderLightningBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number)
     Ahorn.Cairo.save(ctx)
 
     Ahorn.set_antialias(ctx, 1)
     Ahorn.set_line_width(ctx, 1)
 
-    Ahorn.drawRectangle(ctx, x, y, width, height, (0.0, 0.0, 0.0, 0.4), (1.0, 1.0, 1.0, 1.0))
+    Ahorn.drawRectangle(ctx, x, y, width, height, (0.55, 0.97, 0.96, 0.4), (0.99, 0.96, 0.47, 1.0))
 
     Ahorn.restore(ctx)
 end
 
-function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.DreamBlock)
+function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Lightning)
     x, y = Ahorn.position(entity)
     nodes = get(entity.data, "nodes", ())
 
@@ -54,19 +54,19 @@ function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Dr
 
         cox, coy = floor(Int, width / 2), floor(Int, height / 2)
 
-        renderSpaceJam(ctx, nx, ny, width, height)
+        renderLightningBlock(ctx, nx, ny, width, height)
         Ahorn.drawArrow(ctx, x + cox, y + coy, nx + cox, ny + coy, Ahorn.colors.selection_selected_fc, headLength=6)
     end
 end
 
-function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.DreamBlock, room::Maple.Room)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Lightning, room::Maple.Room)
     x = Int(get(entity.data, "x", 0))
     y = Int(get(entity.data, "y", 0))
 
     width = Int(get(entity.data, "width", 32))
     height = Int(get(entity.data, "height", 32))
 
-    renderSpaceJam(ctx, 0, 0, width, height)
+    renderLightningBlock(ctx, 0, 0, width, height)
 end
 
 end

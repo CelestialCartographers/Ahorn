@@ -20,6 +20,8 @@ npcSprites = Dict{String, String}(
     "badeline" => "characters/badeline/sleep00",
 )
 
+fallbackSprite = "characters/oldlady/idle00"
+
 function getTexture(entity::Maple.NPC)
     npcName = get(entity.data, "npc", "granny_00_house")
     name = lowercase(split(npcName, "_")[1])
@@ -31,7 +33,11 @@ function Ahorn.selection(entity::Maple.NPC)
     x, y = Ahorn.position(entity)
     sprite = getTexture(entity)
 
-    return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=1.0)
+    if isa(sprite, String)
+        return Ahorn.getSpriteRectangle(sprite, x, y, jx=0.5, jy=1.0)
+    end
+
+    return Ahorn.getSpriteRectangle(fallbackSprite, x, y, jx=0.5, jy=1.0)
 end
 
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.NPC, room::Maple.Room)
@@ -39,11 +45,9 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.NPC, room::Ma
 
     if isa(texture, String)
         Ahorn.drawSprite(ctx, texture, 0, 0, jx=0.5, jy=1.0)
-
-        return true
     end
 
-    return false
+    return true
 end
 
 end

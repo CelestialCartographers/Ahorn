@@ -12,6 +12,7 @@
 placements.entities.strawberry.tooltips.winged=The strawberry attempts to vertically rise offscreen when the player dashes.
 placements.entities.strawberry.tooltips.checkpointID=Manually determine what checkpoint section strawberries are visually grouped up in, showing up on the start menu during gameplay and level select. Overrides Everest's automatic berry IDs. (Default= -1)
 placements.entities.strawberry.tooltips.order=Manually determine what order strawberries are visually placed in on the start menu during gameplay and level select. Overrides Everest's automatic berry IDs. (Default= -1)
+placements.entities.strawberry.tooltips.moon=Makes the strawberry render as a space berry.\nDoes not work with wings or nodes in the base game.
 
 # Golden Strawberry
 placements.entities.goldenBerry.tooltips.winged=The strawberry attempts to vertically rise offscreen when the player dashes.
@@ -28,6 +29,7 @@ placements.entities.finalBoss.tooltips.lockCamera=The camera cannot pan away fro
 placements.entities.fireBall.tooltips.amount=Determines the amount of fireballs on a track.
 placements.entities.fireBall.tooltips.offset=Determines how far into the path the fireball starts.
 placements.entities.fireBall.tooltips.speed=Determines how fast a fireball reaches the end of the track.
+placements.entities.fireBall.tooltips.notCoreMode=Determines if the fireball should ignore the current core mode and default to ice variant.
 
 # Tentacles
 placements.entities.tentacles.tooltips.slide_until=Changes how far tentacles fall back when Madeline comes into fear distance.
@@ -49,6 +51,7 @@ placements.entities.checkpoint.tooltips.allowOrigin=Whether the Checkpoint shoul
 # Rotate Spinner
 placements.entities.rotateSpinner.tooltips.clockwise=The spinning blade will run clockwise.
 placements.entities.rotateSpinner.tooltips.dust=Changes the appearance of the blade to be a dust sprite.
+placements.entities.rotateSpinner.tooltips.star=Changes the appearance of the blade to be a star.
 
 # Spinner
 placements.entities.spinner.tooltips.attachToSolid=The spinner attaches to the surface of the entity or block, and can be moved by them.
@@ -56,7 +59,8 @@ placements.entities.spinner.tooltips.attachToSolid=The spinner attaches to the s
 # TrackSpinner
 placements.entities.trackSpinner.tooltips.speed=Changes the speed of the spinner's rotation.
 placements.entities.trackSpinner.tooltips.startCenter=The spinner will start at the end of the track.
-placements.entities.trackSpinner.tooltips.dust=Turns the visual appearance of a blade into a dust sprite.
+placements.entities.trackSpinner.tooltips.dust=Turns the visual appearance of the blade into a dust sprite.
+placements.entities.trackSpinner.tooltips.star=Turns the visual appearance of the blade into a star.
 
 # Jump Thru
 placements.entities.jumpThru.tooltips.texture=Changes the appearance of the platform.
@@ -66,6 +70,7 @@ placements.entities.booster.tooltips.red=Determines whether the booster is green
 
 # Wall Booster
 placements.entities.wallBooster.tooltips.left=Whether the entity attaches to the left wall or not.
+placements.entities.wallBooster.tooltips.notCoreMode=Determines if the entity should ignore the current core mode and default to ice variant.
 
 # Dark Chaser
 placements.entities.darkChaser.tooltips.canChangeMusic=Whether the chaser should be able to change the music to the "chasing" track.
@@ -108,6 +113,7 @@ placements.entities.torch.tooltips.startLit=Changes whether the light will start
 
 # Heart Door
 placements.entities.heartGemDoor.tooltips.requires=Determines the number of Crystal Hearts required to open the heart door. Everest keeps track of hearts collected within the level set.
+placements.entities.heartGemDoor.tooltips.startHidden=Whether the door should start hidden and come crashing down when the player approaches.\nWill destroy dash blocks as it crashes down.
 
 # Move Block
 placements.entities.moveBlock.tooltips.canSteer=Determines whether the move block can be moved by the player.
@@ -172,7 +178,9 @@ placements.entities.slider.tooltips.clockwise=Whether the slider will run clockw
 placements.entities.slider.tooltips.surface=Attaches the slider to a surface.
 
 # Lock Block
-placements.entities.lockBlock.tooltips.sprite=Changes the visual appearance of the locked block.
+placements.entities.lockBlock.tooltips.sprite=Changes the visual appearance of the locked door.
+placements.entities.lockBlock.tooltips.unlock_sfx=The sound to play when unlocking the door. Leave empty for default.
+placements.entities.lockBlock.tooltips.stepMusicProgress=Whether unlocking the door should increment the music progress by one.
 
 # Wind Trigger
 placements.triggers.windTrigger.tooltips.pattern=Changes the abilities of the room's current wind type.
@@ -302,6 +310,57 @@ placements.entities.conditionBlock.tooltips.conditionID=Links the condition bloc
 placements.entities.conditionBlock.tooltips.condition=Ties the activation to the collection or activation of a key, strawberry, or button.
 placements.entities.conditionBlock.tooltips.tileType=Determines the visual appearance of the condition block.
 
+# Jellyfish (Glider)
+placements.entities.glider.tooltips.bubble=Whether the entity should hover in the air before being grabbed.
+placements.entities.glider.tooltips.tutorial=Whether the entity should show the usage tutorial.
+
+# Puffer (Eye Bomb)
+placements.entities.eyebomb.tooltips.right=The initial direction of the puffer.
+
+# Swap Block
+placements.entities.swapBlock.tooltips.theme=The visual theme of the swap block.
+
+# Zip Mover
+placements.entities.zipMover.tooltips.theme=The visual theme of the zip mover.
+
+# Moon Creature
+placements.entities.moonCreature.tooltips.number=How many moon creatures should spawn in the cluster.
+
+# Floaty Space Block
+placements.entities.floatySpaceBlock.tooltips.tiletype=Determines the visual appearance of the wall.
+placements.entities.floatySpaceBlock.tooltips.disableSpawnOffset=Whether or not the entity should spawn without the random offset.
+
+# Plyback Tutorial
+placements.entities.playbackTutorial.tooltips.tutorial=Determines which tutorial ghost is played.\nFilename is relative to the `Tutorials` folder, and without the .bin extension.
+
+# Crumble Wall On Rumble
+placements.entities.crumbleWallOnRumble.tooltips.blendin=Blends the block in with the walls it touches, making it less apparent.
+placements.entities.crumbleWallOnRumble.tooltips.tiletype=Determines the visual appearance of the wall.
+placements.entities.crumbleWallOnRumble.tooltips.persistent=Once broken, the block will remain that way, even if the player dies.
+
+# Bird Path
+placements.entities.birdPath.tooltips.only_once=If the bird will only fly the path once, and not come back on death or room transitions.
+placements.entities.birdPath.tooltips.onlyIfLeft=The bird will only fly if the player is to the left of the entity.
+placements.entities.birdPath.tooltips.speedMult=Speed multiplier for the flight speed.
+
+# Crystal Heart
+placements.entities.blackGem.tooltips.fake=Whether the heart is fake and should visually be grey. Triggers the Farewell fake heart cutscene.
+placements.entities.blackGem.tooltips.removeCameraTriggers=Whether the heart should remove camera triggers onces its triggered. Only usable if fake attribute is set.
+
+# Lightning
+placements.entities.lightning.tooltips.moveTime=The time it takes to move from the base position to the node position.
+placements.entities.lightning.tooltips.perLevel=Whether the lightning ignores the global disabling flag set by breaker boxes with the flag attribute set.
+
+# Fling Bird
+placements.entities.flingBird.tooltips.waiting=Whether the bird should visually look like it is tired and waiting to grab the player.
+
+# Lightning Breaker Box
+placements.entities.lightningBlock.tooltips.music_session=Whether the music should be stored in session when box is broken.
+placements.entities.lightningBlock.tooltips.flipX=Whether the sprite should be vertically mirrored.
+placements.entities.lightningBlock.tooltips.flag=Whether the breaker box should disable all lightning entities without the perLevel attribute set when loading a new room. 
+placements.entities.lightningBlock.tooltips.music=Change the currently playing music to this when box is broken.\nLeave empty to not change song.
+placements.entities.lightningBlock.tooltips.music_progress=The new music progress once box is broken.\n-1 keeps the same progress.
+
 
 # -- Triggers -- 
 
@@ -394,9 +453,25 @@ placements.triggers.altMusicTrigger.tooltips.track=Changes the track that plays 
 # Dialog Trigger (Everest)
 placements.triggers.everest/dialogTrigger.tooltips.onlyOnce=Whether the dialogue should only trigger once.
 placements.triggers.everest/dialogTrigger.tooltips.dialogId=The dialogue ID to use for the dialogue.
+placements.triggers.everest/dialogTrigger.tooltips.endLevel=Whether finishing the dialog triggers the level to end.
 
 # Shatter Crystal Trigger (Everest)
 placements.triggers.everest/crystalShatterTrigger.tooltips.mode=Whether the trigger should destroy all crystal spinners, or only the ones contained within it.
+
+# Moon Glitch Background Trigger
+placements.triggers.moonGlitchBackgroundTrigger.tooltips.duration=The duration of the glitch effect.
+placements.triggers.moonGlitchBackgroundTrigger.tooltips.stay=Whether the black hole effect stays in the background after triggering.
+placements.triggers.moonGlitchBackgroundTrigger.tooltips.glitch=Whether the glitch effect is visible or not.
+
+# Black Hole Strength Trigger
+placements.triggers.blackholeStrength.tooltips.strength=Sets the next visual apparence of the black hole effect.
+
+# Rumble Trigger
+placements.triggers.rumbleTrigger.tooltips.manualTrigger=If set to true, this is not triggered by a player walking into it and can only be triggered by code.
+placements.triggers.rumbleTrigger.tooltips.persistent=Once turned on, it will stay activated, even if the player dies.
+
+# Detach Followers Trigger
+placements.triggers.detachFollowersTrigger.tooltips.global=Whether the entities following you should get the 'global' instead of the 'persistent' tag.
 
 
 # -- Effects -- 
@@ -407,6 +482,8 @@ placements.effects.tentacles.names.color=Colour
 
 placements.effects.starfield.names.color=Colour
 
+placements.effects.rain.names.color=Colour
+
 placements.effects.planets.names.count=Count
 placements.effects.planets.names.size=Size
 
@@ -416,6 +493,8 @@ placements.effects.tentacles.tooltips.offset=Determines the lerp strength of the
 placements.effects.tentacles.tooltips.color=The colour of the tentacles.
 
 placements.effects.starfield.tooltips.color=The colour of the stars.
+
+placements.effects.starfield.tooltips.color=The colour of the rain.
 
 placements.effects.planets.tooltips.count=The amount of planets to render.
 placements.effects.planets.tooltips.size=The sprite to use for the planets.\nLocated at "Gameplay/bgs/10/$size00", where "$size" is the size attribute value.
@@ -675,8 +754,9 @@ meta_window.meta.names.BackgroundTiles=Background Tiles
 meta_window.meta.names.Sprites=Sprites
 meta_window.meta.names.Portraits=Portraits
 meta_window.meta.names.OverrideASideMeta=Override A-Side Meta
+meta_window.meta.names.PostcardSoundID=Postcard Sound ID
 
-meta_window.meta.tooltips.Icon=Texture to display on the title banner in level selection representing the map.
+meta_window.meta.tooltips.Icon=Texture to display on the title banner in level selection representing the map.\nRelative to GUI Atlas folder.
 meta_window.meta.tooltips.Interlude=Whether the map is an interlude chapter. No B-sides, deaths aren't counted.
 meta_window.meta.tooltips.CompleteScreenName=Texture used for the complete screen after beating the level.
 meta_window.meta.tooltips.TitleBaseColor=Base colour of the title banner in level selection.
@@ -697,6 +777,7 @@ meta_window.meta.tooltips.BackgroundTiles=The XML file to use for custom Backgro
 meta_window.meta.tooltips.Sprites=The XML file to use for custom Sprites. Relative to mod root, temporarily used in place of the vanilla XML.
 meta_window.meta.tooltips.Portraits=The XML file to use for custom Portraits. Relative to mod root, temporarily used in place of the vanilla XML.
 meta_window.meta.tooltips.OverrideASideMeta=Whether to overwrite the metadata of the A Side.
+meta_window.meta.tooltips.PostcardSoundID=The postcard sound to use. Leave empty for default.\nExamples: 1, 2, 3, csides.
 
 
 meta_window.mode.names.IgnoreLevelAudioLayerData=Ignore Room Audio Layer Data

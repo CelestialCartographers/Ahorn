@@ -51,11 +51,11 @@ function updateAhorn(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
             Pkg.update(["Maple", "Ahorn"], preview=true)
         end
         
-        if occursin(r"(Ahorn|Maple)[^\n]+⇒", sim)
+        if occursin(r"(Ahorn|Maple)[^\n]+⇒", sim) || occursin(r"~ (Ahorn|Maple)", sim)
             do_ask_dialog("A new version is available!\nDo you wish to update Ahorn?\nThis will close the program afterwards and you will have to rerun it.")
         else
             h = pkghash()
-            do_ask_dialog("Ahorn seems to be up-to-date$(h !== nothing && " at hash $h").\nDo you wish to try updating anyway?\nThis will close the program afterwards and you will have to rerun it.", yes="Try Updating Anyway")
+            do_ask_dialog("Ahorn seems to be up-to-date$(h !== nothing ? " at hash $h" : "").\nDo you wish to try updating anyway?\nThis will close the program afterwards and you will have to rerun it.", yes="Try Updating Anyway")
         end
     catch e
         do_ask_dialog("The update check failed for some reason.\nDo you wish to update Ahorn anyway?\nThis will close the program afterwards and you will have to rerun it.")

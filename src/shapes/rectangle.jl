@@ -17,6 +17,14 @@ function checkCollision(box1::Rectangle, box2::Rectangle)
     )
 end
 
+function intersection(box1::Rectangle, box2::Rectangle)
+    x = max(box1.x, box2.x)
+    y = max(box1.y, box2.y)
+    w = min(box1.x + box1.w, box2.x + box2.w) - x
+    h = min(box1.y + box1.h, box2.y + box2.h) - y
+    return w > 0 && h > 0 ? Rectangle(x, y, w, h) : nothing
+end
+
 # Find top left corner and bottom right corner
 function bounds(rects::Array{Rectangle, 1})
     tlx = tly = typemax(Int)

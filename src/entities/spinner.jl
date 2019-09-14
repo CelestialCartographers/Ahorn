@@ -63,6 +63,26 @@ const placements = Ahorn.PlacementDict(
         ),
         rotatingSpinnerFinalizer
     ),
+    "Star (Rotating, Clockwise)" => Ahorn.EntityPlacement(
+        Maple.RotateSpinner,
+        "point",
+        Dict{String, Any}(
+            "dust" => false,
+            "star" => true,
+            "clockwise" => true
+        ),
+        rotatingSpinnerFinalizer
+    ),
+    "Star (Rotating)" => Ahorn.EntityPlacement(
+        Maple.RotateSpinner,
+        "point",
+        Dict{String, Any}(
+            "dust" => false,
+            "star" => true,
+            "clockwise" => false
+        ),
+        rotatingSpinnerFinalizer
+    ),
 )
 
 crystalSpinnerColors = Maple.crystal_colors
@@ -81,13 +101,18 @@ for color in crystalSpinnerColors
 end
 
 speeds = Maple.track_spinner_speeds
-for speed in speeds, dusty in false:true
-    key = (dusty ? "Dust Sprite" : "Blade") * " (Track, $(uppercasefirst(speed)))"
+for speed in speeds, dusty in false:true, star in false:true
+    if star && dusty
+        continue
+    end
+
+    key = (star ? "Star" : (dusty ? "Dust Sprite" : "Blade")) * " (Track, $(uppercasefirst(speed)))"
     placements[key] = Ahorn.EntityPlacement(
         Maple.TrackSpinner,
         "line",
         Dict{String, Any}(
             "dust" => dusty,
+            "star" => star,
             "speed" => speed
         )
     )
@@ -126,8 +151,12 @@ end
 
 function renderMovingSpinner(ctx::Ahorn.Cairo.CairoContext, entity::movingSpinner, x::Number, y::Number)
     dusty = get(entity.data, "dust", false)
+    star = get(entity.data, "star", false)
 
-    if dusty
+    if star 
+        Ahorn.drawSprite(ctx, "danger/starfish13", x, y)
+
+    elseif dusty
         Ahorn.drawSprite(ctx, "danger/dustcreature/base00", x, y)
         Ahorn.drawSprite(ctx, "danger/dustcreature/center00", x, y)
 
@@ -147,8 +176,15 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Spinner, room
         Ahorn.drawSprite(ctx, "danger/dustcreature/center00", 0, 0)
 
     else
-        color = color == "core" ? "blue" : color
-        Ahorn.drawSprite(ctx, "danger/crystal/fg_$(color)03", 0, 0)
+        resource = "danger/crystal/fg_$(color)03"
+        fgSprite = Ahorn.getSprite(resource, "Gameplay")
+
+        if fgSprite.width == 0 || fgSprite.height == 0
+            Ahorn.drawSprite(ctx, "danger/crystal/fg_blue03", 0, 0)
+
+        else
+            Ahorn.drawSprite(ctx, resource, 0, 0)
+        end
     end
 end
 

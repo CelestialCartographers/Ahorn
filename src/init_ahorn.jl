@@ -99,15 +99,12 @@ function extractGamedata(storage::String, force::Bool=false)
         (joinpath(celesteAtlases, "Gameplay.meta"), joinpath(storageSprites, "Gameplay.meta")),
         (joinpath(celesteAtlases, "Gui.meta"), joinpath(storageSprites, "Gui.meta")),
         (joinpath(celesteAtlases, "Portraits.meta"), joinpath(storageSprites, "Portraits.meta")),
-        (joinpath(celesteAtlases, "Checkpoints.meta"), joinpath(storageSprites, "Checkpoints.meta")),
         (joinpath(celesteAtlases, "Misc.meta"), joinpath(storageSprites, "Misc.meta"))
     )
 
     requiredAtlases = (
         (joinpath(celesteAtlases, "Gameplay0.data"), joinpath(storageSprites, "Gameplay.png")),
-        (joinpath(celesteAtlases, "Gui0.data"), joinpath(storageSprites, "Gui.png")),
-        (joinpath(celesteAtlases, "Checkpoints0.data"), joinpath(storageSprites, "Checkpoints0.png")),
-        (joinpath(celesteAtlases, "Checkpoints1.data"), joinpath(storageSprites, "Checkpoints1.png")),
+        (joinpath(celesteAtlases, "Gui0.data"), joinpath(storageSprites, "Gui.png"))
     )
 
     gameplaySprites = joinpath(storage, "Gameplay.png")
