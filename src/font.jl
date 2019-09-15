@@ -34,11 +34,11 @@ end
 
 # Multiline string
 function lineWidth(font::Font, s::AbstractString, replaceMissing::Char=' ')
-    return sum([get(font.charDict, c, font.charDict[replaceMissing])[3] for c in s]) + (length(s) - 1) * font.charSpacing
+    return isempty(s) ? 0 : sum([get(font.charDict, c, font.charDict[replaceMissing])[3] for c in s]) + (length(s) - 1) * font.charSpacing
 end
 
 function lineHeight(font::Font, s::AbstractString, replaceMissing::Char=' ')
-    return maximum([get(font.charDict, c, font.charDict[replaceMissing])[4] for c in s])
+    return isempty(s) ? 0 : maximum([get(font.charDict, c, font.charDict[replaceMissing])[4] for c in s])
 end
 
 function Base.size(font::Font, s::AbstractString, replaceMissing::Char=' ')
