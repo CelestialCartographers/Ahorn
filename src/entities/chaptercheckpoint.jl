@@ -18,7 +18,7 @@ function getBgSprite(entity::Maple.ChapterCheckpoint)
 end
 
 bgFallback = "objects/checkpoint/bg/1"
-flashSprite = "objects/checkpoint/flash04"
+flashSprite = "objects/checkpoint/flash03"
 
 function Ahorn.selection(entity::Maple.ChapterCheckpoint)
     x, y = Ahorn.position(entity)

@@ -6,7 +6,7 @@ sprites = Dict{String, String}(
     "wood" => "objects/door/lockdoor00",
     "temple_a" => "objects/door/lockdoorTempleA00",
     "temple_b" => "objects/door/lockdoorTempleB00",
-    "moon" => "objects/door/moonDoor10"
+    "moon" => "objects/door/moonDoor11"
 )
 
 const placements = Ahorn.PlacementDict(

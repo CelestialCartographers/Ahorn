@@ -484,11 +484,17 @@ placements.effects.tentacles.names.offset=Offset
 placements.effects.tentacles.names.color=Colour
 
 placements.effects.starfield.names.color=Colour
+placements.effects.starfield.names.scrollx=Scroll X
+placements.effects.starfield.names.scrolly=Scroll Y
+placements.effects.starfield.names.speed=Speed
 
 placements.effects.rain.names.color=Colour
 
 placements.effects.planets.names.count=Count
 placements.effects.planets.names.size=Size
+placements.effects.planets.names.color=Colour
+placements.effects.planets.names.scrollx=Scroll X
+placements.effects.planets.names.scrolly=Scroll Y
 
 
 placements.effects.tentacles.tooltips.sides=The side of the screen that the tentacles should attach to.
@@ -496,11 +502,17 @@ placements.effects.tentacles.tooltips.offset=Determines the lerp strength of the
 placements.effects.tentacles.tooltips.color=The colour of the tentacles.
 
 placements.effects.starfield.tooltips.color=The colour of the stars.
+placements.effects.starfield.tooltips.scrollx=Determines the parallax scrolling of the stars along the X axis.
+placements.effects.starfield.tooltips.scrolly=Determines the parallax scrolling of the stars along the Y axis.
+placements.effects.starfield.tooltips.speed=Speed multiplier for the stars.
 
-placements.effects.starfield.tooltips.color=The colour of the rain.
+placements.effects.rain.tooltips.color=The colour of the rain.
 
 placements.effects.planets.tooltips.count=The amount of planets to render.
+placements.effects.planets.tooltips.color=The colour of the planets.
 placements.effects.planets.tooltips.size=The sprite to use for the planets.\nLocated at "Gameplay/bgs/10/$size00", where "$size" is the size attribute value.
+placements.effects.planets.tooltips.scrollx=Determines the parallax scrolling of the planets along the X axis.
+placements.effects.planets.tooltips.scrolly=Determines the parallax scrolling of the planets along the Y axis.
 
 
 # -- Decals Properties --

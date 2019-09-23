@@ -32,17 +32,8 @@ function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::
     for node in nodes
         nx, ny = Int.(node)
 
-        drawArrow(ctx, x + offsetCenterX, y + offsetCenterY, nx + offsetCenterX, ny + offsetCenterY, colors.selection_selected_fc, headLength=6)
-
-        Cairo.save(ctx)
-
-        rectangle(ctx, nx, ny, width, height)
-        clip(ctx)
-    
-        drawRectangle(ctx, nx, ny, width, height, colors.trigger_fc, colors.trigger_bc)
-        drawCenteredText(ctx, text, nx, ny, width, height)
-
-        Cairo.restore(ctx)
+        drawArrow(ctx, x + offsetCenterX, y + offsetCenterY, nx + 4, ny + 4, colors.selection_selected_fc, headLength=6)
+        drawRectangle(ctx, nx, ny, 8, 8, colors.trigger_fc, colors.trigger_bc)
     end
 end
 
@@ -67,7 +58,7 @@ function triggerSelection(trigger::Maple.Trigger, room::Maple.Room, node::Intege
         for node in nodes
             nx, ny = Int.(node)
 
-            push!(res, Rectangle(nx, ny, width, height))
+            push!(res, Rectangle(nx, ny, 8, 8))
         end
 
         return res
