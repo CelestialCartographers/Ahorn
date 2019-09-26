@@ -18,7 +18,7 @@ Ahorn.editingOptions(entity::Maple.PlayerPlayback) = Dict{String, Any}(
     "tutorial" => baseGameTutorials
 )
 
-Ahorn.nodeLimits(entity::Maple.BadelineBoost) = 0, 2
+Ahorn.nodeLimits(entity::Maple.PlayerPlayback) = 0, 2
 
 sprite = "characters/player/sitDown00"
 tint = (0.8, 0.2, 0.2, 0.8)
