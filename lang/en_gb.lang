@@ -67,6 +67,7 @@ placements.entities.jumpThru.tooltips.texture=Changes the appearance of the plat
 
 # Booster
 placements.entities.booster.tooltips.red=Determines whether the booster is green and short distance, or red and infinite distance.
+placements.entities.booster.tooltips.ch9_hub_booster=If set to true, the player is unable to dash out of the booster.
 
 # Wall Booster
 placements.entities.wallBooster.tooltips.left=Whether the entity attaches to the left wall or not.
@@ -703,6 +704,7 @@ styleground_window.parallax.names.loopy=Loop Y
 styleground_window.parallax.names.fg=Foreground
 styleground_window.parallax.names.flag=Flag
 styleground_window.parallax.names.notflag=Not Flag
+styleground_window.parallax.names.tag=Tag
 
 styleground_window.parallax.tooltips.alpha=Determines opacity between 0 (Translucent) and 1 (Opaque). 
 styleground_window.parallax.tooltips.color=Using hex colour code, the code tints a styleground that colour.
@@ -726,6 +728,7 @@ styleground_window.parallax.tooltips.loopy=Loops the styleground on the Y axis.
 styleground_window.parallax.tooltips.fg=Whether the styleground is in the foreground or background.
 styleground_window.parallax.tooltips.flag=Flag to make the backdrop visible. Leave empty to disable.
 styleground_window.parallax.tooltips.notflag=Flag to make the backdrop not visible. Leave empty to disable. Overrides the Flag field if set.
+styleground_window.parallax.tooltips.tag=A tag to make it easier to access given backdrops from code.
 
 
 styleground_window.effects.names.name=Name
@@ -734,6 +737,7 @@ styleground_window.effects.names.exclude=Exclude
 styleground_window.effects.names.fg=Foreground
 styleground_window.effects.names.flag=Flag
 styleground_window.effects.names.notflag=Not Flag
+styleground_window.effects.names.tag=Tag
 
 styleground_window.effects.tooltips.name=The name of the effect.
 styleground_window.effects.tooltips.only=Which rooms the effect will be visible in. Room names can be comma seperated and wildcards are supported.\nExample: "a00,b00,c*".
@@ -741,6 +745,7 @@ styleground_window.effects.tooltips.exclude=Which rooms the effect will not be v
 styleground_window.effects.tooltips.fg=Whether the effect should be in the foreground or background.
 styleground_window.effects.tooltips.flag=Flag to make the effect visible. Leave empty to disable.
 styleground_window.effects.tooltips.notflag=Flag to make the effect not visible. Leave empty to disable. Overrides the Flag field if set.
+styleground_window.effects.tooltips.tag=A tag to make it easier to access given backdrops from code.
 
 
 # -- Metadata Window Displaynames and Tooltips --

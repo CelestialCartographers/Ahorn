@@ -7,7 +7,17 @@ stylegroundWindow = nothing
 effectSectionGrid = nothing
 effectOptions = nothing
 
-effectFieldOrder = ["name", "only", "exclude", "fg", "flag", "notflag"]
+effectFieldOrder = String[
+    "name", "only", "exclude", "tag",
+    "flag", "notflag"
+]
+
+parallaxFieldOrder = String[
+    "texture", "only", "exclude", "tag",
+    "flag", "notflag", "blendmode", "color",
+    "x", "y", "scrollx", "scrolly",
+    "speedx", "speedy", "alpha"
+]
 
 function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, colorOption::Ahorn.Form.Option)
     ctx = Gtk.getgc(canvas)
@@ -92,13 +102,18 @@ parallaxFields = Dict{String, Any}(
     "blendmode" => "additive",
     "instantIn" => false,
     "instantOut" => false,
-    "fadeIn" => false
+    "fadeIn" => false,
+
+    "tag" => ""
 )
 
 # Additional fields to add when creating an Effect
 effectFields = Dict{String, Any}(
     "flag" => "",
-    "notflag" => ""
+    "notflag" => "",
+    "tag" => "",
+    
+    "fg" => true
 )
 
 # Fake fields that are not set in the data, but makes sense to have options for
@@ -254,7 +269,7 @@ function getEffectOptions(effect::Maple.Effect, langdata::Ahorn.LangData, fg::Bo
         data["fg"] = fg
     end
 
-    for (dataName, value) in data
+    for (dataName, value) in merge(effectFields, data)
         symbolDataName = Symbol(dataName)
         keyOptions = get(dropdownOptions, dataName, nothing)
         displayName = haskey(names, symbolDataName) ? names[symbolDataName] : Ahorn.humanizeVariableName(dataName)
@@ -376,7 +391,7 @@ function getParallaxGrid(map::Maple.Map)
     fields = merge(parallaxFields, parallaxFakeFields)
     langdataParallax = get(Ahorn.langdata, [:styleground_window, :parallax])
     options = getParallaxOptions(fields, langdataParallax)
-    section = Ahorn.Form.Section("Parallax", options)
+    section = Ahorn.Form.Section("Parallax", options, fieldOrder=parallaxFieldOrder)
     sectionGrid = Ahorn.Form.generateSectionGrid(section, columns=8)
 
     set_gtk_property!(sectionGrid, :hexpand, true)
