@@ -89,10 +89,10 @@ function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::
 
                 minWidth, minHeight = minimumSize(baseTarget)
                 hasWidth, hasHeight = haskey(baseTarget.data, "width"), haskey(baseTarget.data, "height")
-                width, height = Int(get(data, "width", minWidth)), Int(get(data, "width", minHeight))
+                width, height = Int(get(data, "width", minWidth)), Int(get(data, "height", minHeight))
 
                 if hasWidth && width < minWidth || hasHeight && height < minHeight
-                    updateTarget = ask_dialog("The size specified is smaller than the recommended minimum size ($minWidth, $minHeight)\nDo you want to keep this size regardless?", window)
+                    updateTarget = ask_dialog("The size specified is smaller than the recommended minimum size ($minWidth, $minHeight)\nDo you want to keep this size regardless?", lastPropertyWindow)
                 end
 
                 if updateTarget
