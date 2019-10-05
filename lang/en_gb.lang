@@ -241,6 +241,7 @@ placements.entities.spikesUp.tooltips.type=Determines the visual appearance of t
 
 # Cassette Block
 placements.entities.cassetteBlock.tooltips.index=The colour of the cassette block.
+placements.entities.cassetteBlock.tooltips.tempo=The tempo of the cassette blocks. The first non 1 tempo cassette block decides the tempo for all cassette blocks in the room.
 
 # Temple Gate
 placements.entities.templeGate.tooltips.sprite=Determines the visual appearance of the gate.
@@ -449,6 +450,7 @@ placements.triggers.eventTrigger.tooltips.event=Upon activation, plays the event
 # Music Trigger
 placements.triggers.musicTrigger.tooltips.resetOnLeave=Resets the music when the player leaves the current zone after entering the trigger zone.
 placements.triggers.musicTrigger.tooltips.track=Changes the track that plays when the player enters the trigger zone.
+placements.triggers.musicTrigger.tooltips.progress=Change the progress of the current track. 0 means no change.
 
 # Alt Music Trigger
 placements.triggers.altMusicTrigger.tooltips.resetOnLeave=Resets the music when the player leaves the current zone after entering the trigger zone.
