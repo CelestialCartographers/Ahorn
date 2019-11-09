@@ -2,6 +2,16 @@ module Spinner
 
 using ..Ahorn, Maple
 
+# Spinners in the base game without texture, faster than looking up sprite and trying to load it
+const spinnerWithoutTexture = Set{String}([
+    "Core",
+    "Rainbow",
+    "core",
+    "rainbow"
+])
+
+const defaultSpinnerTexture = "danger/crystal/fg_blue03"
+
 function rotatingSpinnerFinalizer(entity::Maple.RotateSpinner)
     x, y = Int(entity.data["x"]), Int(entity.data["y"])
     entity.data["x"], entity.data["y"] = x + 32, y
@@ -153,7 +163,7 @@ function renderMovingSpinner(ctx::Ahorn.Cairo.CairoContext, entity::movingSpinne
     dusty = get(entity.data, "dust", false)
     star = get(entity.data, "star", false)
 
-    if star 
+    if star
         Ahorn.drawSprite(ctx, "danger/starfish13", x, y)
 
     elseif dusty
@@ -177,13 +187,15 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Spinner, room
 
     else
         resource = "danger/crystal/fg_$(color)03"
-        fgSprite = Ahorn.getSprite(resource, "Gameplay")
 
-        if fgSprite.width == 0 || fgSprite.height == 0
-            Ahorn.drawSprite(ctx, "danger/crystal/fg_blue03", 0, 0)
+        if color in spinnerWithoutTexture
+            Ahorn.drawSprite(ctx, defaultSpinnerTexture, 0, 0)
 
         else
-            Ahorn.drawSprite(ctx, resource, 0, 0)
+            fgSprite = Ahorn.getSprite(resource, "Gameplay")
+            texture = fgSprite.width == 0 || fgSprite.height == 0 ? defaultSpinnerTexture : resource
+
+            Ahorn.drawSprite(ctx, texture, 0, 0)
         end
     end
 end

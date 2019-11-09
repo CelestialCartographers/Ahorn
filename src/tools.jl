@@ -127,6 +127,7 @@ function updateSelectionByCoords!(map::Map, ax::Number, ay::Number)
 
     if room != false && room.name != loadedState.roomName
         selectRow!(roomList, row -> row[1] == room.name)
+        handleRoomChanged(Ahorn.loadedState.map, Ahorn.loadedState.room)
     
         return true
     end
@@ -308,7 +309,7 @@ function deleteRoomCallback(widget=nothing)
         History.addSnapshot!(History.MapSnapshot("Room Deletion", loadedState.map))
 
         deleteat!(loadedState.map.rooms, index)
-        updateTreeView!(roomList, getTreeData(loadedState.map), updateByReplacement=true)
+        updateTreeView!(roomList, getTreeData(loadedState.map))
         draw(canvas)
 
         return true
@@ -373,7 +374,7 @@ function handleKeyReleased(event::eventKey)
 
 end
 
-function handleRoomChanged(map::Map, room::Union{Nothing, Room})
+function handleRoomChanged(map::Map, room::Union{Nothing, Room}, previousRoom::Union{Nothing, Room}=nothing)
     # Clean up tools layer before notifying about room change
     eventToModule(currentTool, "cleanup")
 
@@ -383,5 +384,15 @@ function handleRoomChanged(map::Map, room::Union{Nothing, Room})
         eventToModule(currentTool, "roomChanged", room)
         eventToModule(currentTool, "roomChanged", map, room)
         eventToModule(currentTool, "layersChanged", dr.layers)
+    end
+
+    if isa(previousRoom, Room)
+        dr = getDrawableRoom(map, previousRoom)
+        layer = getLayerByName(dr.layers, "tools")
+
+        clearSurface(layer.surface)
+        layer.redraw = true
+
+        redrawLayer!(dr.rendering)
     end
 end

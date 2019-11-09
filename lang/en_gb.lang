@@ -19,6 +19,10 @@ placements.entities.goldenBerry.tooltips.winged=The strawberry attempts to verti
 
 # Badeline Boost
 placements.entities.badelineBoost.tooltips.lockCamera=Upon activation, the camera cannot pan away from the entity.
+placements.entities.badelineBoost.tooltips.canSkip=Badeline will skip to the next position if the player is too far to the right of the current one  (100 pixels).
+placements.entities.badelineBoost.tooltips.finalCh9Boost=Whether this boost should be able to end the level, transporting the player to room "end-granny". If the player has a golden berry, and this isn't a golden boost, they are transported to the golden room "end-golden" instead.\nRequires a Blackhole in the background, does not work if it is in the foreground.
+placements.entities.badelineBoost.tooltips.finalCh9GoldenBoost=Used to indicate that we are in the golden room and boosting out. Prevents the check in finalCh9Boost, and always ends the level if finalCh9Boost is also set.
+placements.entities.badelineBoost.tooltips.finalCh9Dialog=If finalCh9Boost is also set and doesn't go to golden room, this will trigger the Farewell ending dialog.
 
 # Badeline Boss
 placements.entities.finalBoss.tooltips.startHit=Determines whether or not Badeline waits to attack until the first hit or upon room entry.
@@ -371,6 +375,9 @@ placements.entities.lightningBlock.tooltips.music_progress=The new music progres
 
 # Credits Trigger
 placements.triggers.creditsTrigger.tooltips.event=The event this will trigger.
+
+# Spawn Facing Trigger
+placements.triggers.spawnFacingTrigger.tooltips.facing=The direction the player is facing when respawning inside this trigger.
 
 # Bloom Fade Trigger
 placements.triggers.bloomFadeTrigger.tooltips.positionMode=Determines which direction the bloom fades towards.

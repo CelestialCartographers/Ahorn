@@ -18,7 +18,6 @@ roomList = generateTreeView(
                     info_dialog("The selected room name is already in use.", window)
 
                 else
-                    room.name = v
                     store[row, col] = v
 
                     loadedState.room = room
@@ -72,6 +71,8 @@ function roomListRowHandler(list::ListContainer, row)
     selected = row[1]
 
     if selected != loadedState.roomName
+        previousRoom = loadedState.room
+
         loadedState.roomName = selected
         loadedState.room = getRoomByName(loadedState.map, loadedState.roomName)
         persistence["files_lastroom"] = loadedState.roomName
@@ -80,7 +81,7 @@ function roomListRowHandler(list::ListContainer, row)
         setCamera!(camera, loadedState.room.position...)
         updateDrawingLayers!(loadedState.map, loadedState.room)
 
-        handleRoomChanged(loadedState.map, loadedState.room)
+        handleRoomChanged(loadedState.map, loadedState.room, previousRoom)
 
         draw(canvas)
     end

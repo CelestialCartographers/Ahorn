@@ -49,7 +49,6 @@ layerName(l::Nothing) = ""
 
 function resetLayer!(layer::Layer, room::Room)
     if layer.surface.ptr == C_NULL
-        print("Null surface")
         layer.surface = CairoARGBSurface(room.size...)
     end
 

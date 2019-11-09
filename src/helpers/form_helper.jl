@@ -184,9 +184,9 @@ mutable struct DictionaryChoiceOption <: Option
 
     value::Any
 
-    function DictionaryChoiceOption(name::String, options::Dict{String, T}; dataName::String=name, tooltip::String="", value::H=nothing) where {T, H}
+    function DictionaryChoiceOption(name::String, options::Dict{String, T}; dataName::String=name, tooltip::String="", value::H=nothing, editable::Bool=false) where {T, H}
         label = Label(name, xalign=0.0, margin_start=8, tooltip_text=tooltip)
-        combobox = ComboBoxText(false)
+        combobox = ComboBoxText(editable)
 
         choices = collect(keys(options))
         
@@ -210,7 +210,8 @@ function addToGrid!(grid::Gtk.GtkGrid, option::DictionaryChoiceOption, col::Inte
     grid[col + 1, row] = option.combobox
 
     @guarded signal_connect(option.combobox, "changed") do args...
-        option.value = option.options[Gtk.bytestring(GAccessor.active_text(option.combobox))]
+        text = Gtk.bytestring(GAccessor.active_text(option.combobox))
+        option.value = get(option.options, text, text)
     end
 end
 
@@ -517,7 +518,7 @@ function suggestOption(displayName::String, value::Any; tooltip::String="", data
         return TextChoiceOption(displayName, choices, dataName=dataName, tooltip=tooltip, value=value, editable=editable)
     
     elseif isa(choices, Dict)
-        return DictionaryChoiceOption(displayName, choices, dataName=dataName, tooltip=tooltip, value=value)
+        return DictionaryChoiceOption(displayName, choices, dataName=dataName, tooltip=tooltip, value=value, editable=editable)
 
     elseif isa(value, Bool)
         return CheckBoxOption(displayName, value=value, dataName=dataName, tooltip=tooltip)

@@ -191,12 +191,12 @@ function markForRedraw(room::Maple.Room, map::Maple.Map)
 end
 
 function updateTemplateRoom(creating::Bool=true)
-        # Copy all fields from the selected room if we are creating new one
-        if creating && Ahorn.loadedState.room !== nothing
-            global templateRoom = deepcopy(Ahorn.loadedState.room)
-        end
+    # Copy all fields from the selected room if we are creating new one
+    if creating && Ahorn.loadedState.room !== nothing
+        global templateRoom = deepcopy(Ahorn.loadedState.room)
+    end
 
-        global currentRoom = creating ? templateRoom : Ahorn.loadedState.room
+    global currentRoom = creating ? templateRoom : Ahorn.loadedState.room
 end
 
 function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "use_simple_room_values", true))
@@ -252,6 +252,7 @@ function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "u
             end
 
             Maple.updateTileSize!(currentRoom, Maple.tile_fg_names["Air"], Maple.tile_fg_names["Air"])
+            Ahorn.handleRoomChanged(currentMap, currentRoom, Ahorn.loadedState.room)
             Ahorn.updateTreeView!(Ahorn.roomList, Ahorn.getTreeData(currentMap), row -> row[1] == currentRoom.name)
 
             markForRedraw(currentRoom, currentMap)
