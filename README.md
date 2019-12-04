@@ -14,7 +14,7 @@ This project is an unofficial map maker and level editor, it is merely a fan pro
 
 ### Cross-platform manual installation
 
-First, [install Julia if you haven't already](https://julialang.org/downloads/). You need Julia 1.1, but any newer 1.x version should work as well.
+First, [install Julia if you haven't already](https://julialang.org/downloads/). You need Julia 1.3, but any newer 1.x version should work as well.
 
 The easiest way to install Ahorn would be to download [the installer `install_ahorn.jl`](https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/install_ahorn.jl) (Right-click the link and press "Save as...") and run it with Julia. Just follow its instructions. Ahorn and Maple are installed using Julia's `Pkg` system. The installer will also download and install required dependencies, so grab yourself a glass of juice while you wait.
 ```sh

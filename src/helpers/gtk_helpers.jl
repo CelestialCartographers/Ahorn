@@ -356,7 +356,7 @@ function saveDialog(title::AbstractString, parent=GtkNullContainer(), filters::U
 end
 
 function scalePixbufSimple(pixbuf::Gtk.GdkPixbuf, width::Integer=width(pixbuf), height::Integer=height(pixbuf), method::Int32=GdkInterpType.NEAREST)
-    return ccall((:gdk_pixbuf_scale_simple, Gtk.libgdk_pixbuf), Ptr{GObject}, (Ptr{GObject}, Cint, Cint, Cint), pixbuf, width, height, method)
+    return ccall((:gdk_pixbuf_scale_simple, Gtk.libgdkpixbuf), Ptr{GObject}, (Ptr{GObject}, Cint, Cint, Cint), pixbuf, width, height, method)
 end
 
 function pixbufFromSurface(surface::Cairo.CairoSurface, alpha::Bool=true)

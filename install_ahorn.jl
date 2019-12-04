@@ -1,7 +1,7 @@
 # Ahorn's installation script. Connects to the internet using Pkg3 to install it.
 
-if VERSION < v"1.1"
-    println("""Ahorn, and thus this installer, require Julia version 1.1 or later to run.
+if VERSION < v"1.3"
+    println("""Ahorn, and thus this installer, require Julia version 1.3 or later to run.
     The version you installed is $VERSION. Please update to a more recent version.
     Press Enter to quit the installer.""")
     readline()

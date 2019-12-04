@@ -1,7 +1,7 @@
 @echo off   
 setlocal EnableDelayedExpansion
 
-set minimum_version="v\"1.1.0\""
+set minimum_version="v\"1.3.0\""
 
 where julia >nul 2>nul
 if %ERRORLEVEL% equ 0 (
@@ -45,7 +45,7 @@ echo Using Julia from: %JULIA_PATH%
 
 julia -e "exit(Int(VERSION < %minimum_version%))"
 if %ERRORLEVEL% neq 0 (
-    echo The Julia version is too old to run Ahorn. Please make sure the right version is used. You need at least Julia 1.1.0.
+    echo The Julia version is too old to run Ahorn. Please make sure the right version is used. You need at least Julia 1.3.0.
 
     goto :end
 )

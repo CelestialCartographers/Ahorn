@@ -1,7 +1,7 @@
 name = "Ahorn"
 uuid = "10a6d802-9bc0-11e8-304a-1bca7ec2ebad"
 authors = ["Cruor <cruoratmc@gmail.com>", "Vexatos <Stuarzt@gmx.de>"]
-version = "0.1.0"
+version = "1.0.0"
 
 [deps]
 Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
@@ -16,3 +16,6 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 WinReg = "1b915085-20d7-51cf-bf83-8f477d6f5128"
 YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
+
+[compat]
+julia = "1.3"
