@@ -648,6 +648,7 @@ settings.debug.tooltips.SPRITE_DUMPER_REAL_SIZE=Whether the sprite dumper should
 
 room_window.names.name=Room Name
 room_window.names.musicProgress=Music Progress
+room_window.names.ambienceProgress=Ambience Progress
 room_window.names.x=X
 room_window.names.y=Y
 room_window.names.width=Width
@@ -662,12 +663,17 @@ room_window.names.musicLayer1=Music Layer 1
 room_window.names.musicLayer2=Music Layer 2
 room_window.names.musicLayer3=Music Layer 3
 room_window.names.musicLayer4=Music Layer 4
+room_window.names.delayAltMusicFade=Delay Alternative Music Fade
 room_window.names.music=Music
+room_window.names.altMusic=Alternative Music
 room_window.names.windPattern=Wind Pattern
 room_window.names.color=Colour
+room_window.names.cameraOffsetX=Camera Offset X
+room_window.names.cameraOffsetY=Camera Offset Y
 
 room_window.tooltips.name=The name of the room.
 room_window.tooltips.musicProgress=The progress of the current song.
+room_window.tooltips.ambienceProgress=The progress of the current ambience track.
 room_window.tooltips.x=The x coordinate of the room.
 room_window.tooltips.y=The y coordinate of the room.
 room_window.tooltips.width=The width of the room.
@@ -682,9 +688,13 @@ room_window.tooltips.musicLayer1=Whether the room has the first music layer enab
 room_window.tooltips.musicLayer2=Whether the room has the second music layer enabled.
 room_window.tooltips.musicLayer3=Whether the room has the third music layer enabled.
 room_window.tooltips.musicLayer4=Whether the room has the fourth music layer enabled.
+room_window.tooltips.delayAltMusicFade=Delay the alternative music fade.
 room_window.tooltips.music=What song should be playing in the room, uses previous if left empty.
+room_window.tooltips.altMusic=What alternative song should be playing. It is unsure what this means, as it seems to not be hooked up in the game anymore.
 room_window.tooltips.windPattern=The type of wind in the room.
 room_window.tooltips.color=The colour of the room in the debug map viewer.
+room_window.tooltips.cameraOffsetX=Global horizontal offset of camera in room.
+room_window.tooltips.cameraOffsetY=Global vertical offset of camera in room.
 
 
 # -- Stylegrounds Window Displaynames and Tooltips --

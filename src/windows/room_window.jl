@@ -9,16 +9,22 @@ templateRoom = Maple.Room(name="1")
 currentRoom = nothing
 minimumRecommended = (320, 184)
 
+# Each line represents a line in window with 4 columns
 roomFieldOrder = String[
-    "name", "musicProgress", "x", "y",
-    "width", "height", "underwater", "space",
+    "name", "color",
+    "x", "y",
+    "width", "height", 
+    "cameraOffsetX", "cameraOffsetY",
+    "windPattern", "underwater", "space",
     "disableDownTransition", "checkpoint", "dark", "whisper",
     "musicLayer1", "musicLayer2", "musicLayer3", "musicLayer4",
-    "music", "windPattern", "color"
+    "ambienceProgress", "musicProgress",
+    "music",
 ]
 
 dropdownOptions = Dict{String, Any}(
     "music" => sort(collect(keys(Maple.Songs.songs))),
+    "altMusic" => sort(collect(keys(Maple.Songs.songs))),
     "windPattern" => sort(Maple.wind_patterns),
     "color" => collect(0:length(Ahorn.colors.background_room_color_coded_fill) - 1)
 )
@@ -50,9 +56,14 @@ fields = Dict{String, Any}(
     "color" => :color,
 
     "music" => :music,
-    "musicProgress" => :musicProgress,
 
-    "windPattern" => :windPattern
+    "musicProgress" => :musicProgress,
+    "ambienceProgress" => :ambienceProgress,
+
+    "windPattern" => :windPattern,
+
+    "cameraOffsetX" => :cameraOffsetX,
+    "cameraOffsetY" => :cameraOffsetY
 )
 
 function getValue(room::Maple.Room, value::Any, simple::Bool)
