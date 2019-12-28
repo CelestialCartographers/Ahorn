@@ -578,6 +578,7 @@ settings.config.names.backup_enabled=Automatic backups
 settings.config.names.backup_dialog_enabled=Backup Recovery Dialogue
 settings.config.names.allow_out_of_bounds_placement=Out of bounds placement
 settings.config.names.everest_rcon=Everest Remote Control
+settings.config.names.load_image_meta_yaml=Load Image Meta YAML
 
 settings.config.tooltips.language=The language file being used.
 settings.config.tooltips.camera_maximum_zoom=The greatest allowed camera zoom level.
@@ -611,6 +612,7 @@ settings.config.tooltips.backup_enabled=Whether automatic backups of maps should
 settings.config.tooltips.backup_dialog_enabled=Whether Ahorn should ask the user to restore from a backup after an unexpected shutdown.
 settings.config.tooltips.allow_out_of_bounds_placement=Whether you should be able to click outside of the room to place entities, triggers or decals.
 settings.config.tooltips.everest_rcon=URL for Everest remote control.
+settings.config.tooltips.load_image_meta_yaml=Loads the .meta.yaml image metadata files dumped by old Everest image dumps.\nNot recommended, If sprites are offset incorrectly, fix the sprite itself.
 
 
 settings.debug.names.DEBUG_MENU_DROPDOWN=Debug menu dropdown

@@ -7,26 +7,40 @@ atlases = Dict{String, Dict{String, SpriteHolder}}()
 drawingAlpha = 1
 fileNotFoundSurface = CairoARGBSurface(0, 0)
 
+spriteSurfaceCache = Dict{String, Tuple{Number, Cairo.CairoSurface, String}}()
+spriteYAMLCache = Dict{String, Tuple{Number, Bool, Union{Dict, Nothing}}}()
+
 function getSpriteSurface(resource::String, filename::String, atlas::String="Gameplay")
     # If we have a filename use that, otherwise look for the resource
     filename = isempty(filename) ? findExternalSprite(resource) : filename
     filename = isa(filename, String) ? filename : ""
 
     if isfile(filename)
+        # Check if we have a cached version from zipfile
+        cacheInfo = get(spriteSurfaceCache, resource, nothing)
+        fileModified = mtime(filename)
+
+        if cacheInfo !== nothing && cacheInfo[1] <= fileModified
+            return cacheInfo[2], cacheInfo[3]
+        end
+
         if hasExt(filename, ".png")
-            return open(Cairo.read_from_png, filename), filename
+            surface = open(Cairo.read_from_png, filename)
+            spriteSurfaceCache[resource] = (fileModified, surface, filename)
+
+            return surface, filename
 
         elseif hasExt(filename, ".zip")
-            res = fileNotFoundSurface
-            zipfh = ZipFile.Reader(filename)
-
             # Cheaper to fix resource name than every filename from zip
             # Always uses Unix path
             resourcePath = "Graphics/Atlases/$atlas/" * splitext(resource)[1] * ".png"
+            surface = fileNotFoundSurface
+
+            zipfh = ZipFile.Reader(filename)
 
             for file in zipfh.files
                 if file.name == resourcePath
-                    res = Cairo.read_from_png(file)
+                    surface = Cairo.read_from_png(file)
 
                     break
                 end
@@ -34,7 +48,9 @@ function getSpriteSurface(resource::String, filename::String, atlas::String="Gam
             
             close(zipfh)
 
-            return res, filename
+            spriteSurfaceCache[resource] = (fileModified, surface, filename)
+
+            return surface, filename
         end
 
     else
@@ -43,29 +59,49 @@ function getSpriteSurface(resource::String, filename::String, atlas::String="Gam
 end
 
 function getSpriteMeta(resource::String, filename::String, atlas::String="Gameplay")
+    if get(config, "load_image_meta_yaml", false)
+        return false, false
+    end
+
     # If we have a filename use that, otherwise look for the resource
     filename = isempty(filename) ? findExternalSprite(resource) : filename
     filename = isa(filename, String) ? filename : ""
 
-    if isfile(filename)
+    if resource !== nothing && isfile(filename)
+        cacheInfo = get(spriteYAMLCache, resource, nothing)
+
         if hasExt(filename, ".png")
             yamlFilename = splitext(filename)[1] * ".meta.yaml"
+            fileModified = mtime(yamlFilename)
 
             if isfile(yamlFilename)
+                if cacheInfo !== nothing && cacheInfo[1] <= fileModified && fileModified != 0
+                    return cacheInfo[2], cacheInfo[3]
+                end
+                
                 try
                     data = open(YAML.load, yamlFilename)
+                    spriteYAMLCache[resource] = (fileModified, true, data)
 
                     return true, data
 
                 catch
+                    spriteYAMLCache[resource] = (fileModified, false, "Invalid YAML file")
+
                     return false, "Invalid YAML file"
                 end
             end
 
         elseif hasExt(filename, ".zip")
+            fileModified = mtime(filename)
+
+            if cacheInfo !== nothing && cacheInfo[1] <= fileModified
+                return cacheInfo[2], cacheInfo[3]
+            end
+
             success = true
             res = nothing
-            
+
             zipfh = ZipFile.Reader(filename)
 
             # Cheaper to fix resource name than every filename from zip
@@ -87,6 +123,8 @@ function getSpriteMeta(resource::String, filename::String, atlas::String="Gamepl
             end
             
             close(zipfh)
+
+            spriteYAMLCache[resource] = (fileModified, success, res)
 
             return success, res
         end

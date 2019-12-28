@@ -19,26 +19,37 @@ function warnMissingDecals(side::Maple.Side, config::Ahorn.Config)
 
     if warnMissing
         Ahorn.loadExternalSprites!()
-        textures = Ahorn.spritesToDecalTextures(Ahorn.getAtlas("Gameplay"))
+        
+        atlas = Ahorn.getAtlas("Gameplay")
+        textures = Ahorn.spritesToDecalTextures(atlas)
 
-        missing = Tuple{Maple.Room, Array{Maple.Decal, 1}, Maple.Decal}[]
+        missingDecals = Tuple{Maple.Room, Array{Maple.Decal, 1}, Maple.Decal}[]
+        existingDecalNames = Dict{String, Bool}()
 
         for room in map.rooms
-            for decals in [room.fgDecals, room.bgDecals]
+            for decals in Array{Maple.Decal, 1}[room.fgDecals, room.bgDecals]
                 for decal in decals
+                    if get(existingDecalNames, decal.texture, false)
+                        continue
+                    end
+
                     texture = Ahorn.fixTexturePath(decal.texture)
-                    if !(splitext(texture)[1] in textures || texture in textures)
-                        push!(missing, (room, decals, decal))
+
+                    if !(texture in textures || splitext(texture)[1] in textures)
+                        push!(missingDecals, (room, decals, decal))
+
+                    else
+                        existingDecalNames[decal.texture] = true
                     end
                 end
             end
         end
 
-        missingCount = length(missing)
+        missingCount = length(missingDecals)
         plural = missingCount == 1 ? "" : "s"
 
         if missingCount > 0
-            uniqueNames = unique(String[decal.texture for (room, decals, decal) in missing])
+            uniqueNames = unique(String[decal.texture for (room, decals, decal) in missingDecals])
 
             dialogText = "You have $missingCount decal$plural with no longer existing texture$plural.\n" *
                 "These can potentially crash Celeste when their room is loaded.\n" * 
@@ -49,7 +60,7 @@ function warnMissingDecals(side::Maple.Side, config::Ahorn.Config)
             if confirmed
                 Ahorn.History.addSnapshot!(Ahorn.History.MapSnapshot("Deleting missing decals", map))
 
-                for (room, decals, decal) in missing
+                for (room, decals, decal) in missingDecals
                     filter!(d -> !(d.texture in uniqueNames), decals)
                 end
             end

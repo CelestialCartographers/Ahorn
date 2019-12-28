@@ -184,6 +184,9 @@ function warnBadExtensions(fixable::Array{String, 1}, nonFixable::Array{String, 
     return res
 end
 
+# Filename -> (mtime, image data)
+externalSpritesZipCache = Dict{String, Tuple{Number, Array{Tuple{String, String, String}, 1}}}()
+
 function findExternalSprites()
     warnOnBadExts = get(config, "prompt_bad_resource_exts", true)
     res = Tuple{String, String, String}[]
@@ -227,32 +230,47 @@ function findExternalSprites()
     atlasesUnixPath = replace(atlasesPath, "\\" => "/")
 
     for target in targetZips
-        try
-            zipfh = ZipFile.Reader(target)
+        # Check cache if we already know its files
+        cacheInfo = get(externalSpritesZipCache, target, nothing)
+        targetModified = mtime(target)
 
-            for file in zipfh.files
-                name = file.name
+        if cacheInfo !== nothing && cacheInfo[1] <= targetModified && targetModified != 0
+            append!(res, cacheInfo[2])
 
-                if startswith(name, atlasesUnixPath)
-                    if hasExt(name, ".png")
-                        if !hasExt(name, ".png", false)
-                            # Case sensitive check for warnings
-                            push!(zipFileBadExt, joinpath(target, name))
+        else
+            targetFiles = Tuple{String, String, String}[]
+
+            try
+                zipfh = ZipFile.Reader(target)
+    
+                for file in zipfh.files
+                    name = file.name
+    
+                    if startswith(name, atlasesUnixPath)
+                        if hasExt(name, ".png")
+                            if !hasExt(name, ".png", false)
+                                # Case sensitive check for warnings
+                                push!(zipFileBadExt, joinpath(target, name))
+                            end
+    
+                            # This should be safe, but probably not...
+                            atlas = split(name, "/")[3]
+    
+                            push!(targetFiles, (relpath(name, joinpath(atlasesPath, atlas)), target, atlas))
                         end
-
-                        # This should be safe, but probably not...
-                        atlas = split(name, "/")[3]
-
-                        push!(res, (relpath(name, joinpath(atlasesPath, atlas)), target, atlas))
                     end
                 end
+    
+                close(zipfh)
+    
+            catch e
+                println(Base.stderr, "Failed to load zip file '$target'")
+                println(Base.stderr, e)
             end
 
-            close(zipfh)
+            externalSpritesZipCache[target] = (mtime(target), targetFiles)
 
-        catch e
-            println(Base.stderr, "Failed to load zip file '$target'")
-            println(Base.stderr, e)
+            append!(res, targetFiles)
         end
     end
 
