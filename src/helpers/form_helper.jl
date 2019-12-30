@@ -189,8 +189,8 @@ mutable struct DictionaryChoiceOption <: Option
         combobox = ComboBoxText(editable)
 
         choices = collect(keys(options))
-        
-        push!(combobox, choices...)
+
+        append!(combobox, choices)
 
         index = Ahorn.setComboIndex!(combobox, collect(values(options)), value)
 
@@ -200,7 +200,7 @@ end
 
 Base.size(option::DictionaryChoiceOption) = (2, 1)
 getValue(option::DictionaryChoiceOption) = option.value
-setValue!(option::DictionaryChoiceOption, value::Any) = Ahorn.setComboIndex(option.combobox, collect(values(options.options)), value, allowCustom=false)
+setValue!(option::DictionaryChoiceOption, value::Any) = Ahorn.setComboIndex!(option.combobox, collect(values(option.options)), value, allowCustom=false)
 getGroup(option::DictionaryChoiceOption) = 1
 setGtkProperty!(option::DictionaryChoiceOption, field::Symbol, value::Any) = set_gtk_property!(option.combobox, field, value)
 getGtkProperty(option::DictionaryChoiceOption, field::Symbol, typ::DataType) = set_gtk_property!(option.combobox, field, typ)
