@@ -8,7 +8,7 @@ drawingAlpha = 1
 fileNotFoundSurface = CairoARGBSurface(0, 0)
 
 spriteSurfaceCache = Dict{String, Tuple{Number, Cairo.CairoSurface, String}}()
-spriteYAMLCache = Dict{String, Tuple{Number, Bool, Union{Dict, Nothing}}}()
+spriteYAMLCache = Dict{String, Tuple{Number, Bool, Any}}()
 
 function getSpriteSurface(resource::String, filename::String, atlas::String="Gameplay")
     # If we have a filename use that, otherwise look for the resource
@@ -59,7 +59,7 @@ function getSpriteSurface(resource::String, filename::String, atlas::String="Gam
 end
 
 function getSpriteMeta(resource::String, filename::String, atlas::String="Gameplay")
-    if get(config, "load_image_meta_yaml", false)
+    if !get(config, "load_image_meta_yaml", false)
         return false, false
     end
 
@@ -86,9 +86,9 @@ function getSpriteMeta(resource::String, filename::String, atlas::String="Gamepl
                     return true, data
 
                 catch
-                    spriteYAMLCache[resource] = (fileModified, false, "Invalid YAML file")
+                    spriteYAMLCache[resource] = (fileModified, false, "Invalid YAML data")
 
-                    return false, "Invalid YAML file"
+                    return false, "Invalid YAML data"
                 end
             end
 
