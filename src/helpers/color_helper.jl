@@ -9,7 +9,7 @@ function argb32ToRGBATuple(n::Integer)
 end
 
 function normRGBA32Tuple2ARGB32(c::rgbaTupleType)
-    bytes = round.(Int, c .* 255)
+    bytes = round.(UInt, c .* 255)
 
     return bytes[1] << 16 | bytes[2] << 8 | bytes[3] | bytes[4] << 24
 end

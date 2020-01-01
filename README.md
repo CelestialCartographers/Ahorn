@@ -12,14 +12,23 @@ This project is an unofficial map maker and level editor, it is merely a fan pro
 
 ## Installation
 
+### Windows installation
+
+This installation method only works on Windows and may be slightly easier than the cross-platform one. Download [the installer and runner batch file `ahorn.bat`](https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/ahorn.bat) (Right-click the link and press "Save as...") and run it in any folder. The file will install Julia, set up Ahorn (if needed) and then launch it. Any downloaded files will temporarily be put in the folder the file was run in. Just follow its instructions.
+
+Running `ahorn.bat` again after the installation completed will start Ahorn.
+
 ### Cross-platform manual installation
 
-First, [install Julia if you haven't already](https://julialang.org/downloads/). You need Julia 1.3, but any newer 1.x version should work as well.
+First, [install Julia if you haven't already](https://julialang.org/downloads/). You will need Julia 1.3 or later.
 
-The easiest way to install Ahorn would be to download [the installer `install_ahorn.jl`](https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/install_ahorn.jl) (Right-click the link and press "Save as...") and run it with Julia. Just follow its instructions. Ahorn and Maple are installed using Julia's `Pkg` system. The installer will also download and install required dependencies, so grab yourself a glass of juice while you wait.
+The easiest way to install Ahorn would be to download [the installer `install_ahorn.jl`](https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/install_ahorn.jl) (Right-click the link and press "Save as...") and run it with Julia in the terminal. Just follow its instructions. Ahorn and Maple are installed using Julia's `Pkg` system. The installer will also download and install required dependencies, so grab yourself a glass of juice while you wait.
 ```sh
 ~$ julia install_ahorn.jl
 ```
+
+### First Launch
+
 Upon launching the program for the first time, Ahorn will ask you to select the directory of your celeste installation. It needs Celeste to be installed to be able to extract textures from it, since we are not including them in the program.
 
 The config file can be found in `%localappdata%/Ahorn` on Windows, otherwise in `~/.config/Ahorn`.
