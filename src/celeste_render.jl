@@ -1,7 +1,7 @@
+include("assets.jl")
 include("drawing.jl")
 include("font.jl")
 include("text_drawing.jl")
-include("assets.jl")
 include("layers.jl")
 include("auto_tiler.jl")
 include("decals.jl")

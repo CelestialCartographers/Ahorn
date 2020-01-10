@@ -305,6 +305,10 @@ placements.entities.everest/coreMessage.tooltips.dialog=The dialogue key to use.
 # Star Jump Block
 placements.entities.starJumpBlock.tooltips.sinks=Whether the block sinks when the player stands on it.
 
+# Star Jump Graphics Controller (Everest)
+placements.entities.everest/starClimbGraphicsController.tooltips.fgColor=The foreground colour of the Star Jump Block effect.
+placements.entities.everest/starClimbGraphicsController.tooltips.bgColor=The background colour of the Star Jump Block effect.
+
 # Colour Switch
 placements.entities.colorSwitch.tooltips.type=The colour of the switch.
 
@@ -470,6 +474,10 @@ placements.triggers.everest/dialogTrigger.tooltips.endLevel=Whether finishing th
 
 # Shatter Crystal Trigger (Everest)
 placements.triggers.everest/crystalShatterTrigger.tooltips.mode=Whether the trigger should destroy all crystal spinners, or only the ones contained within it.
+
+# Music Layer Trigger (Everest)
+placements.triggers.everest/musicLayerTrigger.tooltips.layers=Which layers the trigger should change.
+placements.triggers.everest/musicLayerTrigger.tooltips.enable=Whether the trigger should enable or disable the specified layers.
 
 # Moon Glitch Background Trigger
 placements.triggers.moonGlitchBackgroundTrigger.tooltips.duration=The duration of the glitch effect.

@@ -23,16 +23,24 @@ function log(s::String, key::String)
 end
 
 function reloadTools!()
+    empty!(Ahorn.loadedTools)
+    append!(Ahorn.loadedTools, joinpath.(Ahorn.abs"tools", readdir(Ahorn.abs"tools")))
+    Ahorn.initExternalTools()
+
     Ahorn.loadModule.(Ahorn.loadedTools)
     Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedTools, "tools")
     Ahorn.changeTool!(Ahorn.loadedTools[1])
-    Ahorn.selectRow!(Ahorn.roomList, row -> row[1] == Ahorn.loadedState.roomName)
+    Ahorn.selectRow!(Ahorn.toolList, 1)
 
     return true
 end
 
 function reloadEntities!()
     dr = Ahorn.getDrawableRoom(Ahorn.loadedState.map, Ahorn.loadedState.room)
+
+    empty!(Ahorn.loadedEntities)
+    append!(Ahorn.loadedEntities, joinpath.(Ahorn.abs"entities", readdir(Ahorn.abs"entities")))
+    Ahorn.initExternalEntities()
 
     Ahorn.loadModule.(Ahorn.loadedEntities)
     Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedEntities, "entities")
@@ -49,6 +57,10 @@ function reloadEntities!()
 end
 
 function reloadEffects!()
+    empty!(Ahorn.loadedEffects)
+    append!(Ahorn.loadedEffects, joinpath.(Ahorn.abs"effects", readdir(Ahorn.abs"effects")))
+    Ahorn.initExternalEffects()
+
     Ahorn.loadModule.(Ahorn.loadedEffects)
     Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedEffects, "effects")
     Ahorn.registerPlacements!(Ahorn.effectPlacements, Ahorn.loadedEffects)
@@ -58,6 +70,10 @@ end
 
 function reloadTriggers!()
     dr = Ahorn.getDrawableRoom(Ahorn.loadedState.map, Ahorn.loadedState.room)
+
+    empty!(Ahorn.loadedTriggers)
+    append!(Ahorn.loadedTriggers, joinpath.(Ahorn.abs"triggers", readdir(Ahorn.abs"triggers")))
+    Ahorn.initExternalTriggers()
 
     Ahorn.loadModule.(Ahorn.loadedTriggers)
     Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedTriggers, "triggers")

@@ -14,4 +14,6 @@ const speaker = open(Cairo.read_from_png, Ahorn.abs"../assets/sound_source.png")
 const tentacle = open(Cairo.read_from_png, Ahorn.abs"../assets/tentacles.png")
 const northernLights = open(Cairo.read_from_png, Ahorn.abs"../assets/northern_lights.png")
 
+const missingImage = open(Cairo.read_from_png, Ahorn.abs"../assets/missing_image.png")
+
 end

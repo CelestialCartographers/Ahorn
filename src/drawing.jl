@@ -5,7 +5,7 @@ include("extract_sprites_meta.jl")
 atlases = Dict{String, Dict{String, SpriteHolder}}()
 
 drawingAlpha = 1
-fileNotFoundSurface = CairoARGBSurface(0, 0)
+fileNotFoundSurface = Assets.missingImage
 
 spriteSurfaceCache = Dict{String, Tuple{Number, Cairo.CairoSurface, String}}()
 spriteYAMLCache = Dict{String, Tuple{Number, Bool, Any}}()
@@ -135,8 +135,9 @@ end
 
 function addSprite!(resource::String, filename::String=""; atlas::String="Gameplay", force::Bool=false)
     spriteAtlas = getAtlas(atlas)
+    spriteHolder = get(spriteAtlas, resource, nothing)
 
-    if !haskey(spriteAtlas, resource) || spriteAtlas[resource].sprite.width == 0 || spriteAtlas[resource].sprite.height == 0 || mtime(spriteAtlas[resource].path) > spriteAtlas[resource].readtime || force
+    if spriteHolder === nothing || spriteHolder.sprite.surface === fileNotFoundSurface || spriteHolder.sprite.width == 0 || spriteHolder.sprite.height == 0 || mtime(spriteHolder.path) > spriteHolder.readtime || mtime(spriteHolder.path) == 0 || force
         surface, filename = getSpriteSurface(resource, filename)
         success, meta = getSpriteMeta(resource, filename, atlas)
         hasMeta = isa(meta, Dict)
@@ -195,15 +196,6 @@ end
 
 # Gets a resource or loads a modded one
 function getSprite(name::String, atlas::String="Gameplay"; force::Bool=false)
-    # Remove entry if its (0, 0) in size
-    if haskey(atlases, atlas) && haskey(atlases[atlas], name)
-        sprite = atlases[atlas][name].sprite
-
-        if sprite.realWidth == 0 && sprite.realHeight == 0
-            delete!(atlases, name)
-        end
-    end
-
     return addSprite!(name, atlas=atlas, force=force)
 end
 

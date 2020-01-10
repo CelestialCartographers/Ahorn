@@ -10,6 +10,9 @@ const placements = Ahorn.PlacementDict(
     "Star Climb Controller" => Ahorn.EntityPlacement(
         Maple.StarClimbController,
     ),
+    "Star Climb Graphics Controller (Everest)" => Ahorn.EntityPlacement(
+        Maple.StarClimbGraphicsController,
+    ),
 )
 
 Ahorn.minimumSize(entity::Maple.StarJumpBlock) = 8, 8
@@ -18,6 +21,12 @@ Ahorn.resizable(entity::Maple.StarJumpBlock) = true, true
 Ahorn.selection(entity::Maple.StarJumpBlock) = Ahorn.getEntityRectangle(entity)
     
 function Ahorn.selection(entity::Maple.StarClimbController)
+    x, y = Ahorn.position(entity)
+
+    return Ahorn.Rectangle(x - 12, y - 12, 24, 24)
+end
+
+function Ahorn.selection(entity::Maple.StarClimbGraphicsController)
     x, y = Ahorn.position(entity)
 
     return Ahorn.Rectangle(x - 12, y - 12, 24, 24)
@@ -208,5 +217,6 @@ end
 
 Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.StarJumpBlock, room::Maple.Room) = renderStarjumpBlock(ctx, entity, room)
 Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.StarClimbController, room::Maple.Room) = Ahorn.drawImage(ctx, Ahorn.Assets.northernLights, -12, -12)
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.StarClimbGraphicsController, room::Maple.Room) = Ahorn.drawImage(ctx, Ahorn.Assets.northernLights, -12, -12)
 
 end

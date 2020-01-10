@@ -350,6 +350,8 @@ end
 
 function selectionMotionAbs(rect::Ahorn.Rectangle)
     if Ahorn.modifierControl()
+        global selectionRect = rect
+
         if Ahorn.layerName(targetLayer) == "entities" || Ahorn.layerName(targetLayer) == "triggers"
             if material.placement == "rectangle"
                 prevGhost = deepcopy(previewGhost)
@@ -362,14 +364,14 @@ function selectionMotionAbs(rect::Ahorn.Rectangle)
                 end
             end
         end
-
-        global selectionRect = rect
     end
 end
 
 function selectionMotion(rect::Ahorn.Rectangle)
     if !Ahorn.modifierControl()
         ax1, ay1, ax2, ay2 = rect.x * 8 - 8, rect.y * 8 - 8, (rect.x + rect.w) * 8 - 8, (rect.y + rect.h) * 8 - 8
+
+        global selectionRect = Ahorn.Rectangle(ax1, ay1, rect.w * 8, rect.h * 8)
 
         if Ahorn.layerName(targetLayer) == "entities" || Ahorn.layerName(targetLayer) == "triggers"
             if material.placement == "rectangle"
@@ -383,8 +385,6 @@ function selectionMotion(rect::Ahorn.Rectangle)
                 end
             end
         end
-
-        global selectionRect = Ahorn.Rectangle(ax1, ay1, rect.w * 8, rect.h * 8)
     end
 end
 
