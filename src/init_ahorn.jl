@@ -31,7 +31,14 @@ function findCelesteDir()
     steam = findSteamInstallDir()
 
     if steam !== nothing
-        steamfn = joinpath(steam, "steamapps", "common", "Celeste", "Celeste.exe")
+        celesteDir =
+            if Sys.isapple()
+                joinpath("Celeste", "Celeste.app", "Contents", "MacOS")
+            else
+                "Celeste"
+            end
+
+        steamfn = joinpath(steam, "steamapps", "common", celestDir, "Celeste.exe")
 
         if isfile(steamfn)
             return true, steamfn
