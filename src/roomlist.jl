@@ -1,6 +1,8 @@
 roomList = generateTreeView(
     ("Room", "X", "Y", "Width", "Height"),
     getTreeData(loadedState.map),
+    resize=true,
+    sortable=false,
     editable=Bool[
         true,
         true,

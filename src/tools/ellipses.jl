@@ -90,7 +90,7 @@ end
 
 function materialFiltered(list::Ahorn.ListContainer)
     tileNames = Ahorn.tileNames(targetLayer)
-    Ahorn.selectRow!(list, row -> row[1] == tileNames[material])
+    Ahorn.selectRow!(list, row -> row[1] == get(tileNames, material, '0'))
 end
 
 function layersChanged(layers::Array{Ahorn.Layer, 1})

@@ -408,6 +408,14 @@ placements.triggers.everest/coreModeTrigger.tooltips.mode=The core mode that sho
 # Everest Change Inventory Trigger
 placements.triggers.everest/changeInventoryTrigger.tooltips.inventory=The inventory the player should get when the trigger is entered.
 
+# Smooth Camera Offset Trigger
+placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.offsetXFrom=First X position of the camera offset.
+placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.offsetXTo=Second X position of the camera offset.
+placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.offsetYFrom=First Y position of the camera offset.
+placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.offsetYTo=Second Y position of the camera offset.
+placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.positionMode=Which direction the offset moves between the two positions when the player enters the trigger.
+placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.onlyOnce=If checked, the trigger will be disabled when the player first leaves it.
+
 # Camera Advanced Target Trigger
 placements.triggers.cameraAdvanceTargetTrigger.tooltips.positionModeX=Determines which direction the camera fades towards horizontally.
 placements.triggers.cameraAdvanceTargetTrigger.tooltips.positionModeY=Determines which direction the camera fades towards vertically.
@@ -437,7 +445,7 @@ placements.triggers.lightFadeTrigger.tooltips.lightAddFrom=Determines how the li
 placements.triggers.lightFadeTrigger.tooltips.positionMode=Determines which direction the light fades towards.
 
 # Camera Target Trigger
-placements.triggers.cameraTargetTrigger.tooltips.positionMode=Changes the position of the camera, locking it in place.
+placements.triggers.cameraTargetTrigger.tooltips.positionMode=Determines which direction the camera position moves in.
 placements.triggers.cameraTargetTrigger.tooltips.yOnly=The camera will only lock on the Y axis.
 placements.triggers.cameraTargetTrigger.tooltips.xOnly=The camera will only lock on the X axis.
 placements.triggers.cameraTargetTrigger.tooltips.lerpStrength=Determines how fast the camera moves to lock into place upon activation.

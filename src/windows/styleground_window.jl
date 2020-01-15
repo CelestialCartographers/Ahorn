@@ -27,7 +27,7 @@ function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, co
 
     width, height = sprite.realWidth, sprite.realWidth
 
-    if width > 0 && height > 0
+    if width > 0 && height > 0 && !(sprite.surface == Ahorn.Assets.missingImage)
         try
             @assert length(rawColor) == 6
             color = Ahorn.argb32ToRGBATuple(parse(Int, "0x" * rawColor) + 255 << 24) ./ 255.0
@@ -47,7 +47,7 @@ function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, co
 
     else
         Ahorn.clearSurface(ctx)
-        Ahorn.drawCenteredText(ctx, "Unable to preview backdrop.", 0, 0, 320, 180)
+        Ahorn.drawCenteredText(ctx, "Unable to preview backdrop, image not found.\nAhorn can only preview from the Gameplay atlas.", 0, 0, 320, 180)
     end
 end
 

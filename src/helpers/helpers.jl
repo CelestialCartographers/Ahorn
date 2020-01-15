@@ -36,10 +36,20 @@ function humanizeVariableName(s::String)
     text = replace(text,  "/" => " ")
 
     prevUpper = false
+    nextLower = false
+    len = length(s)
+
     res = Char[]
-    for c in text
+
+    for (i, c) in enumerate(text)
         thisUpper = isuppercase(c)
+        nextLower = i < len && islowercase(text[i + 1])
+
         if thisUpper && !prevUpper
+            push!(res, ' ')
+        end
+
+        if thisUpper && nextLower && res[end] != ' '
             push!(res, ' ')
         end
 

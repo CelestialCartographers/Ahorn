@@ -169,10 +169,14 @@ function handleRoomSize(data::Dict{String, Any}, simple::Bool=get(Ahorn.config, 
     return false
 end
 
-function handleRoomName(data::Dict{String, Any}, map::Maple.Map, creating::Bool=true, parent::Gtk.GtkWindow=Ahorn.window)
+function handleRoomName(data::Dict{String, Any}, currentRoom::Maple.Room, map::Maple.Map, creating::Bool=true, parent::Gtk.GtkWindow=Ahorn.window)
     exists = isa(Maple.getRoomByName(map, data["name"]), Maple.Room)
+    
+    if exists
+        if !creating && currentRoom.name == data["name"]
+            return false
+        end
 
-    if exists && creating
         info_dialog("The selected room name is already in use.", parent)
 
         return true
@@ -214,7 +218,7 @@ function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "u
     if Ahorn.loadedState.map === nothing
         info_dialog("No map is currently loaded.", Ahorn.window)
 
-    elseif !creating && Ahorn.loadedState.room == nothing
+    elseif !creating && Ahorn.loadedState.room === nothing
         info_dialog("Cannot edit non existing room.", Ahorn.window)
 
     else
@@ -235,7 +239,7 @@ function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "u
             
             exitEarly = handleRoomSize(data, simple, roomWindow) ||
                 handleMusicTrack(data, roomWindow) ||
-                handleRoomName(data, currentMap, creating, roomWindow)
+                handleRoomName(data, currentRoom, currentMap, creating, roomWindow)
 
             if exitEarly
                 return false
