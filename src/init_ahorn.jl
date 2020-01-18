@@ -20,10 +20,18 @@ function findSteamInstallDir()
         end
 
     elseif Sys.isapple()
-        return joinpath(homedir(), "Library/Application Support/Steam")
+        return joinpath(homedir(), "Library", "Application Support", "Steam")
 
     elseif Sys.islinux()
-        return joinpath(homedir(), ".local/share/Steam")
+        linuxSteamDirs = [
+            joinpath(homedir(), ".local", "share", "Steam"),
+            joinpath(homedir(), ".steam", "steam")
+        ]
+        for path in linuxSteamDirs
+            if isdir(path)
+                return path
+            end
+        end
     end
 end
 
@@ -31,49 +39,61 @@ function findCelesteDir()
     steam = findSteamInstallDir()
 
     if steam !== nothing
-        celesteDir =
-            if Sys.isapple()
-                joinpath("Celeste", "Celeste.app", "Contents", "MacOS")
-            else
-                "Celeste"
-            end
+        celesteDir = joinpath(steam, "steamapps", "common", "Celeste")
+        if Sys.isapple()
+            celesteDir = joinpath(celesteDir, "Celeste.app", "Contents", "MacOS")
+        end
 
-        steamfn = joinpath(steam, "steamapps", "common", celestDir, "Celeste.exe")
-
-        if isfile(steamfn)
-            return true, steamfn
+        if isdir(celesteDir)
+            return true, celesteDir
         end
     end
 
     return false, ""
 end
 
+function cleanupPath(path)
+    filename = basename(path)
+
+    if lowercase(filename) == "celeste.exe"
+        return dirname(path)
+    end
+
+    if Sys.isapple() && lowercase(filename) == "celeste.app"
+        return joinpath(path, "Contents", "MacOS")
+    end
+
+    return path
+end
+
 function configureCelesteDir()
     if !haskey(config, "celeste_dir")
-        found, filename = findCelesteDir()
+        found, celesteDir = findCelesteDir()
+        macOS = Sys.isapple()
+        target = if macOS "Celeste.app" else "Celeste.exe" end
+
         if !found || ask_dialog("Looks like you installed Celeste using Steam!\nAhorn depends on the Celeste installation directory to function; would you like Ahorn to use the Steam installation, or would you rather select a different installation of the game for it to use?", "Use Steam installation", "Manually select Celeste dir", window)
-            info_dialog("Ahorn depends on the Celeste installation directory to function.\nPlease use the file dialog to select 'Celeste.exe' on your computer.", window)
-            filename = openDialog("Select Celeste.exe", window, tuple("*.exe"))
+            info_dialog("Ahorn depends on the Celeste installation directory to function.\nPlease use the file dialog to select '$target' on your computer.", window)
+            filters = if macOS tuple("*.app", "*.exe") else tuple("*.exe") end
+            filename = openDialog("Select $target", window, filters)
 
             if filename == ""
                 return false
-
-            elseif lowercase(basename(filename)) != "celeste.exe"
-                warn_dialog("The file you selected is not named 'celeste.exe'\nWill attempt to use this as the install directory anyway.", window)
+            elseif lowercase(basename(filename)) != lowercase(target)
+                warn_dialog("The file you selected is not named '$target'\nWill attempt to use this as the install directory anyway.", window)
             end
+            celesteDir = cleanupPath(filename)
         end
 
-        celeste_dir = dirname(filename)
-
-        celesteGraphics = joinpath(celeste_dir, "Content", "Graphics") 
+        celesteGraphics = joinpath(celesteDir, "Content", "Graphics")
         celesteAtlases = joinpath(celesteGraphics, "Atlases")
-    
+
         if !isdir(celesteGraphics) || !isdir(celesteAtlases)
             warn_dialog("The directory you selected does not contain the required paths.\nThe subdirectory Content/Graphics/ of a celeste installation with its contents is required for Ahorn to function.", window)
             exit()
         end
 
-        config["celeste_dir"] = celeste_dir
+        config["celeste_dir"] = celesteDir
         saveConfig(config, true) # Manually save because it likely hasn't saved this to file
         info_dialog("Ahorn will now extract all files needed. This might take a while!\nPlease close this window to continue.", window)
     end
