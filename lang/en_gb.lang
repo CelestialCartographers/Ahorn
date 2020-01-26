@@ -51,6 +51,7 @@ placements.entities.checkpoint.tooltips.inventory=Determines the player's invent
 placements.entities.checkpoint.tooltips.dreaming=Determines the dreaming state when loading from the given chapter.\nAutomatic keeps the dreaming state from Metadata.
 placements.entities.checkpoint.tooltips.checkpointID=Manually determine the order in which the checkpoints are placed on the level selection screen. Overrides Everest's automatic checkpoint system. (Default= -1)
 placements.entities.checkpoint.tooltips.allowOrigin=Whether the Checkpoint shouldn't be special cased and automatically set by Everest if position is (0, 0).
+placements.entities.checkpoint.tooltips.bg=Image to use for the Checkpoint background.\nValue "9" will give the full path of "objects/checkpoint/bg/9.png", leave blank for no image.
 
 # Rotate Spinner
 placements.entities.rotateSpinner.tooltips.clockwise=The spinning blade will run clockwise.
@@ -502,6 +503,8 @@ placements.triggers.rumbleTrigger.tooltips.persistent=Once turned on, it will st
 # Detach Followers Trigger
 placements.triggers.detachFollowersTrigger.tooltips.global=Whether the entities following you should get the 'global' instead of the 'persistent' tag.
 
+# Everest Activate Dream Blocks Trigger
+placements.triggers.everest/activateDreamBlocksTrigger.tooltips.fullRoutine=Whether the Space Jam should play the whole animation of activation, rather than just instantly looking ready.
 
 # -- Effects -- 
 

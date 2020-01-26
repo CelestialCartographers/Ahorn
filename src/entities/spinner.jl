@@ -133,7 +133,8 @@ Ahorn.editingOptions(entity::Maple.Spinner) = Dict{String, Any}(
 )
 
 Ahorn.editingOptions(entity::Maple.TrackSpinner) = Dict{String, Any}(
-    "color" => crystalSpinnerColors
+    "color" => crystalSpinnerColors,
+    "speed" => speeds
 )
 
 Ahorn.nodeLimits(entity::Maple.TrackSpinner) = 1, 1
