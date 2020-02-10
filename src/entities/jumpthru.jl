@@ -19,7 +19,8 @@ quads = Tuple{Integer, Integer, Integer, Integer}[
 ]
 
 Ahorn.editingOptions(entity::Maple.JumpThru) = Dict{String, Any}(
-    "texture" => textures
+    "texture" => textures,
+    "surfaceIndex" => Maple.tileset_sound_ids
 )
 
 Ahorn.minimumSize(entity::Maple.JumpThru) = 8, 0

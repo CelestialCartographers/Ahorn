@@ -69,6 +69,7 @@ placements.entities.trackSpinner.tooltips.star=Turns the visual appearance of th
 
 # Jump Thru
 placements.entities.jumpThru.tooltips.texture=Changes the appearance of the platform.
+placements.entities.jumpThru.tooltips.surfaceIndex=Footstep sound when walking on the platform.\nLeave at Default for game to decide automatically based on texture.
 
 # Booster
 placements.entities.booster.tooltips.red=Determines whether the booster is green and short distance, or red and infinite distance.
@@ -172,7 +173,7 @@ placements.entities.everest/npc.tooltips.indicatorOffsetY=Offset for the chat ic
 placements.entities.everest/npc.tooltips.dialogId=The dialogue ID to use for the dialogue.
 placements.entities.everest/npc.tooltips.flipY=Flips the sprite of the NPC vertically.
 placements.entities.everest/npc.tooltips.flipX=Flips the sprite of the NPC horizontally.
-placements.entities.everest/npc.tooltips.onceOnly=Whether the dialogue should only be completable once.
+placements.entities.everest/npc.tooltips.onlyOnce=Whether the dialogue should only be completable once.
 placements.entities.everest/npc.tooltips.endLevel=Whether finishing the dialogue should count as completing the map.
 placements.entities.everest/npc.tooltips.approachWhenTalking=Whether Madeline should walk towards the NPC when talking.
 placements.entities.everest/npc.tooltips.spriteRate=The animation rate for the sprite.

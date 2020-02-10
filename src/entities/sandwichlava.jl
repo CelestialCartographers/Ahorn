@@ -17,6 +17,6 @@ end
 edgeColor = (246, 98, 18, 255) ./ 255
 centerColor = (209, 9, 1, 102) ./ 255
 
-Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SandwichLava, room::Maple.Room) = Ahorn.drawImage(ctx, Ahorn.Assets.lavaSanwitch, -12, -12)
+Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SandwichLava, room::Maple.Room) = Ahorn.drawImage(ctx, Ahorn.Assets.lavaSandwich, -12, -12)
 
 end

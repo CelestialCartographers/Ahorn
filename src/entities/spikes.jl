@@ -75,7 +75,7 @@ Ahorn.editingOptions(entity::normalSpikesUnion) = Dict{String, Any}(
 )
 
 Ahorn.editingOptions(entity::triggerSpikesOrigUnion) = Dict{String, Any}(
-    "type" => String[variant for variant in Maple.spike_types if variant != "tenctacles"]
+    "type" => String[variant for variant in Maple.spike_types if variant != "tentacles"]
 )
 
 directions = Dict{String, String}(
@@ -137,9 +137,9 @@ tentacleSelectionOffsets = Dict{String, Tuple{Number, Number}}(
     "right" => (-8, 0)
 )
 
-spikeNames = ["spikesDown", "spikesLeft", "spikesRight", "spikesUp"]
+spikeNames = String["spikesDown", "spikesLeft", "spikesRight", "spikesUp"]
 
-triggerNames = ["triggerSpikesDown", "triggerSpikesLeft", "triggerSpikesRight", "triggerSpikesUp"]
+triggerNames = String["triggerSpikesDown", "triggerSpikesLeft", "triggerSpikesRight", "triggerSpikesUp"]
 triggerRotationOffsets = Dict{String, Tuple{Number, Number}}(
     "up" => (3, -1),
     "right" => (4, 3),
@@ -147,7 +147,7 @@ triggerRotationOffsets = Dict{String, Tuple{Number, Number}}(
     "left" => (-1, 4),
 )
 
-triggerOriginalNames = ["triggerSpikesOriginalDown", "triggerSpikesOriginalLeft", "triggerSpikesOriginalRight", "triggerSpikesOriginalUp"]
+triggerOriginalNames = String["triggerSpikesOriginalDown", "triggerSpikesOriginalLeft", "triggerSpikesOriginalRight", "triggerSpikesOriginalUp"]
 
 function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
     direction = get(directions, entity.name, "up")

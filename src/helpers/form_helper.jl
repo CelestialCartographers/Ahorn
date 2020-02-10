@@ -357,12 +357,22 @@ end
 
 function getOptionsData(options::Array{Option, 1})
     data = Dict{String, Any}()
+    incorrectOptions = Option[]
 
     for option in options
-        data[option.dataName] = getValue(option)
+        try
+            data[option.dataName] = getValue(option)
+
+        catch e
+            push!(incorrectOptions, option)
+        end
     end
 
-    return data
+    if !isempty(incorrectOptions)
+        return nothing, incorrectOptions
+    end
+
+    return data, incorrectOptions
 end
 
 function setOptionsData!(options::Array{Option, 1}, data::Dict{String, Any})
@@ -386,13 +396,27 @@ function getSectionsData(sections::Array{Section, 1}, packIfSingleSection::Bool=
         return getSectionData(sections[1])
     end
 
-    data = Dict{String, Dict{String, Any}}()
+    sectionsData = Dict{String, Dict{String, Any}}()
+    incorrectSectionsOptions = Dict{Section, Array{Option, 1}}()
+    success = true
 
     for section in sections
-        data[section.dataName] = getSectionData(section)
+        data, incorrectOptions = getSectionData(section)
+
+        if data !== nothing
+            sectionsData[section.dataName] = data
+
+        else
+            incorrectSectionsOptions[section] = incorrectOptions
+            success = false
+        end
     end
 
-    return data
+    if !success
+        return nothing, incorrectSectionsOptions
+    end
+
+    return sectionsData, incorrectSectionsOptions
 end
 
 function setSectionsData!(sections::Array{Section, 1}, data::Dict{String, Any})
@@ -482,21 +506,42 @@ function generateSectionsNotebook(sections::Array{Section, 1}; columns::Integer=
     return notebook
 end
 
-# TODO - Better warning messages.
-# What fields are wrong?
-# Respect validation function
+function getIncorrectOptionsMessage(incorrectOptions::Dict{Section, Array{Option, 1}})
+    lines = String[]
+    flattenedOptions = Option[]
+
+    for (section, options) in incorrectOptions
+        append!(lines, [
+            length(options) == 1 ? "The following field is invalid in section '$(section.name)':" : "The following fields are invalid in section '$(section.name)':"
+            join(String[option.name for option in options], ", ")
+        ])
+    end
+
+    return join(lines, "\n")
+end
+
+function getIncorrectOptionsMessage(incorrectOptions::Array{Option, 1})
+    lines = String[
+        length(incorrectOptions) == 1 ? "The following field is invalid:" : "The following fields are invalid:"
+        join(String[option.name for option in incorrectOptions], ", ")
+    ]
+
+    return join(lines, "\n")
+end
+
+# TODO - Respect validation function
 function createFormWindow(title::String, sections::Union{Array{Section, 1}, Section}; columns::Integer=4, separateGroups::Bool=true, gridIfSingleSection::Bool=true, buttonText::String="Update", callback::Function=(data) -> println(data), parent::Gtk.GtkWindow=Ahorn.window, icon::Pixbuf=Ahorn.windowIcon, canResize::Bool=false)
     sections = isa(sections, Section) ? Section[sections] : sections
     updateButton = Button(buttonText)
 
     @guarded signal_connect(updateButton, "clicked") do args...
-        try
-            data = getSectionsData(sections)
+        data, incorrectOptions = getSectionsData(sections)
+
+        if data !== nothing
             callback(data)
 
-        catch e
-            println(Base.stderr, e)
-            info_dialog("One or more of the inputs are invalid.\nPlease make sure number fields have valid numbers.", parent)
+        else
+            info_dialog(getIncorrectOptionsMessage(incorrectOptions), parent)
         end
     end
 

@@ -199,8 +199,11 @@ function convertString(str::String, as::Type=String)
     elseif as == Bool
         return parse(as, str)
 
-    elseif as <: Number
-        return Ahorn.parseNumber(str)
+    elseif as <: Integer
+        return parse(Int, str)
+
+    elseif as <: AbstractFloat
+        return parse(Float64, str)
 
     else
         error("Unsupported return type")

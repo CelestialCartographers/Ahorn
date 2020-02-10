@@ -75,15 +75,15 @@ function spritesToBackgroundTextures(sprites::Dict{String, Ahorn.SpriteHolder})
 end
 
 parallaxFields = Dict{String, Any}(
-    "x" => 0,
-    "y" => 0,
+    "x" => 0.0,
+    "y" => 0.0,
 
-    "scrollx" => 1,
-    "scrolly" => 1,
-    "speedx" => 0,
-    "speedy" => 0,
+    "scrollx" => 1.0,
+    "scrolly" => 1.0,
+    "speedx" => 0.0,
+    "speedy" => 0.0,
 
-    "alpha" => 1,
+    "alpha" => 1.0,
     "color" => "FFFFFF",
 
     "only" => "*",
@@ -99,7 +99,7 @@ parallaxFields = Dict{String, Any}(
     "flag" => "",
     "notflag" => "",
 
-    "blendmode" => "additive",
+    "blendmode" => "alphablend",
     "instantIn" => false,
     "instantOut" => false,
     "fadeIn" => false,
@@ -136,8 +136,8 @@ function getParallaxListRow(backdrop::Maple.Parallax, fg::Bool=true)
     return (
         get(backdrop, "texture", ""),
         fg,
-        get(backdrop, "x", 0),
-        get(backdrop, "y", 0),
+        get(backdrop, "x", 0.0),
+        get(backdrop, "y", 0.0),
         get(backdrop, "only", "*"),
         get(backdrop, "exclude", ""),
     )
@@ -154,7 +154,7 @@ end
 
 function getParallaxListRows(style::Maple.Style)
     Maple.expandStylegroundApplies!(style)
-    rows = Tuple{String, Bool, Int, Int, String, String, Int}[]
+    rows = Tuple{String, Bool, Float64, Float64, String, String, Int}[]
 
     for (fg, backdrops) in ((true, style.foregrounds), (false, style.backgrounds))
         for (i, backdrop) in enumerate(backdrops)
@@ -292,7 +292,7 @@ function updateEffect(effect::Maple.Effect, data::Dict{String, Any}, fg::Bool=tr
             res.data[attr] = get(effect.data, attr, value)
         end
 
-        res.data = merge(effectTemplates[newName], effect.data)
+        res.data = merge(get(effectTemplates, newName, Dict{String, Any}()), effect.data)
 
     else
         res.data = data
@@ -419,28 +419,35 @@ function getParallaxGrid(map::Maple.Map)
     end
 
     @guarded signal_connect(addButton, "clicked") do widget
-        fg = Ahorn.Form.getValue(fgOption)
+        data, incorrectOptions = Ahorn.Form.getOptionsData(options)
 
-        backdrops = fg ? map.style.foregrounds : map.style.backgrounds
-        backdrop = Parallax(filterFakeFields!(Ahorn.Form.getOptionsData(options), parallaxFakeFields))
+        if data !== nothing
+            fg = Ahorn.Form.getValue(fgOption)
 
-        if hasselection(parallaxList.selection)
-            row = parallaxList.data[Ahorn.getSelected(parallaxList, 1)]
-            index = row[7]
-            targetFg = row[2]
+            backdrops = fg ? map.style.foregrounds : map.style.backgrounds
+            backdrop = Parallax(filterFakeFields!(data, parallaxFakeFields))
 
-            if targetFg == fg
-                insert!(backdrops, index + 1, backdrop)
+            if hasselection(parallaxList.selection)
+                row = parallaxList.data[Ahorn.getSelected(parallaxList, 1)]
+                index = row[7]
+                targetFg = row[2]
+
+                if targetFg == fg
+                    insert!(backdrops, index + 1, backdrop)
+
+                else
+                    push!(backdrops, backdrop)
+                end
 
             else
                 push!(backdrops, backdrop)
             end
 
-        else
-            push!(backdrops, backdrop)
-        end
+            Ahorn.updateTreeView!(parallaxList, getParallaxListRows(map.style), Ahorn.currentRow(parallaxList) + 1, updateByReplacement=true)
 
-        Ahorn.updateTreeView!(parallaxList, getParallaxListRows(map.style), Ahorn.currentRow(parallaxList) + 1, updateByReplacement=true)
+        else
+            info_dialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
+        end
     end
 
     @guarded signal_connect(removeButton, "clicked") do widget
@@ -458,27 +465,34 @@ function getParallaxGrid(map::Maple.Map)
 
     @guarded signal_connect(updateButton, "clicked") do widget
         if hasselection(parallaxList.selection)
-            row = parallaxList.data[Ahorn.getSelected(parallaxList)]
-            index = row[7]
-            fg = row[2]
-            fgNew = Ahorn.Form.getValue(fgOption)
+            data, incorrectOptions = Ahorn.Form.getOptionsData(options)
 
-            if fg == fgNew
-                backdrops = fg ? map.style.foregrounds : map.style.backgrounds
-                backdrop = backdrops[index]
-                backdrop.data = Ahorn.Form.getOptionsData(options)
+            if data !== nothing
+                row = parallaxList.data[Ahorn.getSelected(parallaxList)]
+                index = row[7]
+                fg = row[2]
+                fgNew = Ahorn.Form.getValue(fgOption)
+
+                if fg == fgNew
+                    backdrops = fg ? map.style.foregrounds : map.style.backgrounds
+                    backdrop = backdrops[index]
+                    backdrop.data = data
+
+                else
+                    backdrops = fg ? map.style.foregrounds : map.style.backgrounds
+                    backdropsNew = fgNew ? map.style.foregrounds : map.style.backgrounds
+                    backdrop = backdrops[index]
+                    backdrop.data = data
+
+                    deleteat!(backdrops, index)
+                    push!(backdropsNew, backdrop)
+                end
+
+                Ahorn.updateTreeView!(parallaxList, getParallaxListRows(map.style), Ahorn.currentRow(parallaxList), updateByReplacement=true)
 
             else
-                backdrops = fg ? map.style.foregrounds : map.style.backgrounds
-                backdropsNew = fgNew ? map.style.foregrounds : map.style.backgrounds
-                backdrop = backdrops[index]
-                backdrop.data = Ahorn.Form.getOptionsData(options)
-
-                deleteat!(backdrops, index)
-                push!(backdropsNew, backdrop)
+                info_dialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
             end
-
-            Ahorn.updateTreeView!(parallaxList, getParallaxListRows(map.style), Ahorn.currentRow(parallaxList), updateByReplacement=true)
         end
     end
 
@@ -578,29 +592,36 @@ function getEffectGrid(map::Maple.Map)
 
     @guarded signal_connect(addButton, "clicked") do widget
         if hasselection(effectList.selection)
-            fgOption = Ahorn.Form.getOptionByDataName(effectOptions, "fg")
-            row = effectList.data[Ahorn.getSelected(effectList, 1)]
-            index = row[5]
-            fg = row[2]
-            fgNew = fgOption !== nothing ? Ahorn.Form.getValue(fgOption) : fg
+            data, incorrectOptions = Ahorn.Form.getOptionsData(effectOptions)
+
+            if data !== nothing
+                fgOption = Ahorn.Form.getOptionByDataName(effectOptions, "fg")
+                row = effectList.data[Ahorn.getSelected(effectList, 1)]
+                index = row[5]
+                fg = row[2]
+                fgNew = fgOption !== nothing ? Ahorn.Form.getValue(fgOption) : fg
+                
+                backdrops = fgNew ? map.style.foregrounds : map.style.backgrounds
+                backdrop = Effect(row[1], Dict{String, Any}())
+                backdrop = updateEffect(backdrop, data, fgNew)
+
+                updateEffectSectionGrid(grid, backdrop, fgNew)
+
+                if fg == fgNew
+                    insert!(backdrops, index + 1, backdrop)
+
+                else
+                    push!(backdrops, backdrop)
+                end
             
-            backdrops = fgNew ? map.style.foregrounds : map.style.backgrounds
-            backdrop = Effect(row[1], Dict{String, Any}())
-            backdrop = updateEffect(backdrop, Ahorn.Form.getOptionsData(effectOptions), fgNew)
-
-            updateEffectSectionGrid(grid, backdrop, fgNew)
-
-            if fg == fgNew
-                insert!(backdrops, index + 1, backdrop)
-
             else
-                push!(backdrops, backdrop)
+                info_dialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
             end
 
         else
             nameOption = Ahorn.Form.getOptionByDataName(effectOptions, "name")
             name = nameOption !== nothing ? Ahorn.Form.getValue(nameOption) : Ahorn.effectPlacements[1]().name
-            backdrop = Effect(name, effectTemplates[name])
+            backdrop = Effect(name, get(effectTemplates, name, Dict{String, Any}()))
 
             push!(map.style.foregrounds, backdrop)
         end
@@ -624,31 +645,38 @@ function getEffectGrid(map::Maple.Map)
 
     @guarded signal_connect(updateButton, "clicked") do widget
         if hasselection(effectList.selection)
-            fgOption = Ahorn.Form.getOptionByDataName(effectOptions, "fg")
+            data, incorrectOptions = Ahorn.Form.getOptionsData(effectOptions)
 
-            row = effectList.data[Ahorn.getSelected(effectList)]
-            index = row[5]
-            fg = row[2]
-            fgNew = fgOption !== nothing ? Ahorn.Form.getValue(fgOption) : fg
+            if data !== nothing
+                fgOption = Ahorn.Form.getOptionByDataName(effectOptions, "fg")
 
-            if fg == fgNew
-                backdrops = fg ? map.style.foregrounds : map.style.backgrounds
-                backdrop = backdrops[index]
-                backdrops[index] = updateEffect(backdrop, Ahorn.Form.getOptionsData(effectOptions), fgNew)
+                row = effectList.data[Ahorn.getSelected(effectList)]
+                index = row[5]
+                fg = row[2]
+                fgNew = fgOption !== nothing ? Ahorn.Form.getValue(fgOption) : fg
+
+                if fg == fgNew
+                    backdrops = fg ? map.style.foregrounds : map.style.backgrounds
+                    backdrop = backdrops[index]
+                    backdrops[index] = updateEffect(backdrop, data, fgNew)
+
+                else
+                    backdrops = fg ? map.style.foregrounds : map.style.backgrounds
+                    backdrop = backdrops[index]
+                    backdrop = updateEffect(backdrop, data, fgNew)
+
+                    backdropsNew = fgNew ? map.style.foregrounds : map.style.backgrounds
+
+                    deleteat!(backdrops, index)
+                    push!(backdropsNew, backdrop)
+                end
+
+                select = moveIllegalFgBg(map) ? 0 : something(Ahorn.getSelected(effectList), 0)
+                Ahorn.updateTreeView!(effectList, getEffectListRows(map.style), select, updateByReplacement=true)
 
             else
-                backdrops = fg ? map.style.foregrounds : map.style.backgrounds
-                backdrop = backdrops[index]
-                backdrop = updateEffect(backdrop, Ahorn.Form.getOptionsData(effectOptions), fgNew)
-
-                backdropsNew = fgNew ? map.style.foregrounds : map.style.backgrounds
-
-                deleteat!(backdrops, index)
-                push!(backdropsNew, backdrop)
+                info_dialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
             end
-
-            select = moveIllegalFgBg(map) ? 0 : something(Ahorn.getSelected(effectList), 0)
-            Ahorn.updateTreeView!(effectList, getEffectListRows(map.style), select, updateByReplacement=true)
         end
     end
 

@@ -9,7 +9,7 @@ baseGameTutorials = String[
 ]
 
 const placements = Ahorn.PlacementDict(
-    "Player Playback" => Ahorn.EntityPlacement(
+    "Ghost Player Playback" => Ahorn.EntityPlacement(
         Maple.PlayerPlayback
     )
 )
@@ -21,7 +21,7 @@ Ahorn.editingOptions(entity::Maple.PlayerPlayback) = Dict{String, Any}(
 Ahorn.nodeLimits(entity::Maple.PlayerPlayback) = 0, 2
 
 sprite = "characters/player/sitDown00"
-tint = (0.8, 0.2, 0.2, 0.8)
+tint = (0.8, 0.2, 0.2, 0.75)
 
 function Ahorn.selection(entity::Maple.PlayerPlayback)
     x, y = Ahorn.position(entity)
