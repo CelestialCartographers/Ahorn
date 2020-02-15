@@ -75,6 +75,10 @@ placements.entities.jumpThru.tooltips.surfaceIndex=Footstep sound when walking o
 placements.entities.booster.tooltips.red=Determines whether the booster is green and short distance, or red and infinite distance.
 placements.entities.booster.tooltips.ch9_hub_booster=If set to true, the player is unable to dash out of the booster.
 
+# Watchtower
+placements.entities.towerviewer.tooltips.summit=Whether the watch tower should zoom on the final node or not. Requires nodes to function, otherwise game will crash.
+placements.entities.towerviewer.tooltips.onlyY=Whether the watch tower can only move vertically. If the watch tower has nodes it will still follow them.
+
 # Wall Booster
 placements.entities.wallBooster.tooltips.left=Whether the entity attaches to the left wall or not.
 placements.entities.wallBooster.tooltips.notCoreMode=Determines if the entity should ignore the current core mode and default to ice variant.
@@ -134,6 +138,7 @@ placements.entities.switchGate.tooltips.sprite=Changes the visual appearance of 
 # Dream Block
 placements.entities.dreamBlock.tooltips.fastMoving=Changes the dream block between two speeds.
 placements.entities.dreamBlock.tooltips.oneUse=Determines whether the dream block should disappear after one use.
+placements.entities.dreamBlock.tooltips.below=Determines whether the dream block should render in the background or foreground.
 
 # Cliffside Flag
 placements.entities.cliffside_flag.tooltips.index=Changes the visual appearance of the flag.
@@ -204,6 +209,12 @@ placements.entities.coverupWall.tooltips.tiletype=Changes the visual appearance 
 # Spring
 placements.entities.spring.tooltips.playerCanUse=Determines whether the player is able to interact with the spring.
 
+# Wall Spring Right
+placements.entities.wallSpringRight.tooltips.playerCanUse=Determines whether the player is able to interact with the spring.
+
+# Wall Spring Left
+placements.entities.wallSpringLeft.tooltips.playerCanUse=Determines whether the player is able to interact with the spring.
+
 # Lamp
 placements.entities.lamp.tooltips.broken=Changes the visual appearance of the lamp to be broken.
 
@@ -268,6 +279,8 @@ placements.entities.summitcheckpoint.tooltips.number=Changes the number on the c
 
 # Bird
 placements.entities.bird.tooltips.mode=Determines what properties the bird has.
+placements.entities.bird.tooltips.onlyOnce=Determines if the bird should only show itself once when in "MoveToNodes" mode.
+placements.entities.bird.tooltips.onlyIfPlayerLeft=The bird will only spawn if the player starts to the left of it.
 
 # Intro Car
 placements.entities.introCar.tooltips.hasRoadAndBarriers=Determines if the car should come with road and barriers.
@@ -399,7 +412,7 @@ placements.triggers.everest/flagTrigger.tooltips.state=The value to set for the 
 placements.triggers.everest/flagTrigger.tooltips.flag=The name of the flag to modify.
 placements.triggers.everest/flagTrigger.tooltips.only_once=Whether the trigger should only work once.
 placements.triggers.everest/flagTrigger.tooltips.mode=Determines how the trigger will activate.
-placements.triggers.everest/flagTrigger.tooltips.death_count=Determines how many deaths are required to activate the trigger. (Default= -1)
+placements.triggers.everest/flagTrigger.tooltips.death_count=Determines the exact amount of deaths required to activate the flag trigger. Will always trigger if set to -1.
 
 # Everest Lava Blocker Trigger
 placements.triggers.everest/lavaBlockerTrigger.tooltips.canReenter=Whether the trigger should still be functional after leaving it once.
@@ -417,6 +430,8 @@ placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.offsetYFrom=First
 placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.offsetYTo=Second Y position of the camera offset.
 placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.positionMode=Which direction the offset moves between the two positions when the player enters the trigger.
 placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.onlyOnce=If checked, the trigger will be disabled when the player first leaves it.
+placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.xOnly=Whether the trigger should only update the horizontal offset, keeping the current vertical offset.
+placements.triggers.everest/smoothCameraOffsetTrigger.tooltips.yOnly=Whether the trigger should only update the vertical offset, keeping the current horizontal offset.
 
 # Camera Advanced Target Trigger
 placements.triggers.cameraAdvanceTargetTrigger.tooltips.positionModeX=Determines which direction the camera fades towards horizontally.
@@ -451,6 +466,7 @@ placements.triggers.cameraTargetTrigger.tooltips.positionMode=Determines which d
 placements.triggers.cameraTargetTrigger.tooltips.yOnly=The camera will only lock on the Y axis.
 placements.triggers.cameraTargetTrigger.tooltips.xOnly=The camera will only lock on the X axis.
 placements.triggers.cameraTargetTrigger.tooltips.lerpStrength=Determines how fast the camera moves to lock into place upon activation.
+placements.triggers.cameraTargetTrigger.tooltips.deleteFlag=Session flag to deactivate the trigger, ignored if left empty. Camera will not reset if player is inside the trigger as it deactivates.\nIf the player transitions into the room with the flag set, the trigger can not be reactivated. However, if it was enabled and then disabled in the room, the player can reactivate it.
 
 # Camera Offset Trigger
 placements.triggers.cameraOffsetTrigger.tooltips.cameraX=Offsets the player camera on the X axis.
@@ -463,10 +479,11 @@ placements.triggers.noRefillTrigger.tooltips.state=Determines whether the player
 placements.triggers.minitextboxTrigger.tooltips.only_once=Triggers the dialogue the dialogue ID references only once.
 placements.triggers.minitextboxTrigger.tooltips.mode=Determines how the mini text box will trigger.
 placements.triggers.minitextboxTrigger.tooltips.dialog_id=References from English.txt in the map's Dialog folder to use as text in-game.
-placements.triggers.minitextboxTrigger.tooltips.death_count=Determines how many deaths are required to activate the mini text box trigger. (Default= -1)
+placements.triggers.minitextboxTrigger.tooltips.death_count=Determines the exact amount of deaths required to activate the mini text box trigger. Will always trigger if set to -1.
 
 # Event Trigger
 placements.triggers.eventTrigger.tooltips.event=Upon activation, plays the event selected.
+placements.triggers.eventTrigger.tooltips.onSpawn=If the event should automatically play when the player enters the room.
 
 # Music Trigger
 placements.triggers.musicTrigger.tooltips.resetOnLeave=Resets the music when the player leaves the current zone after entering the trigger zone.
@@ -481,6 +498,7 @@ placements.triggers.altMusicTrigger.tooltips.track=Changes the track that plays 
 placements.triggers.everest/dialogTrigger.tooltips.onlyOnce=Whether the dialogue should only trigger once.
 placements.triggers.everest/dialogTrigger.tooltips.dialogId=The dialogue ID to use for the dialogue.
 placements.triggers.everest/dialogTrigger.tooltips.endLevel=Whether finishing the dialog triggers the level to end.
+placements.triggers.everest/dialogTrigger.tooltips.deathCount=Determines the exact amount of deaths required to activate dialog trigger. Will always trigger if set to -1.
 
 # Shatter Crystal Trigger (Everest)
 placements.triggers.everest/crystalShatterTrigger.tooltips.mode=Whether the trigger should destroy all crystal spinners, or only the ones contained within it.
