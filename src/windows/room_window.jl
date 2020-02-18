@@ -150,7 +150,7 @@ end
 
 function handleMusicTrack(data::Dict{String, Any}, parent::Gtk.GtkWindow=Ahorn.window)
     if data["music"] != "" && !(data["music"] in dropdownOptions["music"]) && !startswith(data["music"], "event:/") 
-        info_dialog("You have entered an invalid song name.\nIf you're using a custom song, make sure to copy the event path from FMOD Studio, which starts with 'event:/'", parent)
+        Ahorn.topMostInfoDialog("You have entered an invalid song name.\nIf you're using a custom song, make sure to copy the event path from FMOD Studio, which starts with 'event:/'", parent)
 
         return true
     end
@@ -161,7 +161,7 @@ end
 function handleRoomSize(data::Dict{String, Any}, simple::Bool=get(Ahorn.config, "use_simple_room_values", true), parent::Gtk.GtkWindow=Ahorn.window)
     minimumRecommendedDisplay = (floor(Int, 320 / (simple ? 8 : 1)), floor(Int, 184 / (simple ? 8 : 1)))
     if any(data["size"] .< minimumRecommended)
-        if !ask_dialog("The size you have chosen is smaller than the recommended minimum size $minimumRecommended.\nAre you sure you want this size?", parent)
+        if !Ahorn.topMostAskDialog("The size you have chosen is smaller than the recommended minimum size $minimumRecommended.\nAre you sure you want this size?", parent)
             return true
         end
     end
@@ -177,7 +177,7 @@ function handleRoomName(data::Dict{String, Any}, currentRoom::Maple.Room, map::M
             return false
         end
 
-        info_dialog("The selected room name is already in use.", parent)
+        Ahorn.topMostInfoDialog("The selected room name is already in use.", parent)
 
         return true
     end
@@ -216,10 +216,10 @@ end
 
 function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "use_simple_room_values", true))
     if Ahorn.loadedState.map === nothing
-        info_dialog("No map is currently loaded.", Ahorn.window)
+        Ahorn.topMostInfoDialog("No map is currently loaded.", Ahorn.window)
 
     elseif !creating && Ahorn.loadedState.room === nothing
-        info_dialog("Cannot edit non existing room.", Ahorn.window)
+        Ahorn.topMostInfoDialog("Cannot edit non existing room.", Ahorn.window)
 
     else
         updateTemplateRoom(creating)

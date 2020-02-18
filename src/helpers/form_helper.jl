@@ -534,6 +534,13 @@ function createFormWindow(title::String, sections::Union{Array{Section, 1}, Sect
     sections = isa(sections, Section) ? Section[sections] : sections
     updateButton = Button(buttonText)
 
+    content = generateSectionsNotebook(sections, columns=columns, separateGroups=separateGroups, gridIfSingleSection=gridIfSingleSection)
+
+    window = Window(title, -1, -1, canResize, icon=icon) |> (Frame() |> (box = Box(:v)))
+    
+    push!(box, content)
+    push!(box, updateButton)
+
     @guarded signal_connect(updateButton, "clicked") do args...
         data, incorrectOptions = getSectionsData(sections)
 
@@ -541,15 +548,9 @@ function createFormWindow(title::String, sections::Union{Array{Section, 1}, Sect
             callback(data)
 
         else
-            info_dialog(getIncorrectOptionsMessage(incorrectOptions), parent)
+            Ahorn.topMostInfoDialog(getIncorrectOptionsMessage(incorrectOptions), window)
         end
     end
-
-    content = generateSectionsNotebook(sections, columns=columns, separateGroups=separateGroups, gridIfSingleSection=gridIfSingleSection)
-
-    window = Window(title, -1, -1, canResize, icon=icon) |> (Frame() |> (box = Box(:v)))
-    push!(box, content)
-    push!(box, updateButton)
 
     return window
 end

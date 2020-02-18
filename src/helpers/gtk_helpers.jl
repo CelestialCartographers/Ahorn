@@ -264,6 +264,43 @@ end
 
 useNativeFileDialogs = isdefined(Gtk, :save_dialog_native) && Gtk.libgtk_version >= v"3.20.0"
 
+# Copy of Gtk.jl definition, but calls a function before running the widget
+function infoDialog(func::Function, message::String, parent::Gtk.GtkWindow=Ahorn.window)
+    w = GtkMessageDialogLeaf(ccall((:gtk_message_dialog_new, Gtk.libgtk), Ptr{Gtk.GObject},
+        (Ptr{Gtk.GObject}, Cint, Cint, Cint, Ptr{UInt8}),
+        parent, Gtk.GtkDialogFlags.DESTROY_WITH_PARENT,
+        Gtk.GtkMessageType.INFO, Gtk.GtkButtonsType.CLOSE, C_NULL))
+
+    set_gtk_property!(w, :text, message)
+
+    func(w)
+
+    run(w)
+    Gtk.destroy(w)
+end
+
+infoDialog(message::String, parent::Gtk.GtkWindow=Ahorn.window) = infoDialog(w -> (), message, parent)
+topMostInfoDialog(message::String, parent::Gtk.GtkWindow=Ahorn.window) = infoDialog(w -> GAccessor.keep_above(w, true), message, parent)
+
+# Copy of Gtk.jl definition, but calls a function before running the widget
+askDialog(message::String, parent::Gtk.GtkWindow=Ahorn.window) = askDialog(message, "No", "Yes", parent)
+askDialog(func::Function, message::String, parent::Gtk.GtkWindow=Ahorn.window) = askDialog(func, message, "No", "Yes", parent)
+
+function askDialog(func::Function, message::String, noText::String, yesText::String, parent::Gtk.GtkWindow=Ahorn.window)
+    dlg = GtkMessageDialog(message, ((noText, 0), (yesText, 1)),
+            Gtk.GtkDialogFlags.DESTROY_WITH_PARENT, Gtk.GtkMessageType.QUESTION, parent)
+
+    func(dlg)
+
+    response = run(dlg)
+    Gtk.destroy(dlg)
+
+    return response == 1
+end
+
+askDialog(message::String, noText::String, yesText::String, parent::Gtk.GtkWindow=Ahorn.window) = askDialog(dlg -> (), message, noText, yesText, parent)
+topMostAskDialog(message::String, parent::Gtk.GtkWindow=Ahorn.window) = askDialog(dlg -> GAccessor.keep_above(dlg, true), message, parent)
+
 # Modified version of standard open dialog
 function openDialog(title::AbstractString, parent=GtkNullContainer(), filters::Union{AbstractVector, Tuple}=String[]; folder::String="", native::Bool=useNativeFileDialogs, kwargs...)
     local dlg
@@ -294,7 +331,7 @@ function openDialog(title::AbstractString, parent=GtkNullContainer(), filters::U
 
     if response == GConstants.GtkResponseType.ACCEPT
         if multiple
-            filename_list = ccall((:gtk_file_chooser_get_filenames, libgtk), Ptr{Gtk._GSList{String}}, (Ptr{GObject},), dlgp)
+            filename_list = ccall((:gtk_file_chooser_get_filenames, Gtk.libgtk), Ptr{Gtk._GSList{String}}, (Ptr{GObject},), dlgp)
             selection = String[f for f in Gtk.GList(filename_list, true)]
 
         else

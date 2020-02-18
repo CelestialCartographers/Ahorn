@@ -446,7 +446,7 @@ function getParallaxGrid(map::Maple.Map)
             Ahorn.updateTreeView!(parallaxList, getParallaxListRows(map.style), Ahorn.currentRow(parallaxList) + 1, updateByReplacement=true)
 
         else
-            info_dialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
+            Ahorn.topMostInfoDialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
         end
     end
 
@@ -491,7 +491,7 @@ function getParallaxGrid(map::Maple.Map)
                 Ahorn.updateTreeView!(parallaxList, getParallaxListRows(map.style), Ahorn.currentRow(parallaxList), updateByReplacement=true)
 
             else
-                info_dialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
+                Ahorn.topMostInfoDialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
             end
         end
     end
@@ -615,7 +615,7 @@ function getEffectGrid(map::Maple.Map)
                 end
             
             else
-                info_dialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
+                Ahorn.topMostInfoDialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
             end
 
         else
@@ -675,7 +675,7 @@ function getEffectGrid(map::Maple.Map)
                 Ahorn.updateTreeView!(effectList, getEffectListRows(map.style), select, updateByReplacement=true)
 
             else
-                info_dialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
+                Ahorn.topMostInfoDialog(Ahorn.Form.getIncorrectOptionsMessage(incorrectOptions), stylegroundWindow)
             end
         end
     end
@@ -728,7 +728,7 @@ end
 
 function createStylegroundWindow(widget::Ahorn.MenuItemsTypes)
     if Ahorn.loadedState.map === nothing
-        info_dialog("No map is currently loaded.", Ahorn.window)
+        Ahorn.topMostInfoDialog("No map is currently loaded.", Ahorn.window)
 
     else
         @Ahorn.catchall begin
