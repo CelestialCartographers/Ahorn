@@ -26,7 +26,7 @@ sprite = "collectables/key/idle00.png"
 function Ahorn.selection(entity::Maple.Key)
     x, y = Ahorn.position(entity)
 
-    if haskey(entity.data, "nodes")
+    if haskey(entity.data, "nodes") && length(entity["nodes"]) >= 2
         controllX, controllY = Int.(entity.data["nodes"][1])
         endX, endY = Int.(entity.data["nodes"][2])
 

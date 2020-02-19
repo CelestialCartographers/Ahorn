@@ -45,9 +45,9 @@ function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles,
 
     if tileValue != '0'
         quad, sprite, imagePath = getTileData(x, y, tiles, meta, states)
-        imagePathSprite = getSprite(imagePath, "Gameplay")
+        imagePathExists = imagePath !== nothing && getSprite(imagePath, "Gameplay") !== Ahorn.Assets.missingImage
         
-        if quad !== nothing && imagePathSprite.surface !== Ahorn.Assets.missingImage
+        if quad !== nothing && imagePathExists
             quadX, quadY = quad
 
             if !isempty(sprite)
