@@ -47,7 +47,8 @@ function getDrawingLayers()
         Layer("triggers"),
 
         Layer("tools", selectable=false),
-        Layer("all", dummy=true)
+        Layer("all", dummy=true),
+        Layer("objtiles", dummy=true)
     ]
 end
 

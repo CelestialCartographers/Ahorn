@@ -96,7 +96,6 @@ function leftClick(x::Number, y::Number)
     if 1 <= x <= width && 1 <= y <= height
         data[y, x] = material
 
-        Ahorn.redrawLayer!(targetLayer)
         Ahorn.redrawLayer!(entityLayer)
     end
 end
@@ -111,7 +110,7 @@ end
 function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer, materials::Ahorn.ListContainer)
     global material = get(Ahorn.persistence, "objtiles_material", -1)
 
-    Ahorn.updateLayerList!(["entities"], 1)
+    Ahorn.updateLayerList!(["objtiles"], 1)
 
     Ahorn.redrawingFuncs["tools"] = drawBrushes
     Ahorn.redrawLayer!(toolsLayer)
