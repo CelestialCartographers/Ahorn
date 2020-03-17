@@ -15,7 +15,7 @@ function initExternalTriggers()
 end
 
 function initExternalEffects()
-    externalEffects = findExternalModules("ffects")
+    externalEffects = findExternalModules("effects")
     append!(loadedEffects, externalEffects)
     loadModule.(externalEffects)
     loadExternalModules!(loadedModules, loadedEffects, "effects")
