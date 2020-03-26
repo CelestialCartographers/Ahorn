@@ -27,7 +27,7 @@ placements.entities.badelineBoost.tooltips.finalCh9Dialog=If finalCh9Boost is al
 # Badeline Boss
 placements.entities.finalBoss.tooltips.startHit=Determines whether or not Badeline waits to attack until the first hit or upon room entry.
 placements.entities.finalBoss.tooltips.patternIndex=Determines what pattern of attack Badeline uses.\n 0 - Badeline transforms into the boss after being hit once\n 1 - Shoots orbs\n 2 - Shoots laser followed by one orb\n 3 - Shoots five streams of two orbs\n 4 - Shoots five streams of two orbs followed by one laser\n 5 - Shoots laser followed by three streams of two orbs\n 6 - Shoots lasers\n 7 - Shoots orbs with less delay\n 8 - Shoots lasers with less delay\n 9 - Shoots streams of two orbs\n 10 - Does nothing\n 11 - Shoots orbs with more delay\n 12 - Does nothing\n 13 - Shoots orbs after getting hit once\n 14 - Shoots lasers with very short delay\n 15 - Shoots lasers with more delay
-placements.entities.finalBoss.tooltips.lockCamera=The camera cannot pan away from the entity.
+placements.entities.finalBoss.tooltips.cameraLockY=Whether the camera should be locked vertically, functioning similarly as a killbox.
 
 # Fire Ball
 placements.entities.fireBall.tooltips.amount=Determines the amount of fireballs on a track.
