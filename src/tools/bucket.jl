@@ -52,6 +52,8 @@ function cleanup()
 end
 
 function setMaterials!(layer::Ahorn.Layer)
+    Ahorn.loadXMLMeta()
+
     validTiles = Ahorn.validTiles(layer)
     tileNames = Ahorn.tileNames(layer)
 

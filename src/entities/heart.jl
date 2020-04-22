@@ -16,6 +16,10 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
+Ahorn.editingOptions(entity::Maple.FakeCrystalHeart) = Dict{String, Any}(
+    "color" => Maple.everest_fake_heart_colors
+)
+
 heartUnion = Union{Maple.CrystalHeart, Maple.DreamCrystalHeart, Maple.FakeCrystalHeart}
 
 sprite = "collectables/heartGem/0/00.png"

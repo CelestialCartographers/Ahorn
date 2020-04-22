@@ -20,7 +20,7 @@ function getSpriteSurface(resource::String, filename::String, atlas::String="Gam
         cacheInfo = get(spriteSurfaceCache, resource, nothing)
         fileModified = mtime(filename)
 
-        if cacheInfo !== nothing && cacheInfo[1] <= fileModified
+        if cacheInfo !== nothing && cacheInfo[1] >= fileModified
             return cacheInfo[2], cacheInfo[3]
         end
 

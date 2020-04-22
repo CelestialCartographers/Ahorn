@@ -17,34 +17,45 @@ Ahorn.nodeLimits(entity::Maple.RidgeGate) = 0, 1
 
 Ahorn.resizable(entity::Maple.RidgeGate) = false, false
 
-sprite = "objects/ridgeGate"
+defaultTexture = "objects/ridgeGate"
 
 function Ahorn.selection(entity::Maple.RidgeGate)
     x, y = Ahorn.position(entity)
-
     nodes = get(entity.data, "nodes", ())
+
+    texture = get(entity.data, "texture", defaultTexture)
+
     if isempty(nodes)
-        return Ahorn.getSpriteRectangle(sprite, x, y)
+        return Ahorn.getSpriteRectangle(texture, x, y)
 
     else
         nx, ny = Int.(nodes[1])
 
-        return [Ahorn.getSpriteRectangle(sprite, x, y, jx=0.0, jy=0.0), Ahorn.getSpriteRectangle(sprite, nx, ny, jx=0.0, jy=0.0)]
+        return [Ahorn.getSpriteRectangle(texture, x, y, jx=0.0, jy=0.0), Ahorn.getSpriteRectangle(texture, nx, ny, jx=0.0, jy=0.0)]
     end
 end
 
 function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.RidgeGate)
     x, y = Ahorn.position(entity)
     nodes = get(entity.data, "nodes", ())
+
+    texture = get(entity.data, "texture", defaultTexture)
+    sprite = Ahorn.getSprite(texture, "Gameplay")
     
     if !isempty(nodes)
         nx, ny = Int.(nodes[1])
 
-        Ahorn.drawSprite(ctx, sprite, nx, ny, jx=0.0, jy=0.0)
-        Ahorn.drawArrow(ctx, nx + 16, ny + 16, x + 16, y + 16, Ahorn.colors.selection_selected_fc, headLength=6)
+        offsetX, offsetY = floor(Int, sprite.width / 2), floor(Int, sprite.height / 2)
+
+        Ahorn.drawSprite(ctx, texture, nx, ny, jx=0.0, jy=0.0)
+        Ahorn.drawArrow(ctx, nx + offsetX, ny + offsetY, x + offsetX, y + offsetY, Ahorn.colors.selection_selected_fc, headLength=6)
     end
 end
 
-Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.RidgeGate, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 0, 0, jx=0.0, jy=0.0)
+function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.RidgeGate, room::Maple.Room)
+    texture = get(entity.data, "texture", defaultTexture)
+
+    Ahorn.drawSprite(ctx, texture, 0, 0, jx=0.0, jy=0.0)
+end
 
 end
