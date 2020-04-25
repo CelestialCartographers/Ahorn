@@ -50,12 +50,13 @@ function Base.size(font::Font, s::AbstractString, replaceMissing::Char=' ')
     return width, height
 end
 
-function drawString(ctx::Cairo.CairoContext, font::Font, s::AbstractString, x::Int=0, y::Int=0; replaceMissing::Char=' ', align::Symbol=:left, tint::Union{colorTupleType, Nothing}=colors.canvas_font_color)
-    shouldSave = x != 0 || y != 0
+function drawString(ctx::Cairo.CairoContext, font::Font, s::AbstractString, x::Int=0, y::Int=0; scale::Number=1, replaceMissing::Char=' ', align::Symbol=:left, tint::Union{colorTupleType, Nothing}=colors.canvas_font_color)
+    shouldSave = x != 0 || y != 0 || scale != 1
 
     if shouldSave
         Cairo.save(ctx)
         Cairo.translate(ctx, x, y)
+        Cairo.scale(ctx, scale, scale)
     end
 
     accX = 0

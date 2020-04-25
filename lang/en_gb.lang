@@ -100,7 +100,7 @@ placements.entities.crumbleBlock.tooltips.texture=What texture to use for the cr
 
 # Fake Block
 placements.entities.fakeBlock.tooltips.tiletype=Changes the visual appearance of the wall.
-placements.entities.exitBlock.tooltips.playTransitionReveal=Determines whether entering the block should play the reveal jingle.
+placements.entities.fakeBlock.tooltips.playTransitionReveal=Determines whether entering the block should play the reveal jingle.
 
 # Glass Block
 placements.entities.glassBlock.tooltips.sinks=Whether the tile should sink when the player is on top.
@@ -226,7 +226,7 @@ placements.entities.fallingBlock.tooltips.behind=Whether the block should visual
 
 # Fake Wall
 placements.entities.fakeWall.tooltips.tiletype=Changes the visual appearance of the wall.
-placements.entities.exitBlock.tooltips.playTransitionReveal=Determines whether entering the wall should play the reveal jingle.
+placements.entities.fakeWall.tooltips.playTransitionReveal=Determines whether entering the wall should play the reveal jingle.
 
 # Bonfire
 placements.entities.bonfire.tooltips.mode=Changes the bonfire between lit, unlit, or smoking.
@@ -285,6 +285,14 @@ placements.entities.summitcheckpoint.tooltips.number=Changes the number on the c
 placements.entities.bird.tooltips.mode=Determines what properties the bird has.
 placements.entities.bird.tooltips.onlyOnce=Determines whether the bird should only show itself once when in "MoveToNodes" mode.
 placements.entities.bird.tooltips.onlyIfPlayerLeft=The bird will only spawn if the player starts to the left of it.
+
+# Everest Custom Tutorial Bird
+placements.entities.everest/customBirdTutorial.tooltips.birdId=The unique id of the bird when used in combination with Custom Tutorial Bird triggers. Useful for extra control over multiple birds in one room.
+placements.entities.everest/customBirdTutorial.tooltips.controls=The controls to display in the bubble, separated by commas. Each part can be:\n- a path to a texture in the Gui atlas (for example "tinyarrow")\n- a direction: Down, DownRight, Right, UpRight, Up, UpLeft, Left, DownLeft\n- a button: Jump, Dash, Grab, Talk, ESC, Pause, MenuLeft, MenuRight, MenuUp, MenuDown, MenuConfirm, MenuCancel, MenuJournal, QuickRestart\n- a dialog ID, if you prefix it with "dialog:" (for example, "dialog:TUTORIAL_DREAMJUMP")\n- plain text
+placements.entities.everest/customBirdTutorial.tooltips.info=The speech bubble title. Can either be a dialog ID or a path to a texture in the GUI atlas.
+placements.entities.everest/customBirdTutorial.tooltips.faceLeft=Whether the bird should face left or right.
+placements.entities.everest/customBirdTutorial.tooltips.caw=Whether the bird should caw upon displaying the speech bubble.
+placements.entities.everest/customBirdTutorial.tooltips.onlyOnce=Whether the bird should respawn after displaying the speech bubble and flying away.
 
 # Intro Car
 placements.entities.introCar.tooltips.hasRoadAndBarriers=Determines whether the car should come with road and barriers.
@@ -376,7 +384,7 @@ placements.entities.birdPath.tooltips.speedMult=Speed multiplier for the flight 
 placements.entities.blackGem.tooltips.fake=Whether the heart is fake and should visually be grey. Triggers the Farewell fake heart cutscene.
 placements.entities.blackGem.tooltips.removeCameraTriggers=Whether the heart should remove camera triggers onces its triggered. Only usable if fake attribute is set.
 
-# Fale Crystal Heart
+# Fake Crystal Heart
 placements.entities.fakeHeart.tooltips.color=Which colour to use for the heart.\nNormal - Blue\nBSide - Red\nCSide - Yellow
 
 # Lightning
@@ -531,6 +539,10 @@ placements.triggers.detachFollowersTrigger.tooltips.global=Whether the entities 
 
 # Everest Activate Dream Blocks Trigger
 placements.triggers.everest/activateDreamBlocksTrigger.tooltips.fullRoutine=Whether the Space Jam should play the whole animation of activation, rather than just instantly looking ready.
+
+# Everest Custom Bird Tutorial
+placements.triggers.everest/customBirdTutorialTrigger.tooltips.birdId=Which bird the trigger should affect.
+placements.triggers.everest/customBirdTutorialTrigger.tooltips.showTutorial=If ticked, the targeted bird will show its speech bubble. If unchecked, the bird will fly away.
 
 # -- Effects -- 
 

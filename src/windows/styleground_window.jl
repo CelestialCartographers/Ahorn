@@ -19,13 +19,23 @@ parallaxFieldOrder = String[
     "speedx", "speedy", "alpha"
 ]
 
+function drawPreviewFailed(canvas::Gtk.GtkCanvas, reason::String, width::Int=320, height::Int=180, scale::Number=3)
+    ctx = Gtk.getgc(canvas)
+
+    set_gtk_property!(canvas, :width_request, width)
+    set_gtk_property!(canvas, :height_request, height)
+
+    Ahorn.clearSurface(ctx)
+    Ahorn.drawCenteredText(ctx, reason, 0, 0, width, height, scale=scale)
+end
+
 function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, colorOption::Ahorn.Form.Option)
     ctx = Gtk.getgc(canvas)
     texture = Ahorn.Form.getValue(textureOption)
     sprite = Ahorn.getSprite(texture, "Gameplay")
     rawColor = Ahorn.Form.getValue(colorOption)
 
-    width, height = sprite.realWidth, sprite.realWidth
+    width, height = sprite.width, sprite.height
 
     if width > 0 && height > 0 && !(sprite.surface == Ahorn.Assets.missingImage)
         try
@@ -41,13 +51,11 @@ function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, co
             Ahorn.drawImage(ctx, sprite, -offsetX, -offsetY, tint=color)
 
         catch e
-            Ahorn.clearSurface(ctx)
-            Ahorn.drawCenteredText(ctx, "Color is invalid.\nExpected hex triplet without #.", 0, 0, 320, 180)
+            drawPreviewFailed(canvas, "Color is invalid.\nExpected hex triplet without #.")
         end
 
     else
-        Ahorn.clearSurface(ctx)
-        Ahorn.drawCenteredText(ctx, "Unable to preview backdrop, image not found.\nAhorn can only preview from the Gameplay atlas.", 0, 0, 320, 180)
+        drawPreviewFailed(canvas, "Unable to preview backdrop, image not found.\nAhorn can only preview from the Gameplay atlas.")
     end
 end
 
