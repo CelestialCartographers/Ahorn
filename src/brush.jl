@@ -191,27 +191,29 @@ end
 function drawBrush(brush::Brush, layer::Layer, x::Number, y::Number, thickness::Integer=2)
     ctx = getSurfaceContext(layer.surface)
 
-    ox, oy = brush.offset
+    if ctx.ptr != C_NULL
+        ox, oy = brush.offset
 
-    Cairo.save(ctx)
+        Cairo.save(ctx)
 
-    scale(ctx, 8, 8)
-    translate(ctx, x + ox - 1.5, y + oy - 1.5)
-    rotate(ctx, brush.rotation * pi / 2)
-    translate(ctx, -1.5, -1.5)
-    rotationOffset(ctx, brush)
+        scale(ctx, 8, 8)
+        translate(ctx, x + ox - 1.5, y + oy - 1.5)
+        rotate(ctx, brush.rotation * pi / 2)
+        translate(ctx, -1.5, -1.5)
+        rotationOffset(ctx, brush)
 
-    for nodes in deepcopy.(brush.nodes)
-        # Fixes weird off by one error in Cairo paths
-        # 1 / 8 is one "pixel", taking into account the (8, 8) scale
-        # This should be good enough, but might look bad at non default stroke thickness
+        for nodes in deepcopy.(brush.nodes)
+            # Fixes weird off by one error in Cairo paths
+            # 1 / 8 is one "pixel", taking into account the (8, 8) scale
+            # This should be good enough, but might look bad at non default stroke thickness
 
-        extend = ceil(thickness / 2)
-        nodes[end] = nodes[end] .+ (extend / 8, extend / 8) .* sign.(nodes[end] .- nodes[end - 1])
-        drawLines(ctx, nodes, colors.brush_bc, filled=true, fc=colors.brush_fc, thickness=thickness)
+            extend = ceil(thickness / 2)
+            nodes[end] = nodes[end] .+ (extend / 8, extend / 8) .* sign.(nodes[end] .- nodes[end - 1])
+            drawLines(ctx, nodes, colors.brush_bc, filled=true, fc=colors.brush_fc, thickness=thickness)
+        end
+
+        restore(ctx)
     end
-
-    restore(ctx)
 end
 
 function applyBrush!(brush::Brush, tiles::Maple.Tiles, material::Char, x::Number, y::Number)

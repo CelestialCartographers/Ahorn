@@ -33,16 +33,18 @@ function drawDecal(ctx::Cairo.CairoContext, decal::Maple.Decal; alpha::Number=ge
     sx, sy = round(Int, decal.scaleX), round(Int, decal.scaleY)
 
     if width > 0 && height > 0
-        Cairo.save(ctx)
+        if ctx.ptr != C_NULL
+            Cairo.save(ctx)
 
-        translate(ctx, x, y)
-        scale(ctx, sx, sy)
-        translate(ctx, -sprite.offsetX, -sprite.offsetY)
-        translate(ctx, -realWidth / 2, -realHeight / 2)
+            translate(ctx, x, y)
+            scale(ctx, sx, sy)
+            translate(ctx, -sprite.offsetX, -sprite.offsetY)
+            translate(ctx, -realWidth / 2, -realHeight / 2)
 
-        drawImage(ctx, sprite, 0, 0, alpha=alpha)
-        
-        restore(ctx)
+            drawImage(ctx, sprite, 0, 0, alpha=alpha)
+            
+            restore(ctx)
+        end
 
     else
         debug.log("Couldn't render decal with texture '$texture' at ($x, $y)", "DRAWING_DECAL_MISSING")

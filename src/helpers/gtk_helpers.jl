@@ -417,8 +417,26 @@ end
 cairoGCCache = Dict{Int, Cairo.CairoContext}()
 
 function getSurfaceContext(surface::Cairo.CairoSurface)
-    get!(cairoGCCache, Int(surface.ptr)) do
+    key = Int(surface.ptr)
+
+    if get(cairoGCCache, key, C_NULL) == C_NULL
+        delete!(cairoGCCache, surface)
+    end
+
+    get!(cairoGCCache, key) do
         creategc(surface)
+    end
+end
+
+function deleteSurface(surface::Cairo.CairoSurface)
+    key = Int(surface.ptr)
+    if haskey(cairoGCCache, key)
+        ctx = cairoGCCache[key]
+
+        delete!(cairoGCCache, key)
+
+        Cairo.destroy(ctx)
+        Cairo.destroy(surface)
     end
 end
 

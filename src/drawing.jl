@@ -227,28 +227,30 @@ getGlobalAlpha() = drawingAlpha
 # Image based #
 
 function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing)
-    if tint !== nothing
-        tinted = CairoImageSurface(zeros(UInt32, height, width), Cairo.FORMAT_ARGB32)
-        tintedCtx = CairoContext(tinted)
+    if ctx.ptr != C_NULL
+        if tint !== nothing
+            tinted = CairoImageSurface(zeros(UInt32, height, width), Cairo.FORMAT_ARGB32)
+            tintedCtx = CairoContext(tinted)
 
-        # Don't pass tint or alpha
-        drawImage(tintedCtx, surface, 0, 0, quadX, quadY, width, height)
-        tinted = tintSurfaceMultiplicative(tinted, tint)
+            # Don't pass tint or alpha
+            drawImage(tintedCtx, surface, 0, 0, quadX, quadY, width, height)
+            tinted = tintSurfaceMultiplicative(tinted, tint)
 
-        drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
+            drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
 
-    else
-        Cairo.save(ctx)
+        else
+            Cairo.save(ctx)
 
-        rectangle(ctx, x, y, width, height)
-        clip(ctx)
-    
-        set_source_surface(ctx, surface, x - quadX, y - quadY)
-        pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
-    
-        paint_with_alpha(ctx, alpha)
-    
-        restore(ctx)
+            rectangle(ctx, x, y, width, height)
+            clip(ctx)
+        
+            set_source_surface(ctx, surface, x - quadX, y - quadY)
+            pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
+        
+            paint_with_alpha(ctx, alpha)
+        
+            restore(ctx)
+        end
     end
 end
 
@@ -261,28 +263,30 @@ drawImage(ctx::Cairo.CairoContext, name::String, x::Number, y::Number, quadX::Nu
 drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing) = drawImage(Gtk.getgc(canvas), sprite.surface, x, y, quadX, quadY, width, height, alpha=alpha, tint=tint)
 
 function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x::Number, y::Number, quadX::Number, quadY::Number, width::Number, height::Number; alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing)
-    if tint !== nothing
-        tinted = CairoImageSurface(zeros(UInt32, height, width), Cairo.FORMAT_ARGB32)
-        tintedCtx = CairoContext(tinted)
+    if ctx.ptr != C_NULL
+        if tint !== nothing
+            tinted = CairoImageSurface(zeros(UInt32, height, width), Cairo.FORMAT_ARGB32)
+            tintedCtx = CairoContext(tinted)
 
-        # Don't pass tint or alpha
-        drawImage(tintedCtx, sprite, 0, 0, quadX, quadY, width, height)
-        tinted = tintSurfaceMultiplicative(tinted, tint)
+            # Don't pass tint or alpha
+            drawImage(tintedCtx, sprite, 0, 0, quadX, quadY, width, height)
+            tinted = tintSurfaceMultiplicative(tinted, tint)
 
-        drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
+            drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
 
-    else
-        Cairo.save(ctx)
+        else
+            Cairo.save(ctx)
 
-        rectangle(ctx, x, y, width, height)
-        clip(ctx)
-    
-        set_source_surface(ctx, sprite.surface, x - quadX - sprite.x, y - quadY - sprite.y)
-        pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
-    
-        paint_with_alpha(ctx, alpha)
-    
-        restore(ctx)
+            rectangle(ctx, x, y, width, height)
+            clip(ctx)
+        
+            set_source_surface(ctx, sprite.surface, x - quadX - sprite.x, y - quadY - sprite.y)
+            pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
+        
+            paint_with_alpha(ctx, alpha)
+        
+            restore(ctx)
+        end
     end
 end
 
@@ -296,20 +300,22 @@ end
 
 # TODO - Only scale 1/-1 works as intended
 function drawSprite(ctx::Cairo.CairoContext, texture::String, x::Number, y::Number; jx::Number=0.5, jy::Number=0.5, sx::Number=1, sy::Number=1, rot::Number=0, alpha::Number=getGlobalAlpha(), tint::Union{Nothing, rgbaTupleType}=nothing, atlas::String="Gameplay")
-    sprite = getTextureSprite(texture, atlas)
+    if ctx.ptr != C_NULL
+        sprite = getTextureSprite(texture, atlas)
 
-    width, height = sprite.realWidth, sprite.realHeight
-    drawX, drawY = floor(Int, x - width * jx - sprite.offsetX) , floor(Int, y - height * jy - sprite.offsetY)
-    
-    Cairo.save(ctx)
-    
-    scale(ctx, sx, sy)
-    translate(ctx, sx > 0 ? 0 : -2 * x, sy > 0 ? 0 : -2 * y)
-    translate(ctx, drawX, drawY)
-    rotate(ctx, rot)
-    drawImage(ctx, sprite, 0, 0, alpha=alpha, tint=tint)
+        width, height = sprite.realWidth, sprite.realHeight
+        drawX, drawY = floor(Int, x - width * jx - sprite.offsetX) , floor(Int, y - height * jy - sprite.offsetY)
+        
+        Cairo.save(ctx)
+        
+        scale(ctx, sx, sy)
+        translate(ctx, sx > 0 ? 0 : -2 * x, sy > 0 ? 0 : -2 * y)
+        translate(ctx, drawX, drawY)
+        rotate(ctx, rot)
+        drawImage(ctx, sprite, 0, 0, alpha=alpha, tint=tint)
 
-    restore(ctx)
+        restore(ctx)
+    end
 end
 
 # Create image from matrix
@@ -359,76 +365,86 @@ function setSourceColor(ctx, c::colorTupleType)
 end
 
 function paintSurface(ctx::Cairo.CairoContext, c::colorTupleType=(1.0, 1.0, 1.0, 1.0))
-    setSourceColor(ctx, c)
-    paint(ctx)
+    if ctx.ptr != C_NULL
+        setSourceColor(ctx, c)
+        paint(ctx)
+    end
 end
 
 paintSurface(surface::Cairo.CairoSurface, c::colorTupleType=(1.0, 1.0, 1.0, 1.0)) = paintSurface(getSurfaceContext(surface), c)
 
 function clearArea(ctx::Cairo.CairoContext, x::Integer, y::Integer, width::Integer, height::Integer)
-    Cairo.save(ctx)
+    if ctx.ptr != C_NULL
+        Cairo.save(ctx)
 
-    setSourceColor(ctx, (0.0, 0.0, 0.0, 1.0))
-    set_operator(ctx, Cairo.OPERATOR_CLEAR)
-    rectangle(ctx, x, y, width, height)
-    fill(ctx)
+        setSourceColor(ctx, (0.0, 0.0, 0.0, 1.0))
+        set_operator(ctx, Cairo.OPERATOR_CLEAR)
+        rectangle(ctx, x, y, width, height)
+        fill(ctx)
 
-    restore(ctx)
+        restore(ctx)
+    end
 end
 
 clearSurface(surface::Cairo.CairoSurface, x::Integer, y::Integer, width::Integer, height::Integer) = clearSurface(getSurfaceContext(surface), x, y, width, height)
 
 function clearSurface(ctx::Cairo.CairoContext)
-    Cairo.save(ctx)
+    if ctx.ptr != C_NULL
+        Cairo.save(ctx)
 
-    setSourceColor(ctx, (0.0, 0.0, 0.0, 0.0))
-    set_operator(ctx, Cairo.OPERATOR_SOURCE)
-    paint(ctx)
+        setSourceColor(ctx, (0.0, 0.0, 0.0, 0.0))
+        set_operator(ctx, Cairo.OPERATOR_SOURCE)
+        paint(ctx)
 
-    restore(ctx)
+        restore(ctx)
+    end
 end
 
 clearSurface(surface::Cairo.CairoSurface) = clearSurface(getSurfaceContext(surface))
 
 # With border
 function drawRectangle(ctx::Cairo.CairoContext, x::Number, y::Number, w::Number, h::Number, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0, 0.0))
-    Cairo.save(ctx)
+    if ctx.ptr != C_NULL
+        Cairo.save(ctx)
 
-    setSourceColor(ctx, fc)
-    rectangle(ctx, x, y, w, h)
-    fill_preserve(ctx)
-    setSourceColor(ctx, rc)
-    stroke(ctx)
+        setSourceColor(ctx, fc)
+        rectangle(ctx, x, y, w, h)
+        fill_preserve(ctx)
+        setSourceColor(ctx, rc)
+        stroke(ctx)
 
-    restore(ctx)
+        restore(ctx)
+    end
 end
 
 drawRectangle(ctx::Cairo.CairoContext, rect::Rectangle, fc::colorTupleType=(0.0, 0.0, 0.0), rc::colorTupleType=(0.0, 0.0, 0.0)) = drawRectangle(ctx, rect.x, rect.y, rect.w, rect.h, fc, rc)
 
 function drawLines(ctx::Cairo.CairoContext, nodes::Array{T, 1}, sc::colorTupleType=(0.0, 0.0, 0.0); thickness::Integer=2, filled::Bool=false, fc::colorTupleType=sc) where T <: Tuple{Number, Number}
-    if length(nodes) < 2
-        return
+    if ctx.ptr != C_NULL
+        if length(nodes) < 2
+            return
+        end
+
+        Cairo.save(ctx)
+
+        set_antialias(ctx, thickness)
+        set_line_width(ctx, thickness)
+
+        move_to(ctx, nodes[1]...)
+
+        for node in nodes[2:end]
+            line_to(ctx, node...)
+        end
+        
+        if filled
+            setSourceColor(ctx, fc)
+            fill_preserve(ctx)
+        end
+
+        setSourceColor(ctx, sc)
+        stroke(ctx)
+        restore(ctx)
     end
-
-    Cairo.save(ctx)
-
-    set_antialias(ctx, thickness)
-    set_line_width(ctx, thickness)
-
-    move_to(ctx, nodes[1]...)
-
-    for node in nodes[2:end]
-        line_to(ctx, node...)
-    end
-    
-    if filled
-        setSourceColor(ctx, fc)
-        fill_preserve(ctx)
-    end
-
-    setSourceColor(ctx, sc)
-    stroke(ctx)
-    restore(ctx)
 end
 
 function drawSimpleCurve(ctx::Cairo.CairoContext, curve::SimpleCurve, c::colorTupleType=(0.0, 0.0, 0.0); resolution::Integer=25, thickness::Integer=2)
@@ -438,13 +454,15 @@ function drawSimpleCurve(ctx::Cairo.CairoContext, curve::SimpleCurve, c::colorTu
 end
 
 function drawArc(ctx::Cairo.CairoContext, x::Number, y::Number, r::Number, alpha::Number, beta::Number, c::colorTupleType=(0.0, 0.0, 0.0))
-    Cairo.save(ctx)
+    if ctx.ptr != C_NULL
+        Cairo.save(ctx)
 
-    setSourceColor(ctx, c)
-    arc(ctx, x, y, r, alpha, beta)
-    stroke(ctx)
+        setSourceColor(ctx, c)
+        arc(ctx, x, y, r, alpha, beta)
+        stroke(ctx)
 
-    restore(ctx)
+        restore(ctx)
+    end
 end
 
 function drawCircle(ctx::Cairo.CairoContext, x::Number, y::Number, r::Number, c::colorTupleType=(0.0, 0.0, 0.0))

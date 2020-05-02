@@ -92,11 +92,9 @@ function DrawableRoom(map::Map, room::Room)
 end
 
 function destroy(dr::DrawableRoom)
-    ctx = getSurfaceContext(dr.rendering.surface)
-    Cairo.destroy(ctx)
+    deleteSurface(dr.rendering.surface)
 
     for layer in dr.layers
-        ctx = getSurfaceContext(layer.surface)
-        Cairo.destroy(ctx)
+        deleteSurface(layer.surface)
     end
 end

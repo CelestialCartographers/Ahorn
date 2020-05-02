@@ -45,7 +45,7 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - Ctrl + shift + t: Configure current room
  - Ctrl + n: New map
  - Ctrl + m: Metadata window
- - Ctrl + shift + alt + s: Open settnings window
+ - Ctrl + shift + alt + s: Open settings window
  - q, e: shrink / grow width on selected
  - a, d: shrink / grow height on selected
  - Arrow keys: move selected

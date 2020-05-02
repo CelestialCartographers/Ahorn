@@ -6,19 +6,21 @@ function position(trigger::Maple.Trigger)
 end
 
 function renderTrigger(ctx::Cairo.CairoContext, layer::Layer, trigger::Maple.Trigger, room::Maple.Room; alpha::Number=1)
-    Cairo.save(ctx)
+    if ctx.ptr != C_NULL
+        Cairo.save(ctx)
 
-    x, y = Int(trigger.x), Int(trigger.y)
-    width, height = Int(trigger.width), Int(trigger.height)
+        x, y = Int(trigger.x), Int(trigger.y)
+        width, height = Int(trigger.width), Int(trigger.height)
 
-    rectangle(ctx, x, y, width, height)
-    clip(ctx)
+        rectangle(ctx, x, y, width, height)
+        clip(ctx)
 
-    text = humanizeVariableName(trigger.name)
-    drawRectangle(ctx, x, y, width, height, colors.trigger_fc, colors.trigger_bc)
-    drawCenteredText(ctx, text, x, y, width, height)
+        text = humanizeVariableName(trigger.name)
+        drawRectangle(ctx, x, y, width, height, colors.trigger_fc, colors.trigger_bc)
+        drawCenteredText(ctx, text, x, y, width, height)
 
-    restore(ctx)
+        restore(ctx)
+    end
 end
 
 function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::Maple.Trigger, room::Maple.Room; alpha::Number=1)

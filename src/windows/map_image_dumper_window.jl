@@ -32,6 +32,8 @@ function drawMapSurface(m::Maple.Map)
 
     Ahorn.deleteDrawableRoomCache(dummyMap)
 
+    deleteSurface(surface)
+
     return surface
 end
 
@@ -57,7 +59,7 @@ function dumpMapImageDialog(w=nothing)
                 open(io -> write_to_png(surface, io), fn, "w")
             end
 
-            Cairo.destroy(ctx)
+            deleteSurface(surface)
         end
 
     else

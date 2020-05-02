@@ -38,18 +38,22 @@ function renderCall(func, args...)
 end
 
 function attemptEntityRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room)
-    Cairo.save(ctx)
+    if ctx.ptr != C_NULL
+        Cairo.save(ctx)
 
-    res = renderCall(renderAbs, ctx, entity) ||
-        renderCall(renderAbs, ctx, entity, room)
+        res = renderCall(renderAbs, ctx, entity) ||
+            renderCall(renderAbs, ctx, entity, room)
 
-    translate(ctx, position(entity)...)
-    res |= renderCall(render, ctx, entity) ||
-        renderCall(render, ctx, entity, room)
+        translate(ctx, position(entity)...)
+        res |= renderCall(render, ctx, entity) ||
+            renderCall(render, ctx, entity, room)
 
-    Cairo.restore(ctx)
+        Cairo.restore(ctx)
 
-    return res
+        return res
+    end
+
+    return false
 end
 
 function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
@@ -85,23 +89,27 @@ function renderSelectedAbs(ctx::Cairo.CairoContext, entity::Maple.Entity)
 end
 
 function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room)
-    Cairo.save(ctx)
+    if ctx.ptr != C_NULL
+        Cairo.save(ctx)
 
-    res = renderCall(renderSelectedAbs, ctx, entity) ||
-        renderCall(renderSelectedAbs, layer, entity) ||
-        renderCall(renderSelectedAbs, ctx, entity, room) ||
-        renderCall(renderSelectedAbs, layer, entity, room)
+        res = renderCall(renderSelectedAbs, ctx, entity) ||
+            renderCall(renderSelectedAbs, layer, entity) ||
+            renderCall(renderSelectedAbs, ctx, entity, room) ||
+            renderCall(renderSelectedAbs, layer, entity, room)
 
-    translate(ctx, position(entity)...)
-    res |= 
-        renderCall(renderSelected, ctx, entity) ||
-        renderCall(renderSelected, layer, entity) ||
-        renderCall(renderSelected, ctx, entity, room) ||
-        renderCall(renderSelected, layer, entity, room)
+        translate(ctx, position(entity)...)
+        res |=
+            renderCall(renderSelected, ctx, entity) ||
+            renderCall(renderSelected, layer, entity) ||
+            renderCall(renderSelected, ctx, entity, room) ||
+            renderCall(renderSelected, layer, entity, room)
 
-    Cairo.restore(ctx)
+        Cairo.restore(ctx)
 
-    return res
+        return res
+    end
+
+    return false
 end
 
 function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)    

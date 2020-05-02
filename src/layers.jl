@@ -7,7 +7,9 @@ mutable struct Layer
     dummy::Bool
     clearOnReset::Bool
 
-    Layer(name::String, surface::Cairo.CairoSurface=CairoARGBSurface(0, 0); redraw::Bool=true, visible::Bool=true, selectable::Bool=true, dummy::Bool=false, clearOnReset::Bool=true) = new(name, surface, redraw, visible, selectable, dummy, clearOnReset)
+    function Layer(name::String, surface::Union{Cairo.CairoSurface, Nothing}=nothing; redraw::Bool=true, visible::Bool=true, selectable::Bool=true, dummy::Bool=false, clearOnReset::Bool=true)
+        return new(name, surface === nothing ? CairoARGBSurface(0, 0) : surface, redraw, visible, selectable, dummy, clearOnReset) 
+    end
 end
 
 include("drawable_room.jl")
@@ -47,13 +49,15 @@ redrawLayer!(::Nothing) = false
 layerName(l::Layer) = l.name
 layerName(l::Nothing) = ""
 
-function resetLayer!(layer::Layer, room::Room)
-    if layer.surface.ptr == C_NULL
-        layer.surface = CairoARGBSurface(room.size...)
-    end
+function layerSurfaceInvalid(layer::Layer)
+    return layer.surface.ptr == C_NULL
+end
 
-    if (Int(width(layer.surface)), Int(height(layer.surface))) != room.size
-        Cairo.destroy(layer.surface)
+function resetLayer!(layer::Layer, room::Room)
+    canvasSize = (Int(width(layer.surface)), Int(height(layer.surface)))
+
+    if layerSurfaceInvalid(layer) || canvasSize != room.size
+        deleteSurface(layer.surface)
         layer.surface = CairoARGBSurface(room.size...)
     end
 
@@ -89,7 +93,7 @@ end
 
 function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera::Camera, room::DrawableRoom; alpha::Number=getGlobalAlpha())
     for layer in layers
-        if layer.redraw && !layer.dummy
+        if !layer.dummy && (layerSurfaceInvalid(layer) || layer.redraw)
             debug.log("Redrawing ($(layer.surface.width), $(layer.surface.height)) $(layer.name)", "DRAWING_VERBOSE")
 
             resetLayer!(layer, room)
@@ -103,7 +107,7 @@ function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera
                     useIfApplicable(redrawFunc, layer, room.room, camera) ||
                     useIfApplicable(redrawFunc, layer, room.room)
 
-                layer.redraw = false
+                layer.redraw = !success
             end
     
             debug.log("Done redrawing $(layer.name)", "DRAWING_VERBOSE")

@@ -37,7 +37,7 @@ function dumpSpritesDialog(w)
                 mkpath(dirname(filename))
                 open(io -> Cairo.write_to_png(surface, io), filename, "w")
 
-                Cairo.destroy(surface)
+                deleteSurface(surface)
             end
         end
     end
