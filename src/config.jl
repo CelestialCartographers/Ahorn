@@ -29,7 +29,7 @@ function saveConfig(c::Config, force::Bool=true)
     end
 end
 
-function loadConfig(fn::String, buffertime::Number=0, default::Dict{K, V}=Dict{Any, Any}()) where {K, V}
+function loadConfig(fn::String, bufferTime::Number=0, default::Dict{K, V}=Dict{Any, Any}()) where {K, V}
     tempFn = fn * ".saving"
 
     # Program terminated before the config was moved
@@ -45,10 +45,10 @@ function loadConfig(fn::String, buffertime::Number=0, default::Dict{K, V}=Dict{A
     end
 
     if isfile(fn)
-        return Config(fn, open(JSON.parse, fn))
+        return Config(fn, bufferTime, open(JSON.parse, fn))
 
     else
-        config = Config(fn, default)
+        config = Config(fn, bufferTime, default)
         saveConfig(config)
 
         return config
@@ -63,7 +63,7 @@ function Base.setindex!(c::Config, value::V, key::K) where {K, V}
     prev = haskey(c, key) ? c.data[key] : nothing
     c.data[key] = value
 
-    if value != prev && prev === nothing
+    if value != prev
         saveConfig(c, false)
     end
 end

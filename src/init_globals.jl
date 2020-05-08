@@ -38,8 +38,8 @@ function initConfigs()
     global configFilename = joinpath(storageDirectory, "config.json")
     global persistenceFilename = joinpath(storageDirectory, "persistence.json")
 
-    global config = loadConfig(configFilename, 0)
-    global persistence = loadConfig(persistenceFilename, 90)
+    global config = attemptLoadConfig(configFilename, 0)
+    global persistence = attemptLoadConfig(persistenceFilename, 90)
 
     debugConfigFilename = joinpath(storageDirectory, "debug.json")
     debug.setConfig(debugConfigFilename, 0)

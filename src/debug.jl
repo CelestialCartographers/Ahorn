@@ -7,7 +7,7 @@ config = Dict{String, Any}()
 const defaultIgnoredTooltipAttrs = String["x", "y", "width", "height", "originX", "originY", "nodes"]
 
 function setConfig(fn::String, buffertime::Int=0)
-    global config = Ahorn.loadConfig(fn, buffertime)
+    global config = Ahorn.attemptLoadConfig(fn, buffertime)
 end
 
 function log(s::String, shouldPrint::Bool)

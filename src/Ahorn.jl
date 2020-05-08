@@ -57,6 +57,7 @@ sleep(0)
 
 include("helpers/helpers.jl")
 include("helpers/macros.jl")
+include("helpers/config_helper.jl")
 include("lang.jl")
 include("validation_entry.jl")
 include("mods.jl")

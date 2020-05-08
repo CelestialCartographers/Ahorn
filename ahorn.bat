@@ -2,9 +2,9 @@
 setlocal EnableDelayedExpansion
 
 set minimum_version="v\"1.3.0\""
-set julia_url_64bit=https://julialang-s3.julialang.org/bin/winnt/x64/1.3/julia-1.3.1-win64.exe
-set julia_url_32bit=https://julialang-s3.julialang.org/bin/winnt/x86/1.3/julia-1.3.1-win32.exe
-set julia_filename=julia-installer-1.3.1.exe
+set julia_url_64bit=https://julialang-s3.julialang.org/bin/winnt/x64/1.4/julia-1.4.1-win64.exe
+set julia_url_32bit=https://julialang-s3.julialang.org/bin/winnt/x86/1.4/julia-1.4.1-win32.exe
+set julia_filename=julia-1.4.1-installed.exe
 set install_url=https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/install_ahorn.jl
 set install_filename=install_ahorn.jl
 
@@ -28,6 +28,17 @@ if %ERRORLEVEL% equ 0 (
 
 :autodetect
 
+rem New default directory, used for Julia 1.4
+for /F " tokens=*" %%i IN ('dir /b /ad-h /o-d "%LocalAppData%\Programs\Julia"') do (
+    set fn=%%i
+    if "!fn:~0,6!" == "Julia-" (
+        set JULIA_PATH="%LocalAppData%\Programs\Julia\%%i\bin"
+
+        goto :foundJulia
+    )
+)
+
+rem Old default directory, Julia 1.3 is a valid target
 for /F " tokens=*" %%i IN ('dir /b /ad-h /o-d "%LocalAppData%"') do (
     set fn=%%i
     if "!fn:~0,6!" == "Julia-" (
@@ -37,7 +48,7 @@ for /F " tokens=*" %%i IN ('dir /b /ad-h /o-d "%LocalAppData%"') do (
     )
 )
 
-echo Julia installation not found in default install directory "%LocalAppData%".
+echo Julia installation not found in default install directory "%LocalAppData%\Programs\Julia\".
 echo Please install to the default directory or add Julia manually to the PATH environmental variable.
 
 goto :installPrompt

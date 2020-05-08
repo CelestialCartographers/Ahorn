@@ -31,9 +31,7 @@ function drawMapSurface(m::Maple.Map)
     end
 
     Ahorn.deleteDrawableRoomCache(dummyMap)
-
-    deleteSurface(surface)
-
+    
     return surface
 end
 
