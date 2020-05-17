@@ -6,7 +6,7 @@ modifierAlt() = keyHeld(Gtk.GdkKeySyms.Alt_L) || keyHeld(Gtk.GdkKeySyms.Alt_R)
 modifierSuper() = keyHeld(Gtk.GdkKeySyms.Super_L) || keyHeld(Gtk.GdkKeySyms.Super_R)
 modifierHyper() = keyHeld(Gtk.GdkKeySyms.Hyper_L) || keyHeld(Gtk.GdkKeySyms.Hyper_R)
 
-modifierNames = Dict{String, Function}(
+const modifierNames = Dict{String, Function}(
     "ctrl" => modifierControl,
     "shift" => modifierShift,
     "alt" => modifierAlt,

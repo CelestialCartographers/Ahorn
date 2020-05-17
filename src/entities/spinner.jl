@@ -95,7 +95,7 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-crystalSpinnerColors = Maple.crystal_colors
+const crystalSpinnerColors = Maple.crystal_colors
 for color in crystalSpinnerColors
     for attached in false:true
         key = "Crystal Spinner ($(uppercasefirst(color))$(attached ? ", Attached" : ""))"
@@ -110,7 +110,7 @@ for color in crystalSpinnerColors
     end
 end
 
-speeds = Maple.track_spinner_speeds
+const speeds = Maple.track_spinner_speeds
 for speed in speeds, dusty in false:true, star in false:true
     if star && dusty
         continue

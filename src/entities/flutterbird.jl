@@ -8,9 +8,9 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-sprite = "scenery/flutterbird/idle00.png"
+const sprite = "scenery/flutterbird/idle00.png"
 
-colors = [
+const colors = [
     (137, 251, 255, 255) ./ 255,
     (240, 252, 108, 255) ./ 255,
     (244, 147, 255, 255) ./ 255,

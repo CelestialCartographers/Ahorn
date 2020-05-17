@@ -7,7 +7,7 @@ struct Font
     Font(filename::String, fontString::String, charSpacing::Int=1, lineSpacing::Int=1) = new(open(Cairo.read_from_png, filename), generateFontDict(fontString), charSpacing, lineSpacing)
 end
 
-stringLineAlignOffsets = Dict{Symbol, Function}(
+const stringLineAlignOffsets = Dict{Symbol, Function}(
     :left => (widest, width) -> 0,
     :center => (widest, width) -> round(Int, (widest - width) / 2),
     :right => (widest, width) -> widest - width,
@@ -50,7 +50,38 @@ function Base.size(font::Font, s::AbstractString, replaceMissing::Char=' ')
     return width, height
 end
 
-function drawString(ctx::Cairo.CairoContext, font::Font, s::AbstractString, x::Int=0, y::Int=0; scale::Number=1, replaceMissing::Char=' ', align::Symbol=:left, tint::Union{colorTupleType, Nothing}=colors.canvas_font_color)
+const stringSurfaceCache = Dict{String, Cairo.CairoSurface}()
+
+function getStringSurface(font::Font, s; replaceMissing::Char=' ', align::Symbol=:left)
+    return get!(stringSurfaceCache, s) do
+        accX = 0
+        accY = 0
+    
+        lineAllignFunc = get(stringLineAlignOffsets, align, :left)
+        widest, height = size(font, s, replaceMissing)
+
+        surface = CairoARGBSurface(widest, height)
+        ctx = getSurfaceContext(surface)
+    
+        for line in split(s, "\n")
+            width = lineWidth(font, line, replaceMissing)
+            accX = lineAllignFunc(widest, width)
+    
+            for c in line
+                quadX, quadY, width, height = get(font.charDict, c, font.charDict[replaceMissing])
+                drawImage(ctx, font.surface, accX, accY, quadX, quadY, width, height)
+    
+                accX += width + font.charSpacing
+            end
+    
+            accY += lineHeight(font, line, replaceMissing) + font.lineSpacing
+        end
+
+        return surface
+    end
+end
+
+function drawString(ctx::Cairo.CairoContext, font::Font, s, x=0, y=0; scale=1.0, replaceMissing::Char=' ', align::Symbol=:left, tint=colors.canvas_font_color)
     shouldSave = x != 0 || y != 0 || scale != 1
 
     if shouldSave
@@ -59,25 +90,8 @@ function drawString(ctx::Cairo.CairoContext, font::Font, s::AbstractString, x::I
         Cairo.scale(ctx, scale, scale)
     end
 
-    accX = 0
-    accY = 0
-
-    lineAllignFunc = get(stringLineAlignOffsets, align, :left)
-    widest, height = size(font, s, replaceMissing)
-
-    for line in split(s, "\n")
-        width = lineWidth(font, line, replaceMissing)
-        accX = lineAllignFunc(widest, width)
-
-        for c in line
-            quadX, quadY, width, height = get(font.charDict, c, font.charDict[replaceMissing])
-            drawImage(ctx, font.surface, accX, accY, quadX, quadY, width, height, tint=tint)
-
-            accX += width + font.charSpacing
-        end
-
-        accY += lineHeight(font, line, replaceMissing) + font.lineSpacing
-    end
+    surface = getStringSurface(font, s, replaceMissing=replaceMissing, align=align)
+    drawImage(ctx, surface, 0, 0, tint=tint)
 
     if shouldSave
         Cairo.restore(ctx)

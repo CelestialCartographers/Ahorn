@@ -2,7 +2,7 @@ module CassetteBlock
 
 using ..Ahorn, Maple
 
-colorNames = Dict{String, Int}(
+const colorNames = Dict{String, Int}(
     "Blue" => 0,
     "Rose" => 1,
     "Bright Sun" => 2,
@@ -29,29 +29,28 @@ Ahorn.resizable(entity::Maple.CassetteBlock) = true, true
 
 Ahorn.selection(entity::Maple.CassetteBlock) = Ahorn.getEntityRectangle(entity)
 
-colors = Dict{Integer, Ahorn.colorTupleType}(
+const colors = Dict{Int, Ahorn.colorTupleType}(
     1 => (240, 73, 190, 255) ./ 255,
 	2 => (252, 220, 58, 255) ./ 255,
 	3 => (56, 224, 78, 255) ./ 255,
 )
 
-defaultColor = (73, 170, 240, 255) ./ 255
-borderMultiplier = (0.9, 0.9, 0.9, 1)
+const defaultColor = (73, 170, 240, 255) ./ 255
+const borderMultiplier = (0.9, 0.9, 0.9, 1)
 
-frame = "objects/cassetteblock/solid"
+const frame = "objects/cassetteblock/solid"
 
 function getCassetteBlockRectangles(room::Maple.Room)
     entities = filter(e -> e.name == "cassetteBlock", room.entities)
-    rects = Dict{Integer, Array{Ahorn.Rectangle, 1}}()
+    rects = Dict{Int, Array{Ahorn.Rectangle, 1}}()
 
     for e in entities
         index = get(e.data, "index", 0)
-
-        if !haskey(rects, index)
-            rects[index] = Ahorn.Rectangle[]
+        rectList = get!(rects, index) do
+            Ahorn.Rectangle[]
         end
         
-        push!(rects[index], Ahorn.Rectangle(
+        push!(rectList, Ahorn.Rectangle(
             Int(get(e.data, "x", 0)),
             Int(get(e.data, "y", 0)),
             Int(get(e.data, "width", 8)),
@@ -63,11 +62,17 @@ function getCassetteBlockRectangles(room::Maple.Room)
 end
 
 # Is there a casette block we should connect to at the offset?
-function notAdjacent(entity::Maple.CassetteBlock, ox::Integer, oy::Integer, rects::Array{Ahorn.Rectangle, 1})
+function notAdjacent(entity::Maple.CassetteBlock, ox, oy, rects)
     x, y = Ahorn.position(entity)
     rect = Ahorn.Rectangle(x + ox + 4, y + oy + 4, 1, 1)
 
-    return !any(Ahorn.checkCollision.(rects, Ref(rect)))
+    for r in rects
+        if Ahorn.checkCollision(r, rect)
+            return false
+        end
+    end
+
+    return true
 end
 
 function drawCassetteBlock(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CassetteBlock, room::Maple.Room)

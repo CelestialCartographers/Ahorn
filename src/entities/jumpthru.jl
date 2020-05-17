@@ -2,7 +2,7 @@ module JumpThru
 
 using ..Ahorn, Maple
 
-textures = ["wood", "dream", "temple", "templeB", "cliffside", "reflection", "core", "moon"]
+const textures = ["wood", "dream", "temple", "templeB", "cliffside", "reflection", "core", "moon"]
 const placements = Ahorn.PlacementDict(
     "Jump Through ($(uppercasefirst(texture)))" => Ahorn.EntityPlacement(
         Maple.JumpThru,
@@ -13,7 +13,7 @@ const placements = Ahorn.PlacementDict(
     ) for texture in textures
 )
 
-quads = Tuple{Integer, Integer, Integer, Integer}[
+const quads = Tuple{Integer, Integer, Integer, Integer}[
     (0, 0, 8, 7) (8, 0, 8, 7) (16, 0, 8, 7);
     (0, 8, 8, 5) (8, 8, 8, 5) (16, 8, 8, 5)
 ]
@@ -61,7 +61,7 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.JumpThru, roo
         end
 
         quad = quads[2 - connected, qx]
-        Ahorn.drawImage(ctx, "objects/jumpthru/$(texture)", 8 * i, 0, quad...)
+        Ahorn.drawImage(ctx, "objects/jumpthru/$(texture)", 8 * i, 0, quad[1], quad[2], quad[3], quad[4])
     end
 end
 

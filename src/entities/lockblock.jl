@@ -2,7 +2,7 @@ module Lockblock
 
 using ..Ahorn, Maple
 
-sprites = Dict{String, String}(
+const sprites = Dict{String, String}(
     "wood" => "objects/door/lockdoor00",
     "temple_a" => "objects/door/lockdoorTempleA00",
     "temple_b" => "objects/door/lockdoorTempleB00",

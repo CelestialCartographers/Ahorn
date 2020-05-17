@@ -135,7 +135,7 @@ function findExternalSprite(resource::String, atlas::String="Gameplay")
     end
 end
 
-warnedFilenames = Set{String}()
+const warnedFilenames = Set{String}()
 
 function warnBadExtensions(fixable::Array{String, 1}, nonFixable::Array{String, 1}, correctExt::String)
     res = false
@@ -173,7 +173,7 @@ function warnBadExtensions(fixable::Array{String, 1}, nonFixable::Array{String, 
         nonFixableCount = length(nonFixable)
         plural = nonFixableCount == 1 ? "" : "s"
         dialogText = "You have $nonFixableCount file$plural with bad extension$plural that cannot be automatically fixed.\n" *
-            "These are not loadable by Celeste (Everest).\n" * 
+            "These are not loadable by Celeste (Everest) or Ahorn.\n" * 
             "Please rename the file$plural manually with the proper extension '$correctExt' or contact the mod maker.\n\n" * 
             join(nonFixable, "\n")
         info_dialog(dialogText, Ahorn.window)
@@ -184,10 +184,125 @@ function warnBadExtensions(fixable::Array{String, 1}, nonFixable::Array{String, 
     return res
 end
 
-# Filename -> (mtime, image data)
-externalSpritesZipCache = Dict{String, Tuple{Number, Array{Tuple{String, String, String}, 1}}}()
+const spriteZipCache = Dict{String, Any}()
 
-function findExternalSprites()
+# Resource prefix filters uneeded files, uses unix paths
+function cacheZipContent(filename::String, resourcePrefix::String="Graphics/Atlases/Gameplay/")
+    debug.log("Caching zip content for $filename", "ZIP_CACHING_VERBOSE")
+
+    spriteZipCache[filename] = Dict{String, Any}()
+
+    # Always uses Unix path
+    zipfh = ZipFile.Reader(filename)
+
+    for file in zipfh.files
+        if startswith(file.name, resourcePrefix)
+            parts = split(file.name, "/")
+            atlas = parts[3]
+            resource = join(parts[3:end], "/")
+
+            if hasExt(file.name, ".png")
+                spriteZipCache[filename][resource] = Cairo.read_from_png(file)
+
+            elseif hasExt(file.name, ".meta.yaml")
+                try
+                    spriteZipCache[filename][resource] = YAML.load(String(read(file)))
+
+                catch
+                    # Bad yaml file
+                end
+            end
+        end
+    end
+    
+    close(zipfh)
+end
+
+# Cleanup and destroy surfaces
+function uncacheZipContent(filename::String)
+    debug.log("Uncaching zip content for $filename", "ZIP_CACHING_VERBOSE")
+
+    fileCache = get(spriteZipCache, filename, nothing)
+
+    if fileCache !== nothing
+        for (resource, data) in fileCache
+            if hasExt(resource, ".png")
+                deleteSurface(data)
+            end
+        end
+    end
+end
+
+function findExternalSpritesInZip(filename::String, atlasesPath::String, atlasesUnixPath::String, badExt::Array{String, 1}, allowRetry::Bool=true)
+    res = Tuple{String, String, String}[]
+    fileCache = get(spriteZipCache, filename, nothing)
+
+    if fileCache !== nothing
+        for (resource, data) in fileCache
+            if hasExt(resource, ".png")
+                if !hasExt(resource, ".png", false)
+                    # Case sensitive check for warnings
+                    push!(badExt, resource)
+                end
+
+                parts = split(resource, "/")
+                atlas = parts[1]
+                resourceNoAtlas = join(parts[2:end], "/")
+
+                push!(res, (resourceNoAtlas, filename, atlas))
+            end
+        end
+
+    else
+        if allowRetry
+            cacheZipContent(filename)
+
+            return findExternalSpritesInZip(filename, atlasesPath, atlasesUnixPath, badExt, false)
+        
+        else
+            return res
+        end
+    end
+
+    return res
+end
+
+function findExternalSpritesInFolder(filename::String, atlasesPath::String, badExt::Array{String, 1}, targetAtlases::Array{String, 1}=["Gameplay"])
+    res = Tuple{String, String, String}[]
+    atlasPath = joinpath(filename, atlasesPath)
+
+    if !isdir(atlasPath)
+        return res
+    end
+
+    for atlas in readdir(atlasPath)
+        if !(atlas in targetAtlases)
+            continue
+        end
+
+        path = joinpath(atlasPath, atlas)
+
+        if isdir(path)
+            for (root, dir, files) in walkdir(path)
+                for file in files
+                    if hasExt(file, ".png")
+                        if !hasExt(file, ".png", false)
+                            # Case sensitive check for warnings
+                            push!(badExt, joinpath(root, file))
+                        end
+
+                        rawpath = joinpath(root, file)
+                        push!(res, (relpath(rawpath, path), rawpath, atlas))
+                    end
+                end
+            end
+        end
+    end
+
+    return res
+end
+
+function findAllExternalSprites()
     warnOnBadExts = get(config, "prompt_bad_resource_exts", true)
     res = Tuple{String, String, String}[]
 
@@ -198,79 +313,56 @@ function findExternalSprites()
     targetZips = getCelesteModZips()
     atlasesPath = joinpath("Graphics", "Atlases")
 
-    for target in targetFolders
-        atlasPath = joinpath(target, atlasesPath)
-
-        if !isdir(atlasPath)
-            continue
-        end
-
-        for atlas in readdir(atlasPath)
-            path = joinpath(atlasPath, atlas)
-
-            if isdir(path)
-                for (root, dir, files) in walkdir(path)
-                    for file in files
-                        if hasExt(file, ".png")
-                            if !hasExt(file, ".png", false)
-                                # Case sensitive check for warnings
-                                push!(folderFileBadExt, joinpath(root, file))
-                            end
-
-                            rawpath = joinpath(root, file)
-                            push!(res, (relpath(rawpath, path), rawpath, atlas))
-                        end
-                    end
-                end
-            end
-        end
-    end
-
     # ZipFile uses unix paths
     atlasesUnixPath = replace(atlasesPath, "\\" => "/")
 
+    for target in targetFolders
+        append!(res, findExternalSpritesInFolder(target, atlasesPath, folderFileBadExt))
+    end
+
     for target in targetZips
-        # Check cache if we already know its files
-        cacheInfo = get(externalSpritesZipCache, target, nothing)
-        targetModified = mtime(target)
+        append!(res, findExternalSpritesInZip(target, atlasesPath, atlasesUnixPath, zipFileBadExt))
+    end
 
-        if cacheInfo !== nothing && cacheInfo[1] <= targetModified && targetModified != 0
-            append!(res, cacheInfo[2])
+    if warnOnBadExts
+        confirmed = warnBadExtensions(folderFileBadExt, zipFileBadExt, ".png")
 
-        else
-            targetFiles = Tuple{String, String, String}[]
+        if confirmed
+            return findAllExternalSprites()
+        end
+    end
+    
+    return res
+end
 
-            try
-                zipfh = ZipFile.Reader(target)
-    
-                for file in zipfh.files
-                    name = file.name
-    
-                    if startswith(name, atlasesUnixPath)
-                        if hasExt(name, ".png")
-                            if !hasExt(name, ".png", false)
-                                # Case sensitive check for warnings
-                                push!(zipFileBadExt, joinpath(target, name))
-                            end
-    
-                            # This should be safe, but probably not...
-                            atlas = split(name, "/")[3]
-    
-                            push!(targetFiles, (relpath(name, joinpath(atlasesPath, atlas)), target, atlas))
-                        end
-                    end
+function findChangedExternalSprites()
+    warnOnBadExts = get(config, "prompt_bad_resource_exts", true)
+    res = Tuple{String, String, String}[]
+
+    changedFilenames = FileWatcher.processWatchEvents(FileWatcher.basePath)
+
+    folderFileBadExt = String[]
+    zipFileBadExt = String[]
+
+    # ZipFile uses unix paths
+    atlasesPath = joinpath("Graphics", "Atlases")
+    atlasesUnixPath = replace(atlasesPath, "\\" => "/")
+
+    for filename in changedFilenames
+        if hasExt(filename, ".zip")
+            append!(res, findExternalSpritesInZip(filename, atlasesPath, atlasesUnixPath, zipFileBadExt))
+
+        elseif hasExt(filename, ".png")
+            hasModRoot, modRoot = getModRoot(filename)
+
+            if hasModRoot
+                relative = relpath(filename, modRoot)
+                parts = splitpath(relative)
+
+                if parts[1] == "Graphics" && parts[2] == "Atlases"
+                    push!(res, (joinpath(parts[4:end]...), filename, parts[3]))
                 end
-    
-                close(zipfh)
-    
-            catch e
-                println(Base.stderr, "Failed to load zip file '$target'")
-                println(Base.stderr, e)
             end
-
-            externalSpritesZipCache[target] = (mtime(target), targetFiles)
-
-            append!(res, targetFiles)
         end
     end
 
@@ -278,10 +370,10 @@ function findExternalSprites()
         confirmed = warnBadExtensions(folderFileBadExt, zipFileBadExt, ".png")
 
         if confirmed
-            return findExternalSprites()
+            return findChangedExternalSprites()
         end
     end
-    
+
     return res
 end
 

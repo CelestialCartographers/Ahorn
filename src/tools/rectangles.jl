@@ -27,7 +27,7 @@ function drawRectangle(rect::Ahorn.Rectangle, layer::Ahorn.Layer, filled=filled)
     Ahorn.drawBrush(rectangleBrush, layer, rect.x, rect.y)
 end
 
-function drawRectangles(layer::Ahorn.Layer, room::Ahorn.Room)
+function drawRectangles(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
     if selection !== nothing
         drawRectangle(selection, toolsLayer)
     end

@@ -7,12 +7,12 @@ stylegroundWindow = nothing
 effectSectionGrid = nothing
 effectOptions = nothing
 
-effectFieldOrder = String[
+const effectFieldOrder = String[
     "name", "only", "exclude", "tag",
     "flag", "notflag"
 ]
 
-parallaxFieldOrder = String[
+const parallaxFieldOrder = String[
     "texture", "only", "exclude", "tag",
     "flag", "notflag", "blendmode", "color",
     "x", "y", "scrollx", "scrolly",
@@ -60,7 +60,7 @@ function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, co
 end
 
 function spritesToBackgroundTextures(sprites::Dict{String, Ahorn.SpriteHolder})
-    Ahorn.loadExternalSprites!()
+    Ahorn.loadChangedExternalSprites!()
 
     res = String[]
 
@@ -82,7 +82,7 @@ function spritesToBackgroundTextures(sprites::Dict{String, Ahorn.SpriteHolder})
     return res
 end
 
-parallaxFields = Dict{String, Any}(
+const parallaxFields = Dict{String, Any}(
     "x" => 0.0,
     "y" => 0.0,
 
@@ -116,7 +116,7 @@ parallaxFields = Dict{String, Any}(
 )
 
 # Additional fields to add when creating an Effect
-effectFields = Dict{String, Any}(
+const effectFields = Dict{String, Any}(
     "flag" => "",
     "notflag" => "",
     "tag" => "",
@@ -125,11 +125,11 @@ effectFields = Dict{String, Any}(
 )
 
 # Fake fields that are not set in the data, but makes sense to have options for
-parallaxFakeFields = Dict{String, Any}(
+const parallaxFakeFields = Dict{String, Any}(
     "fg" => true
 )
 
-effectTemplates = Dict{String, Dict{String, Any}}(
+const effectTemplates = Dict{String, Dict{String, Any}}(
 
 )
 

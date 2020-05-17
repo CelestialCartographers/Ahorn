@@ -23,17 +23,17 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-frameImage = Dict{String, String}(
+const frameImage = Dict{String, String}(
     "none" => "objects/crushblock/block00",
     "horizontal" => "objects/crushblock/block01",
     "vertical" => "objects/crushblock/block02",
     "both" => "objects/crushblock/block03"
 )
 
-smallFace = "objects/crushblock/idle_face"
-giantFace = "objects/crushblock/giant_block00"
+const smallFace = "objects/crushblock/idle_face"
+const giantFace = "objects/crushblock/giant_block00"
 
-kevinColor = (98, 34, 43) ./ 255
+const kevinColor = (98, 34, 43) ./ 255
 
 Ahorn.editingOptions(entity::Maple.CrushBlock) = Dict{String, Any}(
     "axes" => Maple.kevin_axes

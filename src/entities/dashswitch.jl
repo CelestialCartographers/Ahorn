@@ -4,8 +4,8 @@ using ..Ahorn, Maple
 
 const placements = Ahorn.PlacementDict()
 
-textures = String["default", "mirror"]
-directions = Dict{String, Tuple{Type, String, Bool}}(
+const textures = String["default", "mirror"]
+const directions = Dict{String, Tuple{Type, String, Bool}}(
     "up" => (Maple.DashSwitchVertical, "ceiling", false),
     "down" => (Maple.DashSwitchVertical, "ceiling", true),
     "left" => (Maple.DashSwitchHorizontal, "leftSide", false),

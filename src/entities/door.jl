@@ -2,7 +2,7 @@ module Door
 
 using ..Ahorn, Maple
 
-textures = ["wood", "metal"]
+const textures = ["wood", "metal"]
 const placements = Ahorn.PlacementDict(
     "Door ($(uppercasefirst(texture)))" => Ahorn.EntityPlacement(
         Maple.Door,

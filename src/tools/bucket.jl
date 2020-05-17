@@ -25,10 +25,10 @@ function drawFill(x::Number, y::Number, tiles::Maple.Tiles, layer::Ahorn.Layer)
     end
 end
 
-function drawBucket(layer::Ahorn.Layer, room::Ahorn.Room)
-    if bucketPosition != nothing
+function drawBucket(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
+    if bucketPosition !== nothing
         x, y = bucketPosition
-        tiles = Ahorn.roomTiles(targetLayer, room)
+        tiles = Ahorn.roomTiles(targetLayer, room.room)
 
         drawFill(x, y, tiles, layer)
     end

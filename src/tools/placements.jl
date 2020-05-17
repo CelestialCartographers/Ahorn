@@ -24,7 +24,7 @@ blacklistedCloneAttrs = ["id", "x", "y"]
 
 placementLayers = String["entities", "triggers", "fgDecals", "bgDecals"]
 
-function drawPlacements(layer::Ahorn.Layer, room::Ahorn.Room)
+function drawPlacements(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
     ctx = Ahorn.getSurfaceContext(toolsLayer.surface)
 
     if selectionRect !== nothing && selectionRect.w > 0 && selectionRect.h > 0
@@ -35,12 +35,12 @@ function drawPlacements(layer::Ahorn.Layer, room::Ahorn.Room)
 
     if previewGhost !== nothing
         if Ahorn.layerName(targetLayer) == "entities"
-            Ahorn.renderEntity(ctx, toolsLayer, previewGhost, room, alpha=Ahorn.colors.ghost_preplacement_alpha)
-            Ahorn.renderEntitySelection(ctx, toolsLayer, previewGhost, room, alpha=Ahorn.colors.ghost_preplacement_alpha)
+            Ahorn.renderEntity(ctx, toolsLayer, previewGhost, room.room, alpha=Ahorn.colors.ghost_preplacement_alpha)
+            Ahorn.renderEntitySelection(ctx, toolsLayer, previewGhost, room.room, alpha=Ahorn.colors.ghost_preplacement_alpha)
 
         elseif Ahorn.layerName(targetLayer) == "triggers"
-            Ahorn.renderTrigger(ctx, toolsLayer, previewGhost, room, alpha=Ahorn.colors.ghost_preplacement_alpha)
-            Ahorn.renderTriggerSelection(ctx, toolsLayer, previewGhost, room, alpha=Ahorn.colors.ghost_preplacement_alpha)
+            Ahorn.renderTrigger(ctx, toolsLayer, previewGhost, room.room, alpha=Ahorn.colors.ghost_preplacement_alpha)
+            Ahorn.renderTriggerSelection(ctx, toolsLayer, previewGhost, room.room, alpha=Ahorn.colors.ghost_preplacement_alpha)
 
         elseif Ahorn.layerName(targetLayer) == "fgDecals" || Ahorn.layerName(targetLayer) == "bgDecals"
             Ahorn.drawDecal(ctx, previewGhost, alpha=Ahorn.colors.ghost_preplacement_alpha)
@@ -48,7 +48,7 @@ function drawPlacements(layer::Ahorn.Layer, room::Ahorn.Room)
     end
 end
 
-function generatePreview!(layer::Ahorn.Layer, material::Any, x::Integer, y::Integer; sx::Integer=1, sy::Integer=1, nx=x + 8, ny=y)
+function generatePreview!(layer::Ahorn.Layer, material::Any, x, y; sx=1, sy=1, nx=x + 8, ny=y)
     if material !== nothing
         if layer.name == "entities" || layer.name == "triggers"
             # Use cache if possible, otherwise create a new entity/trigger

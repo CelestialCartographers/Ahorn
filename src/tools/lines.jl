@@ -22,8 +22,8 @@ function drawLine(line::Ahorn.Line, layer::Ahorn.Layer)
     Ahorn.drawBrush(lineBrush, layer, 1, 1)
 end
 
-function drawLines(layer::Ahorn.Layer, room::Ahorn.Room)
-    if line != nothing
+function drawLines(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
+    if line !== nothing
         drawLine(line, toolsLayer)
     end
 end

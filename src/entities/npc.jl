@@ -12,7 +12,7 @@ Ahorn.editingOptions(entity::Maple.NPC) = Dict{String, Any}(
     "npc" => Maple.npc_npcs
 )
 
-npcSprites = Dict{String, String}(
+const npcSprites = Dict{String, String}(
     "granny" => "characters/oldlady/idle00",
     "theo" => "characters/theo/theo00",
     "oshiro" => "characters/oshiro/oshiro24",
@@ -20,7 +20,7 @@ npcSprites = Dict{String, String}(
     "badeline" => "characters/badeline/sleep00",
 )
 
-fallbackSprite = "characters/oldlady/idle00"
+const fallbackSprite = "characters/oldlady/idle00"
 
 function getTexture(entity::Maple.NPC)
     npcName = get(entity.data, "npc", "granny_00_house")

@@ -2,10 +2,10 @@ abstract type Snapshot end
 
 mutable struct HistoryTimeline
     snapshots::Array{Snapshot, 1}
-    index::Integer
+    index::Int
     skip::Bool
 
-    HistoryTimeline(snapshots::Array{Snapshot, 1}=Snapshot[], index::Integer=length(snapshots)) = new(snapshots, index, false)
+    HistoryTimeline(snapshots::Array{Snapshot, 1}=Snapshot[], index::Int=length(snapshots)) = new(snapshots, index, false)
 end
 
 function Base.push!(history::HistoryTimeline, snapshot::Snapshot)

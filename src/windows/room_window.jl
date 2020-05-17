@@ -10,7 +10,7 @@ currentRoom = nothing
 minimumRecommended = (320, 184)
 
 # Each line represents a line in window with 4 columns
-roomFieldOrder = String[
+const roomFieldOrder = String[
     "name", "color",
     "x", "y",
     "width", "height", 
@@ -22,7 +22,7 @@ roomFieldOrder = String[
     "music",
 ]
 
-dropdownOptions = Dict{String, Any}(
+const dropdownOptions = Dict{String, Any}(
     "music" => sort(collect(keys(Maple.Songs.songs))),
     "altMusic" => sort(collect(keys(Maple.Songs.songs))),
     "windPattern" => sort(Maple.wind_patterns),
@@ -30,7 +30,7 @@ dropdownOptions = Dict{String, Any}(
 )
 
 # Symbols reads and sets values on the room, other values are stored in data dict
-fields = Dict{String, Any}(
+const fields = Dict{String, Any}(
     "checkpoint" => (room, simple) -> findfirst(e -> e.name == "checkpoint", room.entities) != nothing,
 
     "width" => (room, simple) -> round(Int, room.size[1] / (simple ? 8 : 1)),

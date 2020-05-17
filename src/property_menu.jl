@@ -1,5 +1,6 @@
-lockedEntityEditingFields = ["x", "y", "width", "height"]
-lockedDecalEditingFields = ["x", "y", "scaleX", "scaleY", "texture"]
+const lockedEntityEditingFields = ["x", "y", "width", "height"]
+const lockedDecalEditingFields = ["x", "y", "scaleX", "scaleY", "texture"]
+
 lastPropertyWindow = nothing
 lastPropertyWindowDestroyed = false
 
@@ -41,15 +42,14 @@ function spawnPropertyWindow(title::String, options::Array{Form.Option, 1}, call
     global lastPropertyWindowDestroyed = false
 end
 
-function getTargets(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, selections::Set{Tuple{String, Rectangle, Any, Number}}=Set{Tuple{String, Rectangle, Any, Number}}())
+function getTargets(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, selections::Set{Ahorn.SelectedObject}=Set{Ahorn.SelectedObject}())
     targets = Any[]
     rect = Rectangle(x, y, 1, 1)
 
     if isempty(selections)
         selection = bestSelection(getSelected(room, targetLayer, rect))
         if selection !== nothing
-            layer, box, target, node = selection
-            push!(targets, target)
+            push!(targets, selection.target)
         end
     
     else    
@@ -58,7 +58,8 @@ function getTargets(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, 
         if isa(base, Entity) || isa(base, Trigger)
             push!(targets, base)
 
-            for (layer, box, target, node) in selections
+            for selection in selections
+                target = selection.target
                 if isa(target, Entity) || isa(target, Trigger)
                     if base.name == target.name && base.id != target.id
                         push!(targets, target)
@@ -69,7 +70,7 @@ function getTargets(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, 
         elseif isa(base, Decal)
             push!(targets, base)
             push!(targets, [
-                target for (layer, box, target, node) in selections if isa(target, Decal) && target != base
+                selection.target for selection in selections if isa(selection.target, Decal) && selection.target != base
             ]...)
         end
     end
@@ -77,7 +78,7 @@ function getTargets(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, 
     return targets
 end
 
-function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, toolsLayer::Layer, selections::Set{Tuple{String, Rectangle, Any, Number}}=Set{Tuple{String, Rectangle, Any, Number}}())
+function displayProperties(x::Number, y::Number, room::Maple.Room, targetLayer::Layer, toolsLayer::Layer, selections::Set{Ahorn.SelectedObject}=Set{Ahorn.SelectedObject}())
     targets = getTargets(x, y, room, targetLayer, selections)
 
     if !isempty(targets)

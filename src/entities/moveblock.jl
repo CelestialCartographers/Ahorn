@@ -31,14 +31,14 @@ Ahorn.selection(entity::Maple.MoveBlock) = Ahorn.getEntityRectangle(entity)
 midColor = (4, 3, 23) ./ 255
 highlightColor = (59, 50, 101) ./ 255
 
-arrows = Dict{String, String}(
+const arrows = Dict{String, String}(
     "up" => "objects/moveBlock/arrow02",
     "left" => "objects/moveBlock/arrow04",
     "right" => "objects/moveBlock/arrow00",
     "down" => "objects/moveBlock/arrow06",
 )
 
-button = "objects/moveBlock/button"
+const button = "objects/moveBlock/button"
 
 function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.MoveBlock, room::Maple.Room)
     x = Int(get(entity.data, "x", 0))

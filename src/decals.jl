@@ -1,4 +1,4 @@
-function position(decal::Maple.Decal)
+function position(decal::Maple.Decal)::Tuple{Int, Int}
     return (
         floor(Int, decal.x),
         floor(Int, decal.y)
@@ -22,7 +22,7 @@ function decalSelection(decal::Maple.Decal)
     return Rectangle(drawX, drawY, width * abs(sx), height * abs(sy))
 end
 
-function drawDecal(ctx::Cairo.CairoContext, decal::Maple.Decal; alpha::Number=getGlobalAlpha())
+function drawDecal(ctx::Cairo.CairoContext, decal::Maple.Decal; alpha=nothing)
     texture = "decals/$(decal.texture)"
     sprite = getTextureSprite(texture, "Gameplay")
 
@@ -69,7 +69,7 @@ animationRegex = r"\D+0*?$"
 filterAnimations(s::String) = occursin(animationRegex, s)
 
 function decalTextures(animationFrames::Bool=false)
-    Ahorn.loadExternalSprites!()
+    Ahorn.loadChangedExternalSprites!()
     textures = Ahorn.spritesToDecalTextures(Ahorn.getAtlas("Gameplay"))
 
     if !animationFrames

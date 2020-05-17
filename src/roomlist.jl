@@ -123,14 +123,13 @@ function hideAllRoomListColumns()
     persistence["room_list_column_visibility"] = "none"
 end
 
-
-roomListVisiblityIndices = [
+const roomListVisiblityIndices = [
     "all",
     "roomOnly",
     "none"
 ]
 
-roomListVisiblityFunctions = Dict{String, Function}(
+const roomListVisiblityFunctions = Dict{String, Function}(
     "all" => showAllRoomListColumns,
     "roomOnly" => showRoomListNameColumn,
     "none" => hideAllRoomListColumns

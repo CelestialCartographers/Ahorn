@@ -65,8 +65,8 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-textures = String["default", "mirror", "theo"]
-modes = Maple.temple_gate_modes
+const textures = String["default", "mirror", "theo"]
+const modes = Maple.temple_gate_modes
 
 Ahorn.editingOptions(entity::Maple.TempleGate) = Dict{String, Any}(
     "type" => modes,
@@ -80,7 +80,7 @@ function Ahorn.selection(entity::Maple.TempleGate)
     return Ahorn.Rectangle(x - 4, y, 15, height)
 end
 
-sprites = Dict{String, String}(
+const sprites = Dict{String, String}(
     "default" => "objects/door/TempleDoor00",
     "mirror" => "objects/door/TempleDoorB00",
     "theo" => "objects/door/TempleDoorC00"

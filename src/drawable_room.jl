@@ -1,9 +1,9 @@
 mutable struct TileStates
-    quads::Array{Tuple{Integer, Integer}, 2}
+    quads::Array{Coord, 2}
     chars::Array{Char, 2}
     rands::Array{UInt8, 2}
 
-    TileStates() = new(Matrix{Tuple{Integer, Integer}}(undef, 0, 0), Matrix{Char}(undef, 0, 0), Matrix{Integer}(undef, 0, 0))
+    TileStates() = new(Matrix{Coord}(undef, 0, 0), Matrix{Char}(undef, 0, 0), Matrix{Int}(undef, 0, 0))
 end
 
 mutable struct DrawableRoom
@@ -24,16 +24,18 @@ Base.size(state::TileStates) = size(state.rands)
 getTileStateSeed(name::String, package::String="", fg::Bool=false) = foldl((a, b) -> a + Int(b) * 128, collect(package * (fg ? "fg" : "bg") * name), init=0)
 getTileStateSeed(room::Room, package::String="", fg::Bool=false) = getTileStateSeed(room.name, package, fg)
 
-function updateTileStates!(room::String, package::String, states::TileStates, width::Integer, height::Integer, fg::Bool=false)
-    seed = getTileStateSeed(room, package, fg)
-    rng = MersenneTwister(seed)
+const drawableRoomMersenneTwister = MersenneTwister()
 
-    states.quads = fill((-1, -1), (height, width))
+function updateTileStates!(room::String, package::String, states::TileStates, width::Int, height::Int, fg::Bool=false)
+    seed = getTileStateSeed(room, package, fg)
+    Random.seed!(drawableRoomMersenneTwister, seed)
+
+    states.quads = fill(Coord(-1, -1), (height, width))
     states.chars = fill('0', (height, width))
-    states.rands = rand(rng, 0:255, (height, width))
+    states.rands = rand(drawableRoomMersenneTwister, 0:255, (height, width))
 end
 
-updateTileStates!(room::Room, package::String, states::TileStates, width::Integer, height::Integer, fg::Bool=false) = updateTileStates!(room.name, package, states, width, height, fg)
+updateTileStates!(room::Room, package::String, states::TileStates, width::Int, height::Int, fg::Bool=false) = updateTileStates!(room.name, package, states, width, height, fg)
 
 function getDrawingLayers()
     return Layer[
@@ -52,7 +54,7 @@ function getDrawingLayers()
     ]
 end
 
-function roomVisible(camera::Camera, width::Integer, height::Integer, room::Room)
+function roomVisible(camera::Camera, width::Int, height::Int, room::Room)
     actuallX = camera.x / camera.scale
     actuallY = camera.y / camera.scale
 
@@ -60,14 +62,14 @@ function roomVisible(camera::Camera, width::Integer, height::Integer, room::Room
     actuallHeight = height / camera.scale
 
     cameraRect = Rectangle(actuallX, actuallY, actuallWidth, actuallHeight)
-    roomRect = Rectangle(Int.(room.position)..., Int.(room.size)...)
+    roomRect = Rectangle(room.position[1], room.position[2], room.size[1], room.size[2])
 
     return checkCollision(cameraRect, roomRect)
 end
 
-redrawRenderingLayer(renderingLayer::Layer, layers::Array{Layer, 1}) = renderingLayer.redraw || any(map(layer -> layer.redraw, layers))
+redrawRenderingLayer(renderingLayer::Layer, layers::Array{Layer, 1}) = renderingLayer.redraw || any(map(layer -> layer.redraw && !layer.dummy, layers))
 
-function getRoomBackgroundColor(room::Room)
+function getRoomBackgroundColor(room::Room)::colorTupleType
     if 0 <= room.color < length(colors.background_room_color_coded_fill)
         return colors.background_room_color_coded_fill[room.color + 1]
         

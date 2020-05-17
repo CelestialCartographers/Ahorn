@@ -14,7 +14,7 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-flagLineUnion = Union{Maple.ClothesLine, Maple.CliffFlags}
+const flagLineUnion = Union{Maple.ClothesLine, Maple.CliffFlags}
 
 Ahorn.nodeLimits(entity::flagLineUnion) = 1, 1
 

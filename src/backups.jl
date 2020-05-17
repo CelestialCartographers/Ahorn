@@ -20,7 +20,7 @@ function getBackupFilename(side::Side)
     return joinpath(getSideName(side), "LATEST.bin")
 end
 
-function pruneBackups(folder::String, side::Side, keep::Integer=10)
+function pruneBackups(folder::String, side::Side, keep::Int=10)
     files = Tuple{String, DateTime}[]
     targetFolder = joinpath(folder, getSideName(side))
 

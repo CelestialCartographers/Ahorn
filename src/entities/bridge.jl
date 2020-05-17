@@ -24,8 +24,8 @@ const placements = Ahorn.PlacementDict(
     )
 )
 
-bridgeSprite = "scenery/bridge"
-bridgeFixedSprite = "scenery/bridge_fixed"
+const bridgeSprite = "scenery/bridge"
+const bridgeFixedSprite = "scenery/bridge_fixed"
 
 Ahorn.minimumSize(entity::Maple.Bridge) = 32, 0
 Ahorn.minimumSize(entity::Maple.BridgeFixed) = Ahorn.getSprite(bridgeFixedSprite, "Gameplay").width, 0
@@ -64,7 +64,7 @@ function Ahorn.selection(entity::Maple.BridgeFixed)
     return Ahorn.Rectangle(x, y - 4, selectionWidth, sprite.height)
 end
 
-sizes = Ahorn.Rectangle[
+const sizes = Ahorn.Rectangle[
     Ahorn.Rectangle(0, 0, 16, 52),
     Ahorn.Rectangle(16, 0, 8, 52),
     Ahorn.Rectangle(24, 0, 8, 52),

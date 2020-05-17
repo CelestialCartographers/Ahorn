@@ -1,14 +1,15 @@
-mousePressed = Dict{Integer, Tuple{Gtk.GdkEventButton, Bool, Union{Camera, Bool}}}()
-keyPressed = Dict{Integer, Tuple{Gtk.GdkEventKey, Bool}}()
+const mousePressed = Dict{Int, Tuple{Gtk.GdkEventButton, Bool, Union{Camera, Bool}}}()
+const keyPressed = Dict{Int, Tuple{Gtk.GdkEventKey, Bool}}()
+
 mouseMotion = false
 lastSelection = false
 
 cursor = nothing
 
-const dragButton = 0x3
+const dragButton = 3
 const clickThreshold = 4
 
-mouseHandlers = Dict{Integer, String}(
+const mouseHandlers = Dict{Int, String}(
     1 => "leftClick",
     2 => "middleClick",
     3 => "rightClick",
@@ -16,21 +17,21 @@ mouseHandlers = Dict{Integer, String}(
     5 => "forwardClick"
 )
 
-mouseTypePrefix = Dict{Integer, String}(
+const mouseTypePrefix = Dict{Int, String}(
     4 => "",
     5 => "double",
     6 => "tripple"
 )
 
-moveDirections = Dict{Integer, Tuple{Number, Number}}(
+const moveDirections = Dict{Int, Tuple{Number, Number}}(
     Gtk.GdkKeySyms.Left => (-1, 0),
     Gtk.GdkKeySyms.Right => (1, 0),
     Gtk.GdkKeySyms.Down => (0, 1),
     Gtk.GdkKeySyms.Up => (0, -1)
 )
 
-mouseButtonHeld(n::Integer) = get(mousePressed, n, (false, false, false))[2]
-keyHeld(n::Integer) = get(keyPressed, n, (false, false))[2]
+mouseButtonHeld(n) = get(mousePressed, n, (false, false, false))[2]
+keyHeld(n) = get(keyPressed, n, (false, false))[2]
 
 # Event -> Map coordinates
 getMapCoordinates(camera::Camera, mouseX::Number, mouseY::Number) = (floor(Int, (mouseX + camera.x) / camera.scale / 8) + 1, floor(Int, (mouseY + camera.y) / camera.scale / 8) + 1)
@@ -105,7 +106,7 @@ function motion_notify_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventMotion)
     end
 
     if shouldHandle()
-        lmbEvent, lmbActive, lmbCamera = get(mousePressed, 0x1, (false, false, false))
+        lmbEvent, lmbActive, lmbCamera = get(mousePressed, 1, (false, false, false))
         if lmbActive && mouseMotion != false
             # Don't consider this a seleciton unless its above the treshold
             if !isClick(event, lmbEvent)
@@ -137,7 +138,7 @@ function button_release_event(widget::Gtk.GtkCanvas, event::Gtk.GdkEventButton)
         if !isa(buttonEvent, Bool) && isClick(event, buttonEvent)
             handleClicks(event, camera, buttonEvent)
 
-        elseif buttonActive && event.button == 0x1
+        elseif buttonActive && event.button == 1
             handleSelectionFinish(buttonEvent, buttonCamera, event, camera)
         end
     end
@@ -156,7 +157,7 @@ function leave_notify_event(canvas::Gtk.GtkCanvas, event::Gtk.GdkEventCrossing)
         if buttonActive
             if shouldHandle()
                 # As we can't trigger clicks from here, treat all instances as draging
-                if buttonEvent.button == 0x1
+                if buttonEvent.button == 1
                     handleSelectionFinish(buttonEvent, buttonCamera, event, camera)
                 end
 

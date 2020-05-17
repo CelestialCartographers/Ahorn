@@ -43,8 +43,8 @@ end
 
 tileNames(layer::Layer) = tileNames(layerName(layer))
 
-nodeType = Tuple{Number, Number}
-edgeType = Tuple{nodeType, nodeType}
+const nodeType = Tuple{Number, Number}
+const edgeType = Tuple{nodeType, nodeType}
 
 function shrinkMatrix(m::Array{Bool, 2})
     h, w = size(m)
@@ -188,7 +188,7 @@ function rotationOffset(ctx::CairoContext, brush::Brush)
     end
 end
 
-function drawBrush(brush::Brush, layer::Layer, x::Number, y::Number, thickness::Integer=2)
+function drawBrush(brush::Brush, layer::Layer, x::Number, y::Number, thickness::Int=2)
     ctx = getSurfaceContext(layer.surface)
 
     if ctx.ptr != C_NULL

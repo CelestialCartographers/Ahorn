@@ -41,9 +41,11 @@ function eventToModule(modul::Module, funcname::String, args...)
             catch e
                 # Error running the function
                 println(Base.stderr, "Exception running function $funcname for $modul")
-                println(Base.stderr, e)
-                println.(Ref(Base.stderr), stacktrace())
-                println(Base.stderr, "---")
+
+                for (exc, bt) in Base.catch_stack()
+                    showerror(Base.stderr, exc, bt)
+                    println()
+                end
             end
 
         else

@@ -1,4 +1,4 @@
-function drawFiller(ctx::Cairo.CairoContext, camera::Camera, filler::Filler; alpha::Number=getGlobalAlpha())
+function drawFiller(ctx::Cairo.CairoContext, camera::Camera, filler::Filler; alpha=nothing)
     if ctx.ptr != C_NULL
         x, y = Int(filler.x) * 8, Int(filler.y) * 8
         w, h = Int(filler.w) * 8, Int(filler.h) * 8
@@ -15,7 +15,7 @@ function drawFiller(ctx::Cairo.CairoContext, camera::Camera, filler::Filler; alp
     end
 end
 
-function fillerVisible(camera::Camera, width::Integer, height::Integer, filler::Filler)
+function fillerVisible(camera::Camera, width::Int, height::Int, filler::Filler)
     actuallX = camera.x / camera.scale
     actuallY = camera.y / camera.scale
 

@@ -1,14 +1,14 @@
 struct Sprite
-    x::Integer
-    y::Integer
+    x::Int
+    y::Int
 
-    width::Integer
-    height::Integer
+    width::Int
+    height::Int
 
-    offsetX::Integer
-    offsetY::Integer
-    realWidth::Integer
-    realHeight::Integer
+    offsetX::Int
+    offsetY::Int
+    realWidth::Int
+    realHeight::Int
 
     surface::Cairo.CairoSurface
     filename::String
@@ -17,7 +17,7 @@ end
 mutable struct SpriteHolder
     sprite::Sprite
 
-    readtime::Number
+    readtime::Float64
     path::String
 end
 
@@ -70,7 +70,7 @@ function loadSprites(metaFn::String, spritesFn::String)
     return res
 end
 
-function findTextureAnimations(texture::String, sprites::Dict{String, SpriteHolder}; maxPadding=7)
+function findTextureAnimations(texture::String, sprites::Dict{String, SpriteHolder}; maxPadding=7)::Array{String, 1}
     textures = String[]
 
     for i in 1:maxPadding

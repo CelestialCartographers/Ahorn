@@ -7,7 +7,7 @@ mutable struct Camera
     Camera(x::Number, y::Number, scale::Number) = new(x, y, scale, false)
 end
 
-function setCamera!(camera::Camera, x::Integer, y::Integer)
+function setCamera!(camera::Camera, x, y)
     if !camera.locked
         camera.x = x * camera.scale
         camera.y = y * camera.scale

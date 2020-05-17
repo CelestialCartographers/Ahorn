@@ -3,23 +3,23 @@ module Clutter
 using ..Ahorn, Maple
 using Random
 
-validClutterNames = String["yellowBlocks", "redBlocks", "greenBlocks"]
-clutterDisplayNames = Dict{String, String}(
+const validClutterNames = String["yellowBlocks", "redBlocks", "greenBlocks"]
+const clutterDisplayNames = Dict{String, String}(
     "yellowBlocks" => "Boxes",
     "redBlocks" => "Laundry",
     "greenBlocks" => "Books"
 )
-clutterFunctions = Dict{String, Type}(
+const clutterFunctions = Dict{String, Type}(
     "yellowBlocks" => Maple.YellowBlock,
     "redBlocks" => Maple.RedBlock,
     "greenBlocks" => Maple.GreenBlock
 )
-simpleName = Dict{String, String}(
+const simpleName = Dict{String, String}(
     "yellowBlocks" => "Yellow",
     "redBlocks" => "Red",
     "greenBlocks" => "Green"
 )
-clutterBlockUnion = Union{
+const clutterBlockUnion = Union{
     Maple.YellowBlock,
     Maple.RedBlock,
     Maple.GreenBlock

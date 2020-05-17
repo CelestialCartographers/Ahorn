@@ -38,11 +38,13 @@ function displayMainWindow()
     @progress initMenubar() "Getting menubar ready..." progressDialog
 
     @progress Backup.initBackup(persistence) "Starting backup handler..." progressDialog
+    @progress FileWatcher.initFileWatcher(normpath(joinpath(config["celeste_dir"], "Mods"))) "Starting file watcher..." progressDialog
 
     @progress updateToolDisplayNames!(loadedTools) "Getting tools ready..." progressDialog
     @progress updateToolList!(toolList) "Getting tools ready..." progressDialog
 
     @progress initExternalModules() "Loading external plugins..." progressDialog
+    @progress loadAllExternalSprites!() "Loading external sprites..." progressDialog
 
     @progress updateTreeView!(roomList, getTreeData(loadedState.map)) "Populating room list..." progressDialog
 

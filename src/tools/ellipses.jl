@@ -24,8 +24,8 @@ function drawEllipse(ellipse::Ahorn.Ellipse, layer::Ahorn.Layer)
     Ahorn.drawBrush(ellipseBrush, layer, 1, 1)
 end
 
-function drawEllipses(layer::Ahorn.Layer, room::Ahorn.Room)
-    if ellipse != nothing
+function drawEllipses(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
+    if ellipse !== nothing
         drawEllipse(ellipse, toolsLayer)
     end
 end

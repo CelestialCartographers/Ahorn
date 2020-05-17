@@ -9,7 +9,7 @@ const placements = Ahorn.PlacementDict(
     )
 )
 
-coreMessageUnion = Union{Maple.EverestCoreMessage, Maple.CoreMessage}
+const coreMessageUnion = Union{Maple.EverestCoreMessage, Maple.CoreMessage}
 
 function Ahorn.selection(entity::coreMessageUnion)
     x, y = Ahorn.position(entity)

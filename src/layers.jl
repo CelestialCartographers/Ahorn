@@ -16,7 +16,7 @@ include("drawable_room.jl")
 
 Base.:(==)(lhs::Layer, rhs::Layer) = lhs.name == rhs.name
 
-redrawingFuncs = Dict{String, Function}()
+const redrawingFuncs = Dict{String, Function}()
 
 function redrawCanvas!()
     draw(canvas)
@@ -54,21 +54,21 @@ function layerSurfaceInvalid(layer::Layer)
 end
 
 function resetLayer!(layer::Layer, room::Room)
-    canvasSize = (Int(width(layer.surface)), Int(height(layer.surface)))
+    canvasWidth, canvasHeight = Int(width(layer.surface)), Int(height(layer.surface))
 
-    if layerSurfaceInvalid(layer) || canvasSize != room.size
+    if layerSurfaceInvalid(layer) || canvasWidth != room.size[1] || canvasHeight != room.size[2]
         deleteSurface(layer.surface)
-        layer.surface = CairoARGBSurface(room.size...)
+        layer.surface = CairoARGBSurface(room.size[1], room.size[2])
     end
 
     if layer.clearOnReset
-        clearSurface(layer.surface)
+        clearSurface(getSurfaceContext(layer.surface))
     end
 end
 
 resetLayer!(layer::Layer, room::DrawableRoom) = resetLayer!(layer, room.room)
 
-globalLayerVisibility = Dict{String, Bool}()
+const globalLayerVisibility = Dict{String, Bool}()
 
 function setGlobalLayerVisiblity(canvas::Gtk.GtkCanvas, name::String, visible::Bool=true)
     if get!(globalLayerVisibility, name, true) != visible
@@ -91,35 +91,26 @@ function setGlobalLayerVisiblity(name::String, widget::Gtk.GtkCheckMenuItem)
     setGlobalLayerVisiblity(canvas, name, get_gtk_property(widget, :active, Bool))
 end
 
-function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera::Camera, room::DrawableRoom; alpha::Number=getGlobalAlpha())
+function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera::Camera, room::DrawableRoom; alpha=nothing)
     for layer in layers
         if !layer.dummy && (layerSurfaceInvalid(layer) || layer.redraw)
-            debug.log("Redrawing ($(layer.surface.width), $(layer.surface.height)) $(layer.name)", "DRAWING_VERBOSE")
-
             resetLayer!(layer, room)
 
-            redrawFunc = get(redrawingFuncs, layer.name, (layer, room) -> true)
+            redrawFunc = get(redrawingFuncs, layer.name, (layer, room, camera) -> true)
 
-            # Use DrawableRoom if it accepts it, otherwise just a plain Maple Room
             @catchall begin
-                success = useIfApplicable(redrawFunc, layer, room, camera) ||
-                    useIfApplicable(redrawFunc, layer, room) ||
-                    useIfApplicable(redrawFunc, layer, room.room, camera) ||
-                    useIfApplicable(redrawFunc, layer, room.room)
+                redrawFunc(layer, room, camera)
 
-                layer.redraw = !success
+                layer.redraw = false
             end
-    
-            debug.log("Done redrawing $(layer.name)", "DRAWING_VERBOSE")
         end
 
         if layer.visible && !layer.dummy && get!(globalLayerVisibility, layer.name, true)
             applyLayer!(ctx, layer, alpha=alpha)
-            debug.log("Applying $(layer.name)", "DRAWING_VERBOSE")
         end
     end
 end
 
-function applyLayer!(ctx::Cairo.CairoContext, layer::Layer, x::Integer=0, y::Integer=0; alpha::Number=getGlobalAlpha())
+function applyLayer!(ctx::Cairo.CairoContext, layer::Layer, x=0, y=0; alpha=nothing)
     drawImage(ctx, layer.surface, x, y, alpha=alpha)
 end

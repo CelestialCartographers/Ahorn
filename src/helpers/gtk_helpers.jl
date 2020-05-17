@@ -1,5 +1,5 @@
-eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion, Gtk.GdkEventCrossing}
-eventKey = Gtk.GdkEventKey
+const eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion, Gtk.GdkEventCrossing}
+const eventKey = Gtk.GdkEventKey
 
 macro progress(e::Expr, msg, dialog)
     return quote
@@ -99,7 +99,7 @@ end
 # Window Cursor
 
 # Since our objects are kinda badly thrown together we need to cache them to prevent duplication errors
-cursorCache = Dict{Tuple{Gtk.GtkWindow, Ptr{GObject}}, Gtk.GObject}()
+const cursorCache = Dict{Tuple{Gtk.GtkWindow, Ptr{GObject}}, Gtk.GObject}()
 
 # https://developer.gnome.org/gdk3/stable/gdk3-Cursors.html#gdk-cursor-new-from-name Name list
 function newCursorFromName(window::Gtk.GtkWindow, name::String)
@@ -414,16 +414,16 @@ function getSurfaceData(surface::Cairo.CairoSurface)
     return imageSurface.data
 end
 
-cairoGCCache = Dict{Int, Cairo.CairoContext}()
+const cairoGCCache = Dict{Int, Cairo.CairoContext}()
 
-function getSurfaceContext(surface::Cairo.CairoSurface)
+function getSurfaceContext(surface::Cairo.CairoSurface)::Cairo.CairoContext
     key = Int(surface.ptr)
 
     if get(cairoGCCache, key, C_NULL) == C_NULL
         delete!(cairoGCCache, surface)
     end
 
-    get!(cairoGCCache, key) do
+    return get!(cairoGCCache, key) do
         creategc(surface)
     end
 end

@@ -34,7 +34,7 @@ function displayNameToId(name::String)
     end
 end
 
-function drawBrushes(layer::Ahorn.Layer, room::Maple.Room)
+function drawBrushes(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
     if position !== nothing
         ctx = Ahorn.getSurfaceContext(layer.surface)
 

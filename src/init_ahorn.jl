@@ -79,9 +79,11 @@ function configureCelesteDir()
 
             if filename == ""
                 return false
+
             elseif lowercase(basename(filename)) != lowercase(target)
                 warn_dialog("The file you selected is not named '$target'\nWill attempt to use this as the install directory anyway.", window)
             end
+
             celesteDir = cleanupPath(filename)
         end
 

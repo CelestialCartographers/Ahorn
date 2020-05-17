@@ -12,8 +12,8 @@ targetLayer = nothing
 
 # Drag selection, track individually for easy replacement
 selectionRect = Ahorn.Rectangle(0, 0, 0, 0)
-selectionPreviews = Set{Tuple{String, Ahorn.Rectangle, Any, Number}}()
-selections = Set{Tuple{String, Ahorn.Rectangle, Any, Number}}()
+selectionPreviews = Set{Ahorn.SelectedObject}()
+selections = Set{Ahorn.SelectedObject}()
 
 lastX, lastY = -1, -1
 shouldDrag = false
@@ -25,7 +25,7 @@ canResize = false
 resizeCursor = "default"
 cursorResizeThreshold = 1
 
-resizeCursorDirections = Dict{String, Tuple{Int, Int}}(
+const resizeCursorDirections = Dict{String, Tuple{Int, Int}}(
     "n-resize" => (0, -1),
     "ne-resize" => (1, -1),
     "e-resize" => (1, 0),
@@ -37,7 +37,7 @@ resizeCursorDirections = Dict{String, Tuple{Int, Int}}(
 )
 
 relevantRoom = Ahorn.loadedState.room
-selectionsClipboard = Set{Tuple{String, Ahorn.Rectangle, Any, Number}}()
+selectionsClipboard = Set{Ahorn.SelectedObject}()
 
 function copySelections(cut::Bool=false)
     if isempty(selections)
@@ -60,7 +60,7 @@ end
 
 cutSelections() = copySelections(true)
 
-function getCursorForResize(x::Integer, y::Integer, rect::Ahorn.Rectangle, canHorizontal::Bool=true, canVertical::Bool=true, threshold::Number=cursorResizeThreshold)
+function getCursorForResize(x::Int, y::Int, rect::Ahorn.Rectangle, canHorizontal::Bool=true, canVertical::Bool=true, threshold::Number=cursorResizeThreshold)
     if !(canHorizontal || canVertical)
         return "default"
     end
@@ -109,13 +109,11 @@ function updateCursor()
     Ahorn.setWindowCursor!(Ahorn.window, cursor)
 end
 
-function getSelectionLeftCorner(selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
+function getSelectionLeftCorner(selections::Set{Ahorn.SelectedObject})
     tlx, tly = typemax(Int), typemax(Int)
 
     for selection in selections
-        layer, box, target, node = selection
-
-        x, y = Ahorn.position(target)
+        x, y = Ahorn.position(selection.target)
 
         tlx = min(tlx, x)
         tly = min(tly, y)
@@ -142,7 +140,7 @@ function pasteSelections()
     end
 
     for selection in newSelections
-        layer, box, target, node = selection
+        layer, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
 
         if layer == "fgDecals"
             target.x += offsetX
@@ -218,7 +216,7 @@ hotkeys = Ahorn.Hotkey[
     )
 ]
 
-function drawSelections(layer::Ahorn.Layer, room::Ahorn.Room)
+function drawSelections(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
     drawnTargets = Set()
     ctx = Ahorn.getSurfaceContext(toolsLayer.surface)
 
@@ -235,10 +233,10 @@ function drawSelections(layer::Ahorn.Layer, room::Ahorn.Room)
     # Make sure fgTiles render after the bgTiles
     # Looks better, shouldn't cost to much performance
     selectionsArray = collect(selections)
-    sort!(selectionsArray, by=r -> r[1])
+    sort!(selectionsArray, by=r -> r.layerName)
 
     for selection in selectionsArray
-        layer, box, target, node = selection
+        layer, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
         
         if isa(target, Maple.Entity) && !(target in [row[1] for row in drawnTargets])
             Ahorn.renderEntitySelection(ctx, toolsLayer, target, relevantRoom)
@@ -256,7 +254,7 @@ function drawSelections(layer::Ahorn.Layer, room::Ahorn.Room)
 
         # Get a new selection rectangle
         # This is easier than editing the existing rect
-        rect = Ahorn.getSelection(target, room)
+        rect = Ahorn.getSelection(target, room.room)
         if isa(rect, Array{Ahorn.Rectangle}) && length(rect) >= node + 1
             Ahorn.drawRectangle(ctx, rect[node + 1], Ahorn.colors.selection_selected_fc, Ahorn.colors.selection_selected_bc)
 
@@ -266,7 +264,7 @@ function drawSelections(layer::Ahorn.Layer, room::Ahorn.Room)
     end
 
     for preview in selectionPreviews
-        layer, box, target, node = preview
+        layer, box, target, node = preview.layerName, preview.rectangle, preview.target, preview.node
 
         if isa(target, Maple.Entity) && !(target in [row[1] for row in drawnTargets])
             Ahorn.renderEntitySelection(ctx, toolsLayer, target, relevantRoom)
@@ -328,7 +326,7 @@ function layerSelected(list::Ahorn.ListContainer, materials::Ahorn.ListContainer
     Ahorn.persistence["placements_layer"] = selected
 end
 
-function updateSelectionPreviews(x::Integer, y::Integer)
+function updateSelectionPreviews(x::Int, y::Int)
     if get(Ahorn.config, "preview_possible_selections", true)
         if selectionRect == Ahorn.Rectangle(0, 0, 0, 0)
             # Don't preview tile selections or "all" selection
@@ -339,7 +337,6 @@ function updateSelectionPreviews(x::Integer, y::Integer)
                 previousPreviews = deepcopy(selectionPreviews)
                 finalizeSelections!(selectionPreviews)
                 empty!(selectionPreviews)
-
                 rect = Ahorn.Rectangle(x, y, 1, 1)
                 properlyUpdateSelections!(rect, selectionPreviews, best=true)
 
@@ -355,11 +352,12 @@ function updateSelectionPreviews(x::Integer, y::Integer)
     end
 end
 
-function updateResize(x::Integer, y::Integer)
+function updateResize(x::Int, y::Int)
     if !shouldDrag && length(selections) == 1 && !Ahorn.mouseButtonHeld(0x1)
-        layer, box, target, node = first(selections)
-        rect = Ahorn.getSelection(target, Ahorn.loadedState.room)
-        rect = isa(rect, Array{Ahorn.Rectangle, 1}) ? rect[1] : rect
+        selection = first(selections)
+        layer, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
+        selectionRect = Ahorn.getSelection(target, Ahorn.loadedState.room)
+        rect = isa(selectionRect, Array{Ahorn.Rectangle, 1}) ? selectionRect[1] : selectionRect
         
         if isa(rect, Ahorn.Rectangle) && (isa(target, Maple.Entity) || isa(target, Maple.Trigger)) && node == 0
             resizeW, resizeH = Ahorn.canResizeWrapper(target)
@@ -372,7 +370,7 @@ function updateResize(x::Integer, y::Integer)
     end
 end
 
-function updateDrag(x::Integer, y::Integer)
+function updateDrag(x::Int, y::Int)
     if !shouldDrag
         target = Ahorn.hasSelectionAt(selections, Ahorn.Rectangle(x, y, 1, 1), relevantRoom)
         global canDrag = target != false
@@ -433,7 +431,8 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
 
     if canResize
         if (dx != 0 || dy != 0) && length(selections) == 1
-            layer, box, target, node = first(selections)
+            selection = first(selections)
+            layer, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
 
             if isa(target, Maple.Trigger) || isa(target, Maple.Entity)
                 changed = false
@@ -480,10 +479,9 @@ function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
 
         if dx != 0 || dy != 0
             for selection in selections
-                layer, box, target, node = selection
+               layer, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
 
-                if applicable(applyMovement!, target, dx, dy, node)
-                    applyMovement!(target, dx, dy, node)
+                if applyMovement!(target, dx, dy, node)
                     notifyMovement!(target)
                 end
             end
@@ -503,7 +501,7 @@ function mouseMotionAbs(x::Number, y::Number)
     updateCursor()
 end
 
-function properlyUpdateSelections!(rect::Ahorn.Rectangle, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}; best::Bool=false, mass::Bool=false)
+function properlyUpdateSelections!(rect::Ahorn.Rectangle, selections::Set{Ahorn.SelectedObject}; best::Bool=false, mass::Bool=false)
     retain = Ahorn.modifierShift()
 
     # Do this before we get new selections
@@ -513,11 +511,10 @@ function properlyUpdateSelections!(rect::Ahorn.Rectangle, selections::Set{Tuple{
     end
 
     unselected, newlySelected = Ahorn.updateSelections!(selections, relevantRoom, Ahorn.layerName(targetLayer), rect, retain=retain, best=best, mass=mass)
-
     initSelections!(newlySelected)
 end
 
-function properlyMassSelection!(selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}, rect::Ahorn.Rectangle; strict::Bool=false)
+function properlyMassSelection!(selections::Set{Ahorn.SelectedObject}, rect::Ahorn.Rectangle; strict::Bool=false)
     retain = Ahorn.modifierShift()
 
     # Do this before we get new selections
@@ -530,11 +527,11 @@ function properlyMassSelection!(selections::Set{Tuple{String, Ahorn.Rectangle, A
     initSelections!(newlySelected)
 end
 
-function getLayersSelected(selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
-    return unique([selection[1] for selection in selections])
+function getLayersSelected(selections::Set{Ahorn.SelectedObject})
+    return unique([selection.layerName for selection in selections])
 end
 
-function redrawTargetLayer!(layer::Ahorn.Layer, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}, ignore::Array{String, 1}=String[]; onlyMark::Bool=false)
+function redrawTargetLayer!(layer::Ahorn.Layer, selections::Set{Ahorn.SelectedObject}, ignore::Array{String, 1}=String[]; onlyMark::Bool=false)
     redrawTargetLayer!(layer, getLayersSelected(selections), ignore, onlyMark=onlyMark)
 end
 
@@ -631,14 +628,14 @@ function afterRedo(map::Maple.Map)
     Ahorn.redrawLayer!(toolsLayer)
 end
 
-function finalizeSelections!(targets::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
+function finalizeSelections!(targets::Set{Ahorn.SelectedObject})
     shouldRedraw = false
 
     for selection in targets
-        layer, box, target, node = selection
+        layer = selection.layerName
 
         if layer == "fgTiles" || layer == "bgTiles"
-            applyTileSelecitonBrush!(target, false)
+            applyTileSelecitonBrush!(selection.target, false)
             shouldRedraw = true
         end
     end
@@ -648,14 +645,14 @@ function finalizeSelections!(targets::Set{Tuple{String, Ahorn.Rectangle, Any, Nu
     end
 end
 
-function initSelections!(targets::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
+function initSelections!(targets::Set{Ahorn.SelectedObject})
     shouldRedraw = false
 
     for selection in targets
-        layer, box, target, node = selection
+        layer = selection.layerName
 
         if layer == "fgTiles" || layer == "bgTiles"
-            applyTileSelecitonBrush!(target, true)
+            applyTileSelecitonBrush!(selection.target, true)
             shouldRedraw = true
         end
     end
@@ -665,7 +662,7 @@ function initSelections!(targets::Set{Tuple{String, Ahorn.Rectangle, Any, Number
     end
 end
 
-function setSelections(map::Maple.Map, room::Maple.Room, newSelections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
+function setSelections(map::Maple.Map, room::Maple.Room, newSelections::Set{Ahorn.SelectedObject})
     if room.name == relevantRoom.name
         empty!(selections)
         union!(selections, Ahorn.fixSelections(relevantRoom, newSelections))
@@ -678,7 +675,7 @@ function getSelections()
     return selections
 end
 
-function gridSnapped(v::Integer, step::Integer, direction::Integer)
+function gridSnapped(v, step, direction)
     if direction == 0
         return v
 
@@ -690,7 +687,9 @@ function gridSnapped(v::Integer, step::Integer, direction::Integer)
     end
 end
 
-function applyMovement!(target::Union{Maple.Entity, Maple.Trigger}, ox::Number, oy::Number, node::Number=0)
+applyMovement!(target, ox, oy, node) = false
+
+function applyMovement!(target::Union{Maple.Entity, Maple.Trigger}, ox, oy, node=0)
     if node == 0
         target.data["x"] += ox
         target.data["y"] += oy
@@ -702,21 +701,27 @@ function applyMovement!(target::Union{Maple.Entity, Maple.Trigger}, ox::Number, 
             nodes[node] = nodes[node] .+ (ox, oy)
         end
     end
+
+    return true
 end
 
-function applyMovement!(decal::Maple.Decal, ox::Number, oy::Number, node::Number=0)
+function applyMovement!(decal::Maple.Decal, ox, oy, node=0)
     decal.x += ox
     decal.y += oy
+
+    return true
 end
 
-function applyMovement!(target::Ahorn.TileSelection, ox::Number, oy::Number, node::Number=0)
+function applyMovement!(target::Ahorn.TileSelection, ox, oy, node=0)
     target.offsetX += ox
     target.offsetY += oy
 
     target.selection = Ahorn.Rectangle(target.startX + floor(target.offsetX / 8) * 8, target.startY + floor(target.offsetY / 8) * 8, target.selection.w, target.selection.h)
+
+    return true
 end
 
-function applyGridMovement!(target::Union{Maple.Entity, Maple.Trigger}, gridSize::Integer, directionX::Integer, directionY::Integer, node::Integer=0)
+function applyGridMovement!(target::Union{Maple.Entity, Maple.Trigger}, gridSize, directionX, directionY, node=0)
     if node == 0
         x, y = target.data["x"], target.data["y"]
         ox, oy = gridSnapped(x, gridSize, directionX), gridSnapped(y, gridSize, directionY)
@@ -735,13 +740,13 @@ function applyGridMovement!(target::Union{Maple.Entity, Maple.Trigger}, gridSize
     end
 end
 
-function applyGridMovement!(decal::Maple.Decal, gridSize::Integer, directionX::Integer, directionY::Integer, node::Integer=0)
+function applyGridMovement!(decal::Maple.Decal, gridSize, directionX, directionY, node=0)
     ox, oy = gridSnapped(decal.x, gridSize, directionX), gridSnapped(decal.y, gridSize, directionY)
     
     applyMovement!(decal, ox - decal.x, oy - decal.y)
 end
 
-function applyGridMovement!(target::Ahorn.TileSelection, gridSize::Integer, directionX::Integer, directionY::Integer, node::Integer=0)
+function applyGridMovement!(target::Ahorn.TileSelection, gridSize, directionX, directionY, node=0)
     ox, oy = gridSnapped(target.offsetX, gridSize, directionX), gridSnapped(target.offsetY, gridSize, directionY)
 
     applyMovement!(target, ox - target.offsetX, oy - target.offsetY)
@@ -794,23 +799,21 @@ function handleMovement(event::Ahorn.eventKey)
     snapMode = get(Ahorn.config, "use_grid_snapping", true)
 
     for selection in selections
-        name, box, target, node = selection
+        name, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
         dirX, dirY = Ahorn.moveDirections[event.keyval]
 
         if snapMode
-            if applicable(applyGridMovement!, target, step, dirX, dirY, node)
-                applyGridMovement!(target, step, dirX, dirY, node)
+            if applyGridMovement!(target, step, dirX, dirY, node)
                 notifyMovement!(target)
 
                 redraw = true
             end
 
         else
-            if applicable(applyMovement!, target, dirX * step, dirY * step, node)
-                applyMovement!(target, dirX * step, dirY * step, node)
-                notifyMovement!(target)
+            redraw = applyMovement!(target, dirX * step, dirY * step, node)
 
-                redraw = true
+            if redraw
+                notifyMovement!(target)
             end
         end
     end
@@ -826,7 +829,7 @@ function handleResize(event::Ahorn.eventKey)
     snapMode = get(Ahorn.config, "use_grid_snapping", true)
 
     for selection in selections
-        name, box, target, node = selection
+        name, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
         dirW, dirH = resizeModifiers[event.keyval]
 
         if (name == "entities" || name == "triggers") && !(target in processed)
@@ -866,10 +869,9 @@ end
 function handleScaling(event::Ahorn.eventKey)
     redraw = false
     for selection in selections
-        name, box, target, node = selection
         msx, msy = scaleMultipliers[event.keyval]
 
-        if isa(target, Maple.Decal)
+        if isa(selection.target, Maple.Decal)
             target.scaleX *= msx
             target.scaleY *= msy
 
@@ -884,7 +886,7 @@ function handleAddNodes(event::Ahorn.eventKey)
     redraw = false
 
     for selection in selections
-        name, box, target, node = selection
+        name, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
 
         if name == "entities" || name == "triggers"
             least, most = Ahorn.nodeLimits(target)
@@ -908,21 +910,21 @@ function handleAddNodes(event::Ahorn.eventKey)
     return redraw
 end
 
-function handleDeletion(selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}})
+function handleDeletion(selections::Set{Ahorn.SelectedObject})
     res = !isempty(selections)
     selectionsArray = collect(selections)
 
     # Split into different arrays
-    tileSelections = filter(s -> s[1] == "bgTiles" || s[1] == "fgTiles", selectionsArray)
-    entityTriggerSelections = filter(s -> s[1] == "entities" || s[1] == "triggers", selectionsArray)
-    decalSelections = filter(s -> s[1] == "bgDecals" || s[1] == "fgDecals", selectionsArray)
+    tileSelections = filter(s -> s.layerName == "bgTiles" || s.layerName == "fgTiles", selectionsArray)
+    entityTriggerSelections = filter(s -> s.layerName == "entities" || s.layerName == "triggers", selectionsArray)
+    decalSelections = filter(s -> s.layerName == "bgDecals" || s.layerName == "fgDecals", selectionsArray)
 
     # Sort entities, otherwise deletion will break with nodes
-    sort!(entityTriggerSelections, by=r -> (r[3].id, r[4]), rev=true)
+    sort!(entityTriggerSelections, by=r -> (r.target.id, r.node), rev=true)
 
     # Deletion for entities and triggers
     for selection in entityTriggerSelections
-        name, box, target, node = selection
+        name, box, target, node = selection.layerName, selection.rectangle, selection.target, selection.node
         targetList = Ahorn.selectionTargets[name](relevantRoom)
 
         index = findfirst(isequal(target), targetList)
@@ -948,10 +950,9 @@ function handleDeletion(selections::Set{Tuple{String, Ahorn.Rectangle, Any, Numb
 
     # Deletion for decals
     for selection in decalSelections    
-        name, box, target, node = selection
-        targetList = Ahorn.selectionTargets[name](relevantRoom)
+        targetList = Ahorn.selectionTargets[selection.layerName](relevantRoom)
 
-        index = findfirst(isequal(target), targetList)
+        index = findfirst(isequal(selection.target), targetList)
         if index !== nothing
             deleteat!(targetList, index)
         end

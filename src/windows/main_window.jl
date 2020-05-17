@@ -21,7 +21,7 @@ lastCanvasDraw = time()
 
         stopTime = time()
         deltaTime = stopTime - startTime
-        debug.log("Drawing canvas took $deltaTime seconds", "DRAWING_CANVAS_DRAW_DURATION")
+        debug.log("Drawing canvas took $deltaTime seconds, approx $(1 / deltaTime) fps", "DRAWING_CANVAS_DRAW_DURATION")
 
         persistence["camera_position_x"] = camera.x
         persistence["camera_position_y"] = camera.y

@@ -40,6 +40,8 @@ Ahorn and Maple can be updated from within Ahorn, via `Help->Check for Updates`,
 The possible actions in Ahorn are listed on the right, just select one to use it.
 Hold right click to move around the map. Left click is your main way to place an object or select something. Tools like rectangle or line require holding left click while moving across the screen. Scroll to zoom.
 
+In any menu, you can hover over the name of an option or field for a detailed tooltip explaining its meaning and usage.
+
 Ahorn supports a couple of keybinds and special mouse functionality, with more to come. The following list might not be comprehensive.
  - Ctrl + t: New room
  - Ctrl + shift + t: Configure current room

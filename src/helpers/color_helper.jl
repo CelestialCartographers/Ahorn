@@ -1,10 +1,10 @@
-rgbTupleType = NTuple{3, Float64}
-rgbaTupleType = NTuple{4, Float64}
-colorTupleType = Union{rgbTupleType, rgbaTupleType}
+const rgbTupleType = NTuple{3, Float64}
+const rgbaTupleType = NTuple{4, Float64}
+const colorTupleType = Union{rgbTupleType, rgbaTupleType}
 
 ARGB(r, g, b, a) = reinterpret(Cairo.ARGB32, UInt32(a)<<24 | UInt32(b)<<16 | UInt32(g)<<8 | UInt32(r))
 
-function argb32ToRGBATuple(n::Integer)
+function argb32ToRGBATuple(n)
     return ((n >> 16) & 255, (n >> 8) & 255, n & 255, (n >> 24) & 255)
 end
 

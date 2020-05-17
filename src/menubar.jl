@@ -76,7 +76,7 @@ const menubarDebugChoices = Menubar.AbstractMenuItem[
                     Menubar.MenuChoice("Entities", (w) -> debug.reloadEntities!()),
                     Menubar.MenuChoice("Triggers", (w) -> debug.reloadTriggers!()),
                     Menubar.MenuChoice("Effects", (w) -> debug.reloadEffects!()),
-                    Menubar.MenuChoice("External Sprites", (w) -> loadExternalSprites!(force=true)),
+                    Menubar.MenuChoice("External Sprites", (w) -> loadAllExternalSprites!(force=true)),
                     Menubar.MenuChoice("Language Files", (w) -> debug.reloadLangdata()),
                 ]
             ),

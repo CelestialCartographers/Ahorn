@@ -88,6 +88,8 @@ function reloadTriggers!()
 end
 
 function clearMapDrawingCache!(map::Maple.Map=Ahorn.loadedState.map)
+    Ahorn.loadChangedExternalSprites!()
+
     Ahorn.deleteDrawableRoomCache(map)
     Ahorn.draw(Ahorn.canvas)
 
@@ -95,6 +97,8 @@ function clearMapDrawingCache!(map::Maple.Map=Ahorn.loadedState.map)
 end
 
 function forceDrawWholeMap!(map::Maple.Map=Ahorn.loadedState.map)
+    Ahorn.loadChangedExternalSprites!()
+
     ctx = Ahorn.Gtk.getgc(Ahorn.canvas)
 
     for room in map.rooms

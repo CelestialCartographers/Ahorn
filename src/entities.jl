@@ -15,38 +15,28 @@ end
 
 const PlacementDict = Dict{String, EntityPlacement}
 
-entityNameLookup = Dict{String, String}()
+const entityNameLookup = Dict{String, String}()
 
 # The point the entity will be drawn relative too
 # Make sure it returns in Int32/64
-function position(entity::Maple.Entity)
-    return (
-        floor(Int, get(entity.data, "x", 0)),
-        floor(Int, get(entity.data, "y", 0))
-    )
-end
-
-# Entity is considered to have failed rendering if it returns exactly `false`, `nothing` is considered a success.
-function renderCall(func, args...)
-    if applicable(func, args...)
-        if func(args...) != false
-            return true
-        end
-    end
-
-    return false
+function position(entity::Maple.Entity)::Tuple{Int, Int}
+    return floor(Int, entity.x), floor(Int, entity.y)
 end
 
 function attemptEntityRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room)
     if ctx.ptr != C_NULL
         Cairo.save(ctx)
 
-        res = renderCall(renderAbs, ctx, entity) ||
-            renderCall(renderAbs, ctx, entity, room)
+        res = renderAbs(ctx, entity) != false||
+            renderAbs(ctx, entity, room) != false
 
-        translate(ctx, position(entity)...)
-        res |= renderCall(render, ctx, entity) ||
-            renderCall(render, ctx, entity, room)
+        if !res
+            x, y = position(entity)
+
+            translate(ctx, x, y)
+            res |= render(ctx, entity) != false ||
+                render(ctx, entity, room) != false
+        end
 
         Cairo.restore(ctx)
 
@@ -56,7 +46,15 @@ function attemptEntityRender(ctx::Cairo.CairoContext, layer::Layer, entity::Mapl
     return false
 end
 
+function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
+    return false
+end
+
 function render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
+    return false
+end
+
+function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity)
     return false
 end
 
@@ -64,7 +62,7 @@ function renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, room::Ma
     return false
 end
 
-function renderEntity(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)
+function renderEntity(ctx::Cairo.CairoContext, layer, entity, room; alpha=1.0)
     success = false
 
     # Set global alpha here, passing alpha to the entity renderer is not sane
@@ -73,7 +71,7 @@ function renderEntity(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entit
     success = attemptEntityRender(ctx, layer, entity, room)
 
     # Reset global alpha again
-    setGlobalAlpha!(1)
+    setGlobalAlpha!(1.0)
 
     if !success
         debug.log("Couldn't render entity '$(entity.name)' in room '$(room.name)'", "DRAWING_ENTITY_MISSING")
@@ -84,7 +82,15 @@ function renderSelected(ctx::Cairo.CairoContext, entity::Maple.Entity)
     return false
 end
 
+function renderSelected(ctx::Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
+    return false
+end
+
 function renderSelectedAbs(ctx::Cairo.CairoContext, entity::Maple.Entity)
+    return false
+end
+
+function renderSelectedAbs(ctx::Cairo.CairoContext, entity::Maple.Entity, room::Maple.Room)
     return false
 end
 
@@ -92,17 +98,17 @@ function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, ent
     if ctx.ptr != C_NULL
         Cairo.save(ctx)
 
-        res = renderCall(renderSelectedAbs, ctx, entity) ||
-            renderCall(renderSelectedAbs, layer, entity) ||
-            renderCall(renderSelectedAbs, ctx, entity, room) ||
-            renderCall(renderSelectedAbs, layer, entity, room)
+        res = renderSelectedAbs(ctx, entity) != false ||
+            renderSelectedAbs(ctx, entity, room) != false
 
-        translate(ctx, position(entity)...)
-        res |=
-            renderCall(renderSelected, ctx, entity) ||
-            renderCall(renderSelected, layer, entity) ||
-            renderCall(renderSelected, ctx, entity, room) ||
-            renderCall(renderSelected, layer, entity, room)
+        if !res
+            x, y = position(entity)
+
+            translate(ctx, x, y)
+            res |=
+                renderSelected(ctx, entity) != false ||
+                renderSelected(ctx, entity, room) != false
+        end
 
         Cairo.restore(ctx)
 
@@ -112,14 +118,14 @@ function attemptEntitySelectionRender(ctx::Cairo.CairoContext, layer::Layer, ent
     return false
 end
 
-function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha::Number=1)    
+function renderEntitySelection(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room; alpha=1.0)    
     # Set global alpha here, passing alpha to the entity renderer is not sane
     setGlobalAlpha!(alpha)
 
     success = attemptEntitySelectionRender(ctx, layer, entity, room)
 
     # Reset global alpha again
-    setGlobalAlpha!(1)
+    setGlobalAlpha!(1.0)
 end
 
 # Helper function to respect debug option
@@ -171,7 +177,7 @@ function callFinalizer(map::Maple.Map, room::Room, ep::EntityPlacement, target::
     end
 end
 
-function updateEntityPosition!(target::Union{Entity, Trigger}, ep::EntityPlacement, map::Maple.Map, room::Room, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
+function updateEntityPosition!(target::Union{Entity, Trigger}, ep::EntityPlacement, map::Maple.Map, room::Room, x::Int, y::Int, nx::Int=x + 8, ny::Int=y + 8)
     merge!(target.data, ep.data)
 
     if ep.placement == "point"
@@ -207,13 +213,13 @@ function updateEntityPosition!(target::Union{Entity, Trigger}, ep::EntityPlaceme
     return target
 end
 
-function generateEntity(map::Maple.Map, room::Room, ep::EntityPlacement, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8)
+function generateEntity(map::Maple.Map, room::Room, ep::EntityPlacement, x::Int, y::Int, nx::Int=x + 8, ny::Int=y + 8)
     target = ep.func(x, y)
 
     return updateEntityPosition!(target, ep, map, room, x, y, nx, ny)
 end
 
-function updateCachedEntityPosition!(cache::Dict{String, T}, placements::PlacementDict, map::Maple.Map, room::Room, name::String, x::Integer, y::Integer, nx::Integer=x + 8, ny::Integer=y + 8) where T
+function updateCachedEntityPosition!(cache::Dict{String, T}, placements::PlacementDict, map::Maple.Map, room::Room, name::String, x::Int, y::Int, nx::Int=x + 8, ny::Int=y + 8) where T
     target = getCachedPlacement!(cache, placements, name)
     ep = placements[name]
 
@@ -282,27 +288,24 @@ function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger}, ignores
 end
 
 function selection(entity::Maple.Entity)
-    return false
+    return nothing
 end
 
-function entitySelection(entity::Maple.Entity, room::Maple.Room, node::Integer=0)
-    argsList = Tuple[
-        (entity, room),
-        (entity,)
-    ]
-
-    for args in argsList
-        if applicable(selection, args...)
-            return selection(args...)
-        end
-    end
+function selection(entity::Maple.Entity, room::Maple.Room)
+    return nothing
 end
 
-function getSimpleEntityRng(entity::Maple.Entity)
+function entitySelection(entity::Maple.Entity, room::Maple.Room, node::Int=0)
+    return something(selection(entity), selection(entity, room), Rectangle(entity.x, entity.y, 4, 4))
+end
+
+const entityRng = MersenneTwister()
+
+function getSimpleEntityRng(entity::Maple.Entity)::MersenneTwister
     x, y = position(entity)
-    seed = abs(x) << ceil(Int, log(2, abs(y) + 1)) | abs(y)
+    seed::Int = abs(x) << ceil(Int, log(2, abs(y) + 1)) | abs(y)
 
-    return MersenneTwister(seed)
+    return Random.seed!(entityRng, seed)
 end
 
 function getCachedPlacement!(cache::Dict{String, T}, placements::PlacementDict, name::String, map::Union{Maple.Map, Nothing}=Ahorn.loadedState.map, room::Union{Maple.Room, Nothing}=Ahorn.loadedState.room) where T <: Union{Entity, Trigger}

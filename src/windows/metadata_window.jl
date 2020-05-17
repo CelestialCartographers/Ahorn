@@ -5,7 +5,7 @@ using ..Ahorn, Maple
 
 metadataWindow = nothing
 
-metaDropdownOptions = Dict{String, Any}(
+const metaDropdownOptions = Dict{String, Any}(
     "IntroType" => Maple.intro_types,
     "ColorGrade" => Maple.color_grades,
     "CoreMode" => Maple.core_modes,
@@ -13,17 +13,17 @@ metaDropdownOptions = Dict{String, Any}(
     "Wipe" => Maple.wipe_names
 )
 
-modeDropdownOptions = Dict{String, Any}(
+const modeDropdownOptions = Dict{String, Any}(
     "Inventory" => Maple.inventories,
     "StartLevel" => String[]
 )
 
-audiostateDropdownOptions = Dict{String, Any}(
+const audiostateDropdownOptions = Dict{String, Any}(
     "Music" => sort(collect(values(Maple.Songs.songs))),
     "Ambience" => sort(collect(values(Maple.AmbientSounds.sounds)))
 )
 
-metaFieldOrder = String[
+const metaFieldOrder = String[
     "Name", "SID", "Icon",
     "CompleteScreenName", "CassetteCheckpointIndex",
     "CassetteNoteColor", "CassetteSong",
@@ -36,8 +36,8 @@ metaFieldOrder = String[
     "Portraits", "Sprites"
 ]
 
-modeFieldOrder = String[]
-audiostateFieldOrder = String[]
+const modeFieldOrder = String[]
+const audiostateFieldOrder = String[]
 
 function getOptions(data::Dict{String, Any}, dropdownOptions::Dict{String, Any}, langdata::Ahorn.LangData)
     res = Ahorn.Form.Option[]
@@ -155,7 +155,7 @@ function createWindow()
 end
 
 function configureMetadata(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
-    if Ahorn.loadedState.side != nothing
+    if Ahorn.loadedState.side !== nothing
         if metadataWindow !== nothing
             Gtk.destroy(metadataWindow)
         end

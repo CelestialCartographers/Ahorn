@@ -5,9 +5,11 @@ mutable struct Config
     data::Dict{Any, Any}
     mtime::Number
     buffertime::Number
+    lastCheck::Number
+    checkDelay::Number
 
-    Config(fn::String, data::Dict{K, V}) where {K, V} = new(fn, data, 0, 0)
-    Config(fn::String, buffertime::Number, data::Dict{K, V}) where {K, V} = new(fn, data, 0, buffertime)
+    Config(fn::String, data::Dict{K, V}, checkDelay::Number=2.5) where {K, V} = new(fn, data, 0, 0, 0, checkDelay)
+    Config(fn::String, buffertime::Number, data::Dict{K, V}, checkDelay::Number=2.5) where {K, V} = new(fn, data, 0, buffertime, 0, checkDelay)
 end
 
 function saveConfig(c::Config, force::Bool=true)
@@ -29,7 +31,7 @@ function saveConfig(c::Config, force::Bool=true)
     end
 end
 
-function loadConfig(fn::String, bufferTime::Number=0, default::Dict{K, V}=Dict{Any, Any}()) where {K, V}
+function loadConfig(fn::String, buffertime::Number=0, default::Dict{K, V}=Dict{Any, Any}()) where {K, V}
     tempFn = fn * ".saving"
 
     # Program terminated before the config was moved
@@ -45,10 +47,10 @@ function loadConfig(fn::String, bufferTime::Number=0, default::Dict{K, V}=Dict{A
     end
 
     if isfile(fn)
-        return Config(fn, bufferTime, open(JSON.parse, fn))
+        return Config(fn, open(JSON.parse, fn))
 
     else
-        config = Config(fn, bufferTime, default)
+        config = Config(fn, default)
         saveConfig(config)
 
         return config
@@ -63,24 +65,36 @@ function Base.setindex!(c::Config, value::V, key::K) where {K, V}
     prev = haskey(c, key) ? c.data[key] : nothing
     c.data[key] = value
 
-    if value != prev
+    if value != prev || prev === nothing
         saveConfig(c, false)
     end
 end
 
 function Base.getindex(c::Config, key::Any) 
-    if mtime(c.fn) > c.mtime
-        c.mtime = mtime(c.fn)
-        c.data = open(JSON.parse, c.fn)
+    now = time()
+
+    if now > c.lastCheck + c.checkDelay
+        c.lastCheck = now
+
+        if mtime(c.fn) > c.mtime
+            c.mtime = mtime(c.fn)
+            c.data = open(JSON.parse, c.fn)
+        end
     end
 
     return c.data[key]
 end
 
 function Base.get(c::Config, key::K, value::V) where {K, V}
-    if mtime(c.fn) > c.mtime
-        c.mtime = mtime(c.fn)
-        c.data = open(JSON.parse, c.fn)
+    now = time()
+
+    if now > c.lastCheck + c.checkDelay
+        c.lastCheck = now
+
+        if mtime(c.fn) > c.mtime
+            c.mtime = mtime(c.fn)
+            c.data = open(JSON.parse, c.fn)
+        end
     end
 
     # Force a rewrite of the config

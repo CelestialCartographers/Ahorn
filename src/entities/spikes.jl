@@ -4,33 +4,33 @@ using ..Ahorn, Maple
 
 const placements = Ahorn.PlacementDict()
 
-entities = Dict{String, Type}(
+const entities = Dict{String, Type}(
     "up" => Maple.SpikesUp,
     "down" => Maple.SpikesDown,
     "left" => Maple.SpikesLeft,
     "right" => Maple.SpikesRight,
 )
 
-triggerEntities = Dict{String, Type}(
+const triggerEntities = Dict{String, Type}(
     "up" => Maple.TriggerSpikesUp,
     "down" => Maple.TriggerSpikesDown,
     "left" => Maple.TriggerSpikesLeft,
     "right" => Maple.TriggerSpikesRight,
 )
 
-triggerEntitiesOrig = Dict{String, Type}(
+const triggerEntitiesOrig = Dict{String, Type}(
     "up" => Maple.TriggerSpikesOriginalUp,
     "down" => Maple.TriggerSpikesOriginalDown,
     "left" => Maple.TriggerSpikesOriginalLeft,
     "right" => Maple.TriggerSpikesOriginalRight,
 )
 
-normalSpikesUnion = Union{Maple.SpikesUp, Maple.SpikesDown, Maple.SpikesLeft, Maple.SpikesRight}
-triggerSpikesUnion = Union{Maple.TriggerSpikesUp, Maple.TriggerSpikesDown, Maple.TriggerSpikesLeft, Maple.TriggerSpikesRight}
-triggerSpikesOrigUnion = Union{Maple.TriggerSpikesOriginalUp, Maple.TriggerSpikesOriginalDown, Maple.TriggerSpikesOriginalLeft, Maple.TriggerSpikesOriginalRight}
-spikesUnion = Union{normalSpikesUnion, triggerSpikesUnion, triggerSpikesOrigUnion}
+const normalSpikesUnion = Union{Maple.SpikesUp, Maple.SpikesDown, Maple.SpikesLeft, Maple.SpikesRight}
+const triggerSpikesUnion = Union{Maple.TriggerSpikesUp, Maple.TriggerSpikesDown, Maple.TriggerSpikesLeft, Maple.TriggerSpikesRight}
+const triggerSpikesOrigUnion = Union{Maple.TriggerSpikesOriginalUp, Maple.TriggerSpikesOriginalDown, Maple.TriggerSpikesOriginalLeft, Maple.TriggerSpikesOriginalRight}
+const spikesUnion = Union{normalSpikesUnion, triggerSpikesUnion, triggerSpikesOrigUnion}
 
-triggerSpikeColors = [
+const triggerSpikeColors = [
     (242, 90, 16, 255) ./ 255,
     (255, 0, 0, 255) ./ 255,
     (242, 16, 103, 255) ./ 255
@@ -78,7 +78,7 @@ Ahorn.editingOptions(entity::triggerSpikesOrigUnion) = Dict{String, Any}(
     "type" => String[variant for variant in Maple.spike_types if variant != "tentacles"]
 )
 
-directions = Dict{String, String}(
+const directions = Dict{String, String}(
     "spikesUp" => "up",
     "spikesDown" => "down",
     "spikesLeft" => "left",
@@ -95,59 +95,59 @@ directions = Dict{String, String}(
     "triggerSpikesOriginalRight" => "right",
 )
 
-offsets = Dict{String, Tuple{Integer, Integer}}(
+const offsets = Dict{String, Tuple{Integer, Integer}}(
     "up" => (4, -4),
     "down" => (4, 4),
     "left" => (-4, 4),
     "right" => (4, 4),
 )
 
-triggerOriginalOffsets = Dict{String, Tuple{Integer, Integer}}(
+const triggerOriginalOffsets = Dict{String, Tuple{Integer, Integer}}(
     "up" => (0, 5),
     "down" => (0, -4),
     "left" => (5, 0),
     "right" => (-4, 0),
 )
 
-rotations = Dict{String, Number}(
+const rotations = Dict{String, Number}(
     "up" => 0,
     "right" => pi / 2,
     "down" => pi,
     "left" => pi * 3 / 2
 )
 
-rotationOffsets = Dict{String, Tuple{Number, Number}}(
+const rotationOffsets = Dict{String, Tuple{Number, Number}}(
     "up" => (0.5, 0.25),
     "right" => (1, 0.675),
     "down" => (1.5, 1.125),
     "left" => (0, 1.675)
 )
 
-resizeDirections = Dict{String, Tuple{Bool, Bool}}(
+const resizeDirections = Dict{String, Tuple{Bool, Bool}}(
     "up" => (true, false),
     "down" => (true, false),
     "left" => (false, true),
     "right" => (false, true),
 )
 
-tentacleSelectionOffsets = Dict{String, Tuple{Number, Number}}(
+const tentacleSelectionOffsets = Dict{String, Tuple{Number, Number}}(
     "up" => (0, -8),
     "down" => (0, -8),
     "left" => (-8, 0),
     "right" => (-8, 0)
 )
 
-spikeNames = String["spikesDown", "spikesLeft", "spikesRight", "spikesUp"]
+const spikeNames = String["spikesDown", "spikesLeft", "spikesRight", "spikesUp"]
 
-triggerNames = String["triggerSpikesDown", "triggerSpikesLeft", "triggerSpikesRight", "triggerSpikesUp"]
-triggerRotationOffsets = Dict{String, Tuple{Number, Number}}(
+const triggerNames = String["triggerSpikesDown", "triggerSpikesLeft", "triggerSpikesRight", "triggerSpikesUp"]
+const triggerRotationOffsets = Dict{String, Tuple{Number, Number}}(
     "up" => (3, -1),
     "right" => (4, 3),
     "down" => (5, 5),
     "left" => (-1, 4),
 )
 
-triggerOriginalNames = String["triggerSpikesOriginalDown", "triggerSpikesOriginalLeft", "triggerSpikesOriginalRight", "triggerSpikesOriginalUp"]
+const triggerOriginalNames = String["triggerSpikesOriginalDown", "triggerSpikesOriginalLeft", "triggerSpikesOriginalRight", "triggerSpikesOriginalUp"]
 
 function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
     direction = get(directions, entity.name, "up")
@@ -219,12 +219,16 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
             height = get(entity.data, "height", 16)
 
             for ox in 0:16:width - 16, oy in 0:16:height - 16
-                drawX, drawY = (ox, oy) .+ (16, 16) .* rotationOffsets[direction] .+ triggerOriginalOffset
+                drawX = ox + 16 * rotationOffsets[direction][1] + triggerOriginalOffset[1]
+                drawY = oy + 16 * rotationOffsets[direction][2] + triggerOriginalOffset[2]
+
                 Ahorn.drawSprite(ctx, "danger/tentacles00", drawX, drawY, rot=rotations[direction])
             end
 
             if width / 8 % 2 == 1 || height / 8 % 2 == 1
-                drawX, drawY = (width - 16, height - 16) .+ (16, 16) .* rotationOffsets[direction] .+ triggerOriginalOffset
+                drawX = width - 16 + 16 * rotationOffsets[direction][1] + triggerOriginalOffset[1]
+                drawY = height - 16 + 16 * rotationOffsets[direction][2] + triggerOriginalOffset[2]
+
                 Ahorn.drawSprite(ctx, "danger/tentacles00", drawX, drawY, rot=rotations[direction])
             end
 
@@ -240,7 +244,8 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
                 color1 = rand(rng, triggerSpikeColors)
                 color2 = rand(rng, triggerSpikeColors)
 
-                drawX, drawY = (ox, oy) .+ triggerRotationOffsets[direction] .+ triggerOriginalOffset
+                drawX = ox + triggerRotationOffsets[direction][1] + triggerOriginalOffset[1]
+                drawY = oy + triggerRotationOffsets[direction][2] + triggerOriginalOffset[2]
 
                 Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v06", drawX, drawY, rot=rotations[direction], tint=color1)
                 Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v03", drawX + 3 * updown, drawY + 3 * !updown, rot=rotations[direction], tint=color2)
@@ -251,7 +256,9 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
             height = get(entity.data, "height", 8)
 
             for ox in 0:8:width - 8, oy in 0:8:height - 8
-                drawX, drawY = (ox, oy) .+ offsets[direction] .+ triggerOriginalOffset
+                drawX = ox + offsets[direction][1] + triggerOriginalOffset[1]
+                drawY = oy + offsets[direction][2] + triggerOriginalOffset[2]
+
                 Ahorn.drawSprite(ctx, "danger/spikes/$(variant)_$(direction)00", drawX, drawY)
             end
         end

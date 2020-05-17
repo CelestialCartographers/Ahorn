@@ -38,10 +38,10 @@ const placements = Ahorn.PlacementDict(
     ),
 )
 
-strawberryUnion = Union{Maple.Strawberry, Maple.GoldenStrawberry, Maple.GoldenStrawberryNoDash}
+const strawberryUnion = Union{Maple.Strawberry, Maple.GoldenStrawberry, Maple.GoldenStrawberryNoDash}
 
 # name, winged, has pips, moon
-sprites = Dict{Tuple{String, Bool, Bool, Bool}, String}(
+const sprites = Dict{Tuple{String, Bool, Bool, Bool}, String}(
     ("strawberry", false, false, false) => "collectables/strawberry/normal00",
     ("strawberry", true, false, false) => "collectables/strawberry/wings01",
     ("strawberry", false, true, false) => "collectables/ghostberry/idle00",
@@ -61,13 +61,13 @@ sprites = Dict{Tuple{String, Bool, Bool, Bool}, String}(
     ("memorialTextController", true, true, false) => "collectables/goldberry/wings01",
 )
 
-seeds = Dict{String, String}(
+const seeds = Dict{String, String}(
     "strawberry" => "collectables/strawberry/seed00",
     "goldenBerry" => "collectables/goldberry/seed00",
     "memorialTextController" => "collectables/goldberry/seed00",
 )
 
-fallback = "collectables/strawberry/normal00"
+const fallback = "collectables/strawberry/normal00"
 
 Ahorn.nodeLimits(entity::strawberryUnion) = 0, -1
 

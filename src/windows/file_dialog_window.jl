@@ -38,6 +38,7 @@ function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::Strin
                 EntityIds.updateValidIds(loadedState.map)
 
                 loadXMLMeta()
+                Ahorn.loadChangedExternalSprites!()
 
                 updateTreeView!(roomList, getTreeData(loadedState.map), 1)
                 handleRoomChanged(loadedState.map, loadedState.room)

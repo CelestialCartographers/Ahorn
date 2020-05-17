@@ -1,6 +1,6 @@
 module ObjectTileNames
 
-names = Dict{Int, String}(
+const names = Dict{Int, String}(
     -1 => "Air (-1)",
     0 => "Grass A (0)",
     1 => "Grass B (1)",

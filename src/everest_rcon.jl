@@ -40,10 +40,10 @@ if loaded
 
     # Ahorn doesn't support sides yet, ignore for now
     teleport(baseUrl::String, area::String, room::String; force::Bool=false) = request("$baseUrl/tp?", Dict{String, Any}("area" => area, "room" => room, "forcenew" => force))
-    teleport(baseUrl::String, area::String, room::String, x::Integer, y::Integer; force::Bool=false) = request("$baseUrl/tp?", Dict{String, Any}("area" => area, "room" => room, "forcenew" => force, "x" => x, "y" => y))
+    teleport(baseUrl::String, area::String, room::String, x::Int, y::Int; force::Bool=false) = request("$baseUrl/tp?", Dict{String, Any}("area" => area, "room" => room, "forcenew" => force, "x" => x, "y" => y))
 
     teleportToRoom(baseUrl::String, level::String; force::Bool=false) = request("$baseUrl/tp?", Dict{String, Any}("level" => level, "forcenew" => force))
-    teleportToRoom(baseUrl::String, level::String, x::Integer, y::Integer; force::Bool=false) = request("$baseUrl/tp?", Dict{String, Any}("level" => level, "forcenew" => force, "x" => x, "y" => y))
+    teleportToRoom(baseUrl::String, level::String, x::Int, y::Int; force::Bool=false) = request("$baseUrl/tp?", Dict{String, Any}("level" => level, "forcenew" => force, "x" => x, "y" => y))
 
     function session(baseUrl::String)
         success, data = request("$baseUrl/session")

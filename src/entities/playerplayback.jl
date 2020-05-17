@@ -3,7 +3,7 @@ module PlayerPlayback
 using ..Ahorn, Maple
 
 # Read from disk instead?
-baseGameTutorials = String[
+const baseGameTutorials = String[
     "combo", "superwalljump", "too_close", "too_far",
     "wavedash", "wavedashppt"
 ]
@@ -20,8 +20,8 @@ Ahorn.editingOptions(entity::Maple.PlayerPlayback) = Dict{String, Any}(
 
 Ahorn.nodeLimits(entity::Maple.PlayerPlayback) = 0, 2
 
-sprite = "characters/player/sitDown00"
-tint = (0.8, 0.2, 0.2, 0.75)
+const sprite = "characters/player/sitDown00"
+const tint = (0.8, 0.2, 0.2, 0.75)
 
 function Ahorn.selection(entity::Maple.PlayerPlayback)
     x, y = Ahorn.position(entity)

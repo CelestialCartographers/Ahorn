@@ -19,7 +19,7 @@ function Ahorn.selection(entity::Maple.SummitCloud)
     return Ahorn.getSpriteRectangle(sprite, x, y, sx=scaleX, sy=1)
 end
 
-textures = String[
+const textures = String[
     "scenery/summitclouds/cloud00.png",
     "scenery/summitclouds/cloud01.png",
     "scenery/summitclouds/cloud03.png"

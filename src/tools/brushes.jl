@@ -11,7 +11,7 @@ toolsLayer = nothing
 targetLayer = nothing
 material = '0'
 
-brushes = Ahorn.Brush[
+const brushes = Ahorn.Brush[
     Ahorn.Brush(
         "Pencil",
         hcat(1)
@@ -43,7 +43,7 @@ brushes = Ahorn.Brush[
 selectedBrush = brushes[1]
 
 hoveringBrush = nothing
-phantomBrushes = Dict{Tuple{Integer, Integer}, Ahorn.Brush}()
+const phantomBrushes = Dict{Tuple{Integer, Integer}, Ahorn.Brush}()
 
 function applyPhantomBrushes()
     if !isempty(phantomBrushes)
@@ -66,7 +66,7 @@ function applyPhantomBrushes()
     end
 end
 
-function drawBrushes(layer::Ahorn.Layer, room::Maple.Room)
+function drawBrushes(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
     if !isa(hoveringBrush, Nothing)
         x, y, brush = hoveringBrush
 

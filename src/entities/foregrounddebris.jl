@@ -9,7 +9,7 @@ const placements = Ahorn.PlacementDict(
     )
 )
 
-rockTextures = Dict{String, Array{String, 1}}(
+const rockTextures = Dict{String, Array{String, 1}}(
     "rock_a" => [
         "scenery/fgdebris/rock_a00",
         "scenery/fgdebris/rock_a01",

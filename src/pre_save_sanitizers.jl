@@ -18,7 +18,7 @@ function warnMissingDecals(side::Maple.Side, config::Ahorn.Config)
     warnMissing = get(config, "warn_missing_decals_on_save", true)
 
     if warnMissing
-        Ahorn.loadExternalSprites!()
+        Ahorn.loadChangedExternalSprites!()
         
         atlas = Ahorn.getAtlas("Gameplay")
         textures = Ahorn.spritesToDecalTextures(atlas)

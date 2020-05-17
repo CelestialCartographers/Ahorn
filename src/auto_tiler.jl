@@ -13,30 +13,28 @@ struct AnimatedTile
     delay::Number
 end
 
-struct Mask
-    mask::Array{Int, 2}
-end
+const Mask = Array{Int, 2}
 
 # Convert mask string into a 3x3 matrix
-function Mask(s::String)
+function getMaskFromString(s::String)
     data = replace(replace(s, "-" => ""), "x" => "2")
 
     return Mask(transpose(reshape(parse.(Int, (collect(data))), (3, 3))))
 end
 
-function sortScore(m::Mask)
-    return length(filter(v -> v == 2, m.mask))
+function sortScore(mask::Mask)
+    return length(filter(v -> v == 2, mask))
 end
 
 # Get quads for a given mask
 function convertTileString(s::String)
     parts = split(s, ";")
-    res = Tuple{Integer, Integer}[]
+    res = Coord[]
 
     for part in parts
         x, y = parse.(Int, split(part, ","))
 
-        push!(res, (x, y))
+        push!(res, Coord(x, y))
     end
 
     return res
@@ -66,15 +64,26 @@ function loadAnimatedTilesXML(fn::String)
     return animatedTiles
 end
 
+struct Coord
+    x::Int
+    y::Int
+end
+
+struct MaskData
+    mask::Mask
+    coords::Array{Coord, 1}
+    sprites::String
+end
+
 function loadTilesetXML(fn::String)
     xdoc = parse_file(fn)
     xroot = root(xdoc)
 
     paths = Dict{Char, String}()
-    masks = Dict{Char, Any}()
-    padding = Dict{Char, Array{Tuple{Integer, Integer}, 1}}()
-    center = Dict{Char, Array{Tuple{Integer, Integer}, 1}}()
-    ignores = Dict{Char, Array{Char, 1}}()
+    masks = Dict{Char, Array{MaskData, 1}}()
+    padding = Dict{Char, Array{Coord, 1}}()
+    center = Dict{Char, Array{Coord, 1}}()
+    ignores = Dict{Char, Set{Char}}()
 
     orderedElements = sort(collect(child_elements(xroot)), by=set -> attribute(set, "copy") !== nothing)
 
@@ -87,32 +96,34 @@ function loadTilesetXML(fn::String)
         paths[id] = "tilesets/$path"
 
         if ignore !== nothing
-            ignores[id] = collect(ignore)
+            ignores[id] = Set{Char}(ignore)
         end
 
         if copyTileset !== nothing
-            padding[id] = deepcopy(padding[copyTileset[1]])
-            center[id] = deepcopy(center[copyTileset[1]])
-            masks[id] = deepcopy(masks[copyTileset[1]])
+            tilesetId = copyTileset[1]
+            padding[id] = deepcopy(padding[tilesetId])
+            center[id] = deepcopy(center[tilesetId])
+            masks[id] = deepcopy(masks[tilesetId])
         end
 
-        currMasks = Tuple{Mask, Array{Tuple{Integer, Integer}, 1}, String}[]
+        currMasks = MaskData[]
 
         for c in child_elements(set)
             mask = attribute(c, "mask")
             tilesString = attribute(c, "tiles")
+            quads = convertTileString(tilesString)
 
             if mask == "padding"
-                padding[id] = convertTileString(tilesString)
+                padding[id] = quads
 
             elseif mask == "center"
-                center[id] = convertTileString(tilesString)
+                center[id] = quads
 
             else
                 sprites = attribute(c, "sprites")
-                push!(currMasks, (
-                    Mask(mask),
-                    convertTileString(tilesString),
+                push!(currMasks, MaskData(
+                    getMaskFromString(mask),
+                    quads,
                     isa(sprites, String) ? sprites : ""
                 ))
             end
@@ -120,7 +131,7 @@ function loadTilesetXML(fn::String)
 
         if !isempty(currMasks)
             masks[id] = currMasks
-            sort!(masks[id], by=m -> sortScore(m[1]), rev=false)
+            sort!(masks[id], by=m -> sortScore(m.mask), rev=false)
         end
     end
 
@@ -129,10 +140,10 @@ end
 
 struct TilerMeta
     paths::Dict{Char, String}
-    masks::Dict{Char, Any}
-    paddings::Dict{Char, Array{Tuple{Integer, Integer}, 1}}
-    centers::Dict{Char, Array{Tuple{Integer, Integer}, 1}}
-    ignores::Dict{Char, Array{Char, 1}}
+    masks::Dict{Char, Array{MaskData, 1}}
+    paddings::Dict{Char, Array{Coord, 1}}
+    centers::Dict{Char, Array{Coord, 1}}
+    ignores::Dict{Char, Set{Char}}
 end
 
 TilerMeta(s::String) = TilerMeta(loadTilesetXML(s)...)
@@ -164,6 +175,11 @@ function loadFgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bo
             println(Base.stderr, "Failed to load custom ForegroundTiles XML")
             println(Base.stderr, e)
 
+            for (exc, bt) in Base.catch_stack()
+                showerror(Base.stderr, exc, bt)
+                println()
+            end
+
             loadFgTilerMeta(side, fn, true)
         end
     end
@@ -191,6 +207,11 @@ function loadBgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bo
         if !loadDefault
             println(Base.stderr, "Failed to load custom BackgroundTiles XML")
             println(Base.stderr, e)
+
+            for (exc, bt) in Base.catch_stack()
+                showerror(Base.stderr, exc, bt)
+                println()
+            end
 
             loadBgTilerMeta(side, fn, true)
         end
@@ -220,6 +241,11 @@ function loadAnimatedTilesMeta(side::Union{Side, Nothing}, fn::String, loadDefau
             println(Base.stderr, "Failed to load custom AnimatedTiles XML")
             println(Base.stderr, e)
 
+            for (exc, bt) in Base.catch_stack()
+                showerror(Base.stderr, exc, bt)
+                println()
+            end
+
             loadAnimatedTilesMeta(side, fn, true)
         end
     end
@@ -234,57 +260,86 @@ function loadXMLMeta()
     loadAnimatedTilesMeta(side, filename)
 end
 
-function getTile(tiles::Tiles, x::Integer, y::Integer)
+function getTile(tiles::Tiles, x::Int, y::Int)
     return get(tiles.data, (y, x), ' ')
 end
 
-function checkPadding(tiles::Tiles, x::Integer, y::Integer)
+function checkPadding(tiles::Tiles, x::Int, y::Int)
     # Checks for '0' even though getTile might return ' '
     # This is due to quirks/special flags in the actuall autotiler
     return getTile(tiles, x - 2, y) == '0' || getTile(tiles, x + 2, y) == '0' || getTile(tiles, x, y - 2) == '0' || getTile(tiles, x, y + 2) == '0'
 end
 
+const ignoresDefault = Set{Char}()
+
 # Return the "mask" value for a tile
-function checkTile(value::Char, target::Char, ignore::Array{Char, 1}=Char[])
+function checkTile(value::Char, target::Char, ignore::Set{Char}=ignoresDefault)
     return !(target == '0' || target in ignore || ('*' in ignore && value != target))
 end
 
-function checkMask(adj::Array{Bool, 2}, mask::Mask)
-    mask = mask.mask
-    for i in 1:9
-        if mask[i] != 2
-            if adj[i] != mask[i]
-                return false
-            end
-        end
-    end
-
-    return true
+# Unrolled for performance
+# We never need to check 5, otherwise we wouldn't be in this mask check
+function checkMask(mask::Mask, adj::Array{Bool, 1})
+    return @inbounds !(
+        adj[1] != mask[1] && mask[1] != 2 ||
+        adj[2] != mask[2] && mask[2] != 2 ||
+        adj[3] != mask[3] && mask[3] != 2 ||
+        adj[4] != mask[4] && mask[4] != 2 ||
+        adj[6] != mask[6] && mask[6] != 2 ||
+        adj[7] != mask[7] && mask[7] != 2 ||
+        adj[8] != mask[8] && mask[8] != 2 ||
+        adj[9] != mask[9] && mask[9] != 2
+    )
 end
 
-function getMaskQuads(x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta)
-    value = tiles.data[y, x]
+function getIfInboundsKnownSize(data::Array{Char, 2}, y::Int, x::Int, height::Int, width::Int, default::Char='0')::Char
+    if 1 <= y <= height && 1 <= x <= width
+        return @inbounds data[y, x]
 
-    masks = get(meta.masks, value, Tuple{Mask, Array{Tuple{Integer, Integer}, 1}, String}[])
-    ignore = get(meta.ignores, value, Char[])
+    else
+        return default
+    end
+end
 
-    adjacent = get(tiles.data, (y - 1:y + 1, x - 1:x + 1), value)
-    adjacent = Bool[checkTile(value, target, ignore) for target in adjacent]
+function getAdjacencyArray(data::Array{Char, 2}, y::Int, x::Int, height::Int, width::Int, default::Char, ignores::Set{Char})::Array{Bool, 1}
+    return Bool[
+        checkTile(default, getIfInboundsKnownSize(data, y - 1, x - 1, height, width, default), ignores),
+        checkTile(default, getIfInboundsKnownSize(data, y, x - 1, height, width, default), ignores),
+        checkTile(default, getIfInboundsKnownSize(data, y + 1, x - 1, height, width, default), ignores),
+
+        checkTile(default, getIfInboundsKnownSize(data, y - 1, x, height, width, default), ignores),
+        true,
+        checkTile(default, getIfInboundsKnownSize(data, y + 1, x, height, width, default), ignores),
+    
+        checkTile(default, getIfInboundsKnownSize(data, y - 1, x + 1, height, width, default), ignores),
+        checkTile(default, getIfInboundsKnownSize(data, y, x + 1, height, width, default), ignores),
+        checkTile(default, getIfInboundsKnownSize(data, y + 1, x + 1, height, width, default), ignores)
+    ]
+end
+
+const defaultPaddingCoords = Coord[Coord(0, 0)]
+const maskDataDefault = MaskData[]
+
+function getMaskQuads(x::Int, y::Int, tiles::Tiles, meta::TilerMeta)
+    data = tiles.data
+    height, width = size(data)
+    value = @inbounds tiles.data[y, x]
+
+    masks = get(meta.masks, value, maskDataDefault)
+    ignores = get(meta.ignores, value, ignoresDefault)
+
+    adjacent = getAdjacencyArray(data, y, x, height, width, value, ignores)
 
     for data in masks
-        mask, quads, sprites = data
-        
-        if checkMask(adjacent, mask)
-            return quads, sprites
+        if checkMask(data.mask, adjacent)
+            return data.coords, data.sprites
         end
     end
 
     if checkPadding(tiles, x, y)
-        return get(meta.paddings, value, Tuple{Integer, Integer}[(0, 0)]), ""
+        return get(meta.paddings, value, defaultPaddingCoords), ""
         
     else
-        return get(meta.centers, value, Tuple{Integer, Integer}[(0, 0)]), ""
+        return get(meta.centers, value, defaultPaddingCoords), ""
     end
-    
-    return Tuple{Integer, Integer}[(5, 12)], ""
 end

@@ -14,7 +14,7 @@ const placements = Ahorn.PlacementDict(
 )
 
 # Maple definition doesn't have "Fake keys"
-fearDistance = Dict{String, String}(
+const fearDistance = Dict{String, String}(
     "None" => "",
     "Close" => "close",
     "Medium" => "medium",
@@ -42,7 +42,7 @@ function Ahorn.selection(entity::Maple.Tentacles)
     return res
 end
 
-function drawTentacleIcon(ctx::Ahorn.Cairo.CairoContext, x::Integer, y::Integer)
+function drawTentacleIcon(ctx::Ahorn.Cairo.CairoContext, x, y)
     Ahorn.drawImage(ctx, Ahorn.Assets.tentacle, x - 12, y - 12)
 end
 

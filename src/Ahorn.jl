@@ -105,6 +105,7 @@ include("hotkeys.jl")
 include("tools.jl")
 include("menubar.jl")
 include("backups.jl")
+include("file_watcher.jl")
 include("loading_spinner.jl")
 include("object_tile_names.jl")
 

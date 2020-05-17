@@ -2,14 +2,22 @@ include("assets.jl")
 include("drawing.jl")
 include("font.jl")
 include("text_drawing.jl")
-include("layers.jl")
 include("auto_tiler.jl")
+include("layers.jl")
 include("decals.jl")
 include("entities.jl")
 include("triggers.jl")
 include("fillers.jl")
 
-function drawObjectTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tile::Integer; alpha::Number=getGlobalAlpha())
+struct TileData
+    coord::Coord
+    sprite::String
+    path::String
+end
+
+const unusedQuad = Coord(-1, -1)
+
+function drawObjectTile(ctx::Cairo.CairoContext, x::Int, y::Int, tile::Int; alpha=nothing)
     scenery = getSprite("tilesets/scenery", "Gameplay")
 
     width = floor(Int, scenery.realWidth / 8)
@@ -20,88 +28,111 @@ function drawObjectTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tile::I
     drawImage(ctx, "tilesets/scenery", drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
 end
 
-tileDrawPosition(x::Integer, y::Integer) = (x - 1) * 8, (y - 1) * 8
+tileDrawPosition(x::Int, y::Int) = (x - 1) * 8, (y - 1) * 8
 
-function getTileData(x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates)
-    tileValue = tiles.data[y, x]
+function getTileData(x::Int, y::Int, tiles::Tiles, meta::TilerMeta, states::TileStates)::Union{Nothing, TileData}
+    tileValue::Char = tiles.data[y, x]
 
     if haskey(meta.paths, tileValue)
-        imagePath = meta.paths[tileValue]
-        quads, sprite = getMaskQuads(x, y, tiles, meta)
+        imagePath::String = meta.paths[tileValue]
+        quads::Array{Coord, 1}, sprite::String = getMaskQuads(x, y, tiles, meta)
+        targetQuad::Coord = quads[Int(mod1(states.rands[y, x], length(quads)))]
 
-        return quads[Integer(mod1(states.rands[y, x], length(quads)))], sprite, imagePath
+        return TileData(targetQuad, sprite, imagePath)
     end
 
-    return nothing, nothing, nothing
+    return nothing
 end
 
-function tileNeedsUpdate(tileValue::Char, x::Integer, y::Integer, quad::Tuple{Integer, Integer}, states::TileStates)
+function tileNeedsUpdate(tileValue::Char, x::Int, y::Int, quad::Coord, states::TileStates)
     return tileValue != states.chars[y, x] || states.quads[y, x] != quad
 end
 
-function drawTile(ctx::Cairo.CairoContext, x::Integer, y::Integer, tiles::Tiles, meta::TilerMeta, states::TileStates; alpha::Number=getGlobalAlpha())
-    tileValue = tiles.data[y, x]
+function getTile(tiles, x, y, width, height, default)
+    if 1 <= x <= width && 1 <= y <= height
+        return @inbounds tiles.data[y, x]
+
+    else
+        return default
+    end
+end
+
+# TODO - Consider passing in if the imagePath exists or not, it wont change in each batch
+function drawTile(ctx::Cairo.CairoContext, x, y, tile, tiles, meta, states; alpha=nothing)
     drawX, drawY = tileDrawPosition(x, y)
 
-    if tileValue != '0'
-        quad, sprite, imagePath = getTileData(x, y, tiles, meta, states)
-        imagePathExists = imagePath !== nothing && getSprite(imagePath, "Gameplay").surface !== Ahorn.Assets.missingImage
-        
-        if quad !== nothing && imagePathExists
-            quadX, quadY = quad
+    if tile != '0'
+        tileData = getTileData(x, y, tiles, meta, states)
 
-            if !isempty(sprite)
-                animatedMeta = filter(m -> m.name == sprite, animatedTilesMeta)[1]
-                frames = findTextureAnimations(animatedMeta.path, getAtlas("Gameplay"))
+        if tileData !== nothing
+            quad, sprite, imagePath = tileData.coord, tileData.sprite, tileData.path
+            imagePathExists = imagePath != "" && getSprite(imagePath, "Gameplay").surface !== Ahorn.Assets.missingImage
+            
+            if imagePathExists
+                quadX, quadY = quad.x, quad.y
 
-                if !isempty(frames)
-                    frame = frames[Integer(mod1(states.rands[y, x], length(frames)))]
-                    frameSprite = getSprite(frame, "Gameplay")
+                if !isempty(sprite)
+                    animatedMeta = filter(m -> m.name == sprite, animatedTilesMeta)[1]
+                    frames = findTextureAnimations(animatedMeta.path, getAtlas("Gameplay"))
 
-                    ox = animatedMeta.posX - frameSprite.offsetX
-                    oy = animatedMeta.posY - frameSprite.offsetY
+                    if !isempty(frames)
+                        frame = frames[Int(mod1(states.rands[y, x], length(frames)))]
+                        frameSprite = getSprite(frame, "Gameplay")
 
-                    # TODO - What do we actually have to clear here?
-                    #clearArea(ctx, drawX + ox, drawY + oy, 8, 8)
-                    drawImage(ctx, frame, drawX + ox, drawY + oy, alpha=alpha)
+                        ox = animatedMeta.posX - frameSprite.offsetX
+                        oy = animatedMeta.posY - frameSprite.offsetY
+
+                        # TODO - What do we actually have to clear here?
+                        #clearArea(ctx, drawX + ox, drawY + oy, 8, 8)
+                        drawImage(ctx, frame, drawX + ox, drawY + oy, alpha=alpha)
+                    end
                 end
+
+                if tileNeedsUpdate(tile, x, y, quad, states)
+                    if states.quads[y, x] != unusedQuad
+                        clearArea(ctx, drawX, drawY, 8, 8)
+                    end
+
+                    drawImage(ctx, imagePath, drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
+
+                    states.quads[y, x] = quad
+                end
+
+            else
+                drawRectangle(ctx, drawX, drawY, 8, 8, colors.unknown_tile_color, (0.0, 0.0, 0.0, 0.0))
             end
-
-            if tileNeedsUpdate(tileValue, x, y, quad, states)
-                clearArea(ctx, drawX, drawY, 8, 8)
-                drawImage(ctx, imagePath, drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
-
-                states.quads[y, x] = quad
-            end
-
-        else
-            drawRectangle(ctx, drawX, drawY, 8, 8, colors.unknown_tile_color, (0.0, 0.0, 0.0, 0.0))
-        end
+        end 
     
     else
-        if states.chars[y, x] != '0'
+        if states.chars[y, x] != '0' && states.quads[y, x] != unusedQuad
             clearArea(ctx, drawX, drawY, 8, 8)
         end
     end
 
-    states.chars[y, x] = tileValue
+    states.chars[y, x] = tile
 end
 
-function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, objtiles::ObjectTiles, meta::TilerMeta, states::TileStates, width::Integer, height::Integer; alpha::Number=getGlobalAlpha(), fg::Bool=true, useObjectTiles::Bool=false)
+function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, objtiles::ObjectTiles, meta::TilerMeta, states::TileStates, width, height; alpha=nothing, fg::Bool=true, useObjectTiles::Bool=false)
     for y in 1:height, x in 1:width
-        objtile = get(objtiles.data, (y, x), -1)
-        tile = get(tiles.data, (y, x), '0')
+        tile = getTile(tiles, x, y, width, height, '0')
 
-        if useObjectTiles && objtile != -1 && tile != '0'
-            drawObjectTile(ctx, x, y, objtile, alpha=alpha)
+        if useObjectTiles && fg && tile != '0'
+            objtile = getTile(objtiles, x, y, width, height, -1)
+
+            if objtile != -1
+                drawObjectTile(ctx, x, y, objtile, alpha=alpha)
+
+            else
+                drawTile(ctx, x, y, tile, tiles, meta, states, alpha=alpha)    
+            end
 
         else
-            drawTile(ctx, x, y, tiles, meta, states, alpha=alpha)
+            drawTile(ctx, x, y, tile, tiles, meta, states, alpha=alpha)
         end
     end
 end
 
-function drawTiles(ctx::Cairo.CairoContext, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha(), useObjectTiles::Bool=false)
+function drawTiles(ctx::Cairo.CairoContext, dr::DrawableRoom, fg::Bool=true; alpha=nothing, useObjectTiles::Bool=false)
     objtiles = dr.room.objTiles
     tiles = fg ? dr.room.fgTiles : dr.room.bgTiles
     height, width = size(tiles.data)
@@ -118,7 +149,11 @@ function drawTiles(ctx::Cairo.CairoContext, dr::DrawableRoom, fg::Bool=true; alp
     return true
 end
 
-drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true; alpha::Number=getGlobalAlpha(), useObjectTiles::Bool=false) = drawTiles(getSurfaceContext(layer.surface), dr, fg, alpha=alpha, useObjectTiles=useObjectTiles)
+function drawTiles(layer::Layer, dr::DrawableRoom, fg::Bool=true; alpha=nothing, useObjectTiles::Bool=false)
+    ctx = getSurfaceContext(layer.surface)
+
+    drawTiles(ctx, dr, fg, alpha=alpha, useObjectTiles=useObjectTiles)
+end
 
 function drawParallax(ctx::Cairo.CairoContext, parallax::Maple.Parallax, camera::Camera, fg::Bool=true)
 
@@ -132,7 +167,7 @@ function drawEffect(ctx::Cairo.CairoContext, effect::Maple.Effect, camera::Camer
 
 end
 
-backgroundFuncs = Dict{Type, Function}(
+const backgroundFuncs = Dict{Type, Function}(
     Maple.Parallax => drawParallax,
     Maple.Apply => drawApply,
     Maple.Effect => drawEffect,
@@ -193,22 +228,21 @@ function resetDrawingSettings()
     reset!(camera)
 end
 
-loadExternalSprites!()
-
 drawingLayers = nothing
-drawableRooms = Dict{Map, Dict{Room, DrawableRoom}}()
 
-redrawingFuncs["fgDecals"] = (layer, room) -> drawDecals(layer, room, true)
-redrawingFuncs["bgDecals"] = (layer, room) -> drawDecals(layer, room, false)
+const drawableRooms = Dict{Map, Dict{Room, DrawableRoom}}()
 
-redrawingFuncs["fgTiles"] = (layer, room) -> drawTiles(layer, room, true)
-redrawingFuncs["bgTiles"] = (layer, room) -> drawTiles(layer, room, false)
+redrawingFuncs["fgDecals"] = (layer, room, camera) -> drawDecals(layer, room, true)
+redrawingFuncs["bgDecals"] = (layer, room, camera) -> drawDecals(layer, room, false)
+
+redrawingFuncs["fgTiles"] = (layer, room, camera) -> drawTiles(layer, room, true)
+redrawingFuncs["bgTiles"] = (layer, room, camera) -> drawTiles(layer, room, false)
 
 redrawingFuncs["fgParallax"] = (layer, room, camera) -> drawBackground(layer, room, camera, true)
 redrawingFuncs["bgParallax"] = (layer, room, camera) -> drawBackground(layer, room, camera, false)
 
-redrawingFuncs["entities"] = drawEntities
-redrawingFuncs["triggers"] = drawTriggers
+redrawingFuncs["entities"] = (layer, room, camera) -> drawEntities(layer, room)
+redrawingFuncs["triggers"] = (layer, room, camera) -> drawTriggers(layer, room)
 
 function getDrawableRooms(map::Map)
     if !haskey(drawableRooms, map)
@@ -244,6 +278,7 @@ function updateDrawingLayers!(map::Map, room::Room)
 end
 
 function drawMap(ctx::Cairo.CairoContext, camera::Camera, map::Map; adjacentAlpha::Number=colors.adjacent_room_alpha, backgroundFill::colorTupleType=colors.background_canvas_fill)
+    deleteNonVisibleRooms = get(config, "delete_non_visible_rooms_cache", false)
     width, height = floor(Int, ctx.surface.width), floor(Int, ctx.surface.height)
 
     paintSurface(ctx, backgroundFill)
@@ -256,14 +291,16 @@ function drawMap(ctx::Cairo.CairoContext, camera::Camera, map::Map; adjacentAlph
     end
 
     for room in map.rooms
-        if roomVisible(camera, width, height, room)
+        visible = roomVisible(camera, width, height, room)
+
+        if visible
             dr = getDrawableRoom(map, room)
             alpha = loadedState.roomName == room.name ? 1.0 : adjacentAlpha
 
             drawRoom(ctx, camera, dr, alpha=alpha)
 
         else
-            if get(config, "delete_non_visible_rooms_cache", false)
+            if deleteNonVisibleRooms
                 if haskey(drawableRooms, map)
                     if haskey(drawableRooms[map], room)
                         destroy(drawableRooms[map][room])
@@ -277,7 +314,7 @@ end
 
 drawMap(canvas::Gtk.GtkCanvas, camera::Camera, map::Map) = drawMap(Gtk.getgc(canvas), camera, map)
 
-function drawRoom(ctx::Cairo.CairoContext, camera::Camera, room::DrawableRoom; alpha::Number=getGlobalAlpha())
+function drawRoom(ctx::Cairo.CairoContext, camera::Camera, room::DrawableRoom; alpha=nothing)
     renderingLayer = room.rendering
     drawingLayers = room.layers
 

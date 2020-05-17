@@ -1,9 +1,7 @@
-function createFakeTiles(room::Maple.Room, x::Integer, y::Integer, width::Integer, height::Integer, material::Char='3'; blendIn::Bool=false)
+function createFakeTiles(room::Maple.Room, x::Int, y::Int, width::Int, height::Int, material::Char='3'; blendIn::Bool=false)::Array{Char, 2}
     tx, ty = floor(Int, x / 8) + 1, floor(Int, y / 8) + 1
     tw, th = floor(Int, width / 8), floor(Int, height / 8)
 
-    ftw, fth = ceil.(Int, room.size ./ 8)
-    
     fakeTiles = fill('0', (th + 2, tw + 2))
 
     if blendIn
@@ -15,7 +13,7 @@ function createFakeTiles(room::Maple.Room, x::Integer, y::Integer, width::Intege
     return fakeTiles
 end
 
-function getObjectTiles(room::Maple.Room, x::Integer, y::Integer, width::Integer, height::Integer)
+function getObjectTiles(room::Maple.Room, x::Int, y::Int, width::Int, height::Int)::Maple.ObjectTiles
     tx, ty = floor(Int, x / 8) + 1, floor(Int, y / 8) + 1
     tw, th = floor(Int, width / 8), floor(Int, height / 8)
 
@@ -46,7 +44,7 @@ function tiletypeEditingOptions()
 end
 
 # Not the most efficient, but renders correctly
-function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple.Entity; material::Union{Char, Nothing}=nothing, alpha::Number=getGlobalAlpha(), blendIn::Bool=false)
+function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple.Entity; material=nothing, alpha=nothing, blendIn::Bool=false)
     x = Int(get(entity.data, "x", 0))
     y = Int(get(entity.data, "y", 0))
 
@@ -70,7 +68,7 @@ function drawTileEntity(ctx::Cairo.CairoContext, room::Maple.Room, entity::Maple
     end
 end
 
-function drawFakeTiles(ctx::Cairo.CairoContext, room::Maple.Room, tiles::Array{Char, 2}, objTiles::Maple.ObjectTiles, fg::Bool, x::Number, y::Number; alpha::Number=getGlobalAlpha(), clipEdges::Bool=false)
+function drawFakeTiles(ctx::Cairo.CairoContext, room::Maple.Room, tiles::Array{Char, 2}, objTiles::Maple.ObjectTiles, fg, x, y; alpha=nothing, clipEdges=false)
     fakeDr = DrawableRoom(
         loadedState.map,
         Maple.Room(

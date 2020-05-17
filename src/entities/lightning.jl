@@ -9,6 +9,8 @@ const placements = Ahorn.PlacementDict(
     )
 )
 
+const lightningFillColor = (0.55, 0.97, 0.96, 0.4)
+const lightningBorderColor = (0.99, 0.96, 0.47, 1.0)
 
 Ahorn.nodeLimits(entity::Maple.Lightning) = 0, 1
 
@@ -37,7 +39,7 @@ function renderLightningBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Numbe
     Ahorn.set_antialias(ctx, 1)
     Ahorn.set_line_width(ctx, 1)
 
-    Ahorn.drawRectangle(ctx, x, y, width, height, (0.55, 0.97, 0.96, 0.4), (0.99, 0.96, 0.47, 1.0))
+    Ahorn.drawRectangle(ctx, x, y, width, height, lightningFillColor, lightningBorderColor)
 
     Ahorn.restore(ctx)
 end

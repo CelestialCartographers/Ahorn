@@ -2,13 +2,13 @@ module EntityIds
 
 using ..Ahorn, Maple
 
-EntityTriggerType = Union{Maple.Entity, Maple.Trigger}
+const EntityTriggerType = Union{Maple.Entity, Maple.Trigger}
 
 entityIdState = nothing
 validIds = Ahorn.MultiRange()
 
 # These types should be unsafe for getting new ids because of ridge gate/condition block
-unsafeForReassign = Type[
+const unsafeForReassign = Type[
     Strawberry,
     GoldenStrawberry,
     MemorialTextController,

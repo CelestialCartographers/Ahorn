@@ -24,8 +24,8 @@ function drawCircle(circle::Ahorn.Circle, layer::Ahorn.Layer)
     Ahorn.drawBrush(circleBrush, layer, 1, 1)
 end
 
-function drawCircles(layer::Ahorn.Layer, room::Ahorn.Room)
-    if circle != nothing
+function drawCircles(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
+    if circle !== nothing
         drawCircle(circle, toolsLayer)
     end
 end

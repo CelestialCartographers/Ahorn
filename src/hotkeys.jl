@@ -1,4 +1,4 @@
-hotkeys = Hotkey[
+const hotkeys = Hotkey[
     Hotkey(
         "ctrl + alt + shift + s",
         SettingsWindow.showSettings

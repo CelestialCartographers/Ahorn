@@ -10,7 +10,7 @@ const placements = Ahorn.PlacementDict(
 
 # Values might be wrong
 # -1 = left, 1 = right
-modeFacingScale = Dict{String, Integer}(
+const modeFacingScale = Dict{String, Integer}(
     "climbingtutorial" => -1,
     "dashingtutorial" => 1,
     "dreamjumptutorial" => 1,

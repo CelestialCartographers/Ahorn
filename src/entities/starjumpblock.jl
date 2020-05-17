@@ -55,26 +55,26 @@ function noAdjacent(entity::Maple.StarJumpBlock, ox::Integer, oy::Integer, rects
     return !any(Ahorn.checkCollision.(rects, Ref(rect)))
 end
 
-fillColor = (255, 255, 255, 255) ./ 255
-corners = String[
+const fillColor = (255, 255, 255, 255) ./ 255
+const corners = String[
     "objects/starjumpBlock/corner00.png",
     "objects/starjumpBlock/corner01.png",
     "objects/starjumpBlock/corner02.png",
     "objects/starjumpBlock/corner03.png"
 ]
-edgeHs = String[
+const edgeHs = String[
     "objects/starjumpBlock/edgeH00.png",
     "objects/starjumpBlock/edgeH01.png",
     "objects/starjumpBlock/edgeH02.png",
     "objects/starjumpBlock/edgeH03.png",
 ]
-edgeVs = String[
+const edgeVs = String[
     "objects/starjumpBlock/edgeV00.png",
     "objects/starjumpBlock/edgeV01.png",
     "objects/starjumpBlock/edgeV02.png",
     "objects/starjumpBlock/edgeV03.png",
 ]
-leftRailings = String[
+const leftRailings = String[
     "objects/starjumpBlock/leftrailing00.png"
     "objects/starjumpBlock/leftrailing01.png"
     "objects/starjumpBlock/leftrailing02.png"
@@ -83,7 +83,7 @@ leftRailings = String[
     "objects/starjumpBlock/leftrailing05.png"
     "objects/starjumpBlock/leftrailing06.png"
 ]
-rightRailings = String[
+const rightRailings = String[
     "objects/starjumpBlock/rightrailing00.png"
     "objects/starjumpBlock/rightrailing01.png"
     "objects/starjumpBlock/rightrailing02.png"
@@ -92,7 +92,7 @@ rightRailings = String[
     "objects/starjumpBlock/rightrailing05.png"
     "objects/starjumpBlock/rightrailing06.png"
 ]
-railings = String[
+const railings = String[
     "objects/starjumpBlock/railing00.png"
     "objects/starjumpBlock/railing01.png"
     "objects/starjumpBlock/railing02.png"

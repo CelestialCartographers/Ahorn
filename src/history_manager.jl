@@ -17,9 +17,9 @@ end
 struct SelectionSnapshot <: Snapshot
     description::String
     room::Maple.Room
-    selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}
+    selections::Set{Ahorn.SelectedObject}
 
-    SelectionSnapshot(description::String, room::Maple.Room, selections::Set{Tuple{String, Ahorn.Rectangle, Any, Number}}) = new(description, room, deepcopy(selections))
+    SelectionSnapshot(description::String, room::Maple.Room, selections::Set{Ahorn.SelectedObject}) = new(description, room, deepcopy(selections))
 end
 
 struct MultiSnapshot <: Snapshot
@@ -81,10 +81,10 @@ function getToolSelections()
         return deepcopy(selectionRes)
     end
 
-    return Set{Tuple{String, Ahorn.Rectangle, Any, Number}}()
+    return Set{Ahorn.SelectedObject}()
 end
 
-historyTimelines = Dict{Maple.Map, HistoryTimeline}()
+const historyTimelines = Dict{Maple.Map, HistoryTimeline}()
 
 currentMap() = Ahorn.loadedState.map
 

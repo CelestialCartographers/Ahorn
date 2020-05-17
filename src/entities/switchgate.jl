@@ -11,7 +11,7 @@ function gateFinalizer(entity)
     entity.data["nodes"] = [(x + width, y)]
 end
 
-textures = ["block", "mirror", "temple", "stars"]
+const textures = ["block", "mirror", "temple", "stars"]
 
 const placements = Ahorn.PlacementDict(
     "Switch Gate (Stone)" => Ahorn.EntityPlacement(

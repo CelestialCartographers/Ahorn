@@ -19,7 +19,7 @@ function Ahorn.selection(entity::Maple.ResortRoofEnding)
     return Ahorn.Rectangle(x, y, ceil(Int, width / 16) * 16 + 16, 16)
 end
 
-centerTextures = String[
+const centerTextures = String[
     "decals/3-resort/roofCenter.png",
     "decals/3-resort/roofCenter_b.png",
     "decals/3-resort/roofCenter_c.png",
