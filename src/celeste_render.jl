@@ -130,12 +130,13 @@ end
 
 function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, objtiles::ObjectTiles, meta::TilerMeta, states::TileStates, width, height; alpha=nothing, fg::Bool=true, useObjectTiles::Bool=false)
     existingPaths, spriteLookup = tilePathsExist(unique(tiles.data), meta)
+    objHeight, objWidth = size(objtiles.data)
 
     for y in 1:height, x in 1:width
         tile = getTile(tiles, x, y, width, height, '0')
 
         if useObjectTiles && fg && tile != '0'
-            objtile = getTile(objtiles, x, y, width, height, -1)
+            objtile = getTile(objtiles, x, y, objWidth, objHeight, -1)
 
             if objtile != -1
                 drawObjectTile(ctx, x, y, objtile, alpha=alpha)
