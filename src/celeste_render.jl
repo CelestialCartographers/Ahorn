@@ -28,8 +28,6 @@ function drawObjectTile(ctx::Cairo.CairoContext, x::Int, y::Int, tile::Int; alph
     drawImage(ctx, "tilesets/scenery", drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
 end
 
-tileDrawPosition(x::Int, y::Int) = (x - 1) * 8, (y - 1) * 8
-
 function getTileData(x::Int, y::Int, tiles::Tiles, meta::TilerMeta, states::TileStates)::Union{Nothing, TileData}
     tileValue::Char = tiles.data[y, x]
 
@@ -57,16 +55,34 @@ function getTile(tiles, x, y, width, height, default)
     end
 end
 
-# TODO - Consider passing in if the imagePath exists or not, it wont change in each batch
-function drawTile(ctx::Cairo.CairoContext, x, y, tile, tiles, meta, states; alpha=nothing)
-    drawX, drawY = tileDrawPosition(x, y)
+function tilePathsExist(tiles, meta)
+    exists = Dict{Char, Bool}()
+    sprites = Dict{Char, Sprite}()
+
+    for tile in tiles
+        if haskey(meta.paths, tile)
+            imagePath = meta.paths[tile]
+            sprite = getSprite(imagePath, "Gameplay")
+
+            exists[tile] = imagePath != "" && sprite.surface !== Ahorn.Assets.missingImage
+            sprites[tile] = sprite
+        end
+    end
+
+    return exists, sprites
+end
+
+# TODO - Consider caching findTextureAnimations, not called often
+function drawTile(ctx::Cairo.CairoContext, x, y, tile, tiles, meta, states, existingPaths, spriteLookup; alpha=nothing)
+    drawX = (x - 1) * 8
+    drawY = (y - 1) * 8
 
     if tile != '0'
         tileData = getTileData(x, y, tiles, meta, states)
 
         if tileData !== nothing
-            quad, sprite, imagePath = tileData.coord, tileData.sprite, tileData.path
-            imagePathExists = imagePath != "" && getSprite(imagePath, "Gameplay").surface !== Ahorn.Assets.missingImage
+            quad, sprite = tileData.coord, tileData.sprite
+            imagePathExists = existingPaths[tile]
             
             if imagePathExists
                 quadX, quadY = quad.x, quad.y
@@ -93,7 +109,7 @@ function drawTile(ctx::Cairo.CairoContext, x, y, tile, tiles, meta, states; alph
                         clearArea(ctx, drawX, drawY, 8, 8)
                     end
 
-                    drawImage(ctx, imagePath, drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
+                    drawImage(ctx, spriteLookup[tile], drawX, drawY, quadX * 8, quadY * 8, 8, 8, alpha=alpha)
 
                     states.quads[y, x] = quad
                 end
@@ -113,6 +129,8 @@ function drawTile(ctx::Cairo.CairoContext, x, y, tile, tiles, meta, states; alph
 end
 
 function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, objtiles::ObjectTiles, meta::TilerMeta, states::TileStates, width, height; alpha=nothing, fg::Bool=true, useObjectTiles::Bool=false)
+    existingPaths, spriteLookup = tilePathsExist(unique(tiles.data), meta)
+
     for y in 1:height, x in 1:width
         tile = getTile(tiles, x, y, width, height, '0')
 
@@ -123,11 +141,11 @@ function drawTiles(ctx::Cairo.CairoContext, tiles::Tiles, objtiles::ObjectTiles,
                 drawObjectTile(ctx, x, y, objtile, alpha=alpha)
 
             else
-                drawTile(ctx, x, y, tile, tiles, meta, states, alpha=alpha)    
+                drawTile(ctx, x, y, tile, tiles, meta, states, existingPaths, spriteLookup, alpha=alpha)
             end
 
         else
-            drawTile(ctx, x, y, tile, tiles, meta, states, alpha=alpha)
+            drawTile(ctx, x, y, tile, tiles, meta, states, existingPaths, spriteLookup, alpha=alpha)
         end
     end
 end

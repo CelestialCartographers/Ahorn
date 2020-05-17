@@ -13,17 +13,32 @@ struct AnimatedTile
     delay::Number
 end
 
-const Mask = Array{Int, 2}
+struct Mask
+    tiles::UInt8
+    ignores::UInt8
+end
 
-# Convert mask string into a 3x3 matrix
+# Relevant characters of the tile mask string
+# We never need to check the centre tile, otherwise we wouldn't be in the mask check
+const lookupmask = [1, 2, 3, 5, 7, 9, 10, 11]
+
+# Convert mask string into a bitmask.
+# ignoremask is 1 for every tile that should NOT be ignored.
 function getMaskFromString(s::String)
-    data = replace(replace(s, "-" => ""), "x" => "2")
-
-    return Mask(transpose(reshape(parse.(Int, (collect(data))), (3, 3))))
+    data = s[lookupmask]
+    tilemask = UInt8(0)
+    ignoremask = UInt8(0)
+    for (i, c) in enumerate(data)
+        tilemask |= UInt8(c == '1') << (8 - i)
+        ignoremask |= UInt8(c != 'x') << (8 - i)
+    end
+    return Mask(tilemask, ignoremask)
 end
 
 function sortScore(mask::Mask)
-    return length(filter(v -> v == 2, mask))
+    # Counts the number of 0-bits in the ignore string
+    # by counting the number of 1-bits.
+    return 8 - sum([(mask.ignores >> i) & 0b1 for i = 0:7])
 end
 
 # Get quads for a given mask
@@ -75,6 +90,13 @@ struct MaskData
     sprites::String
 end
 
+struct Ignore
+    wildcard::Bool
+    ignores::String
+
+    Ignore(s::String) = new('*' in s, filter(c -> c != '*', s))
+end
+
 function loadTilesetXML(fn::String)
     xdoc = parse_file(fn)
     xroot = root(xdoc)
@@ -83,7 +105,7 @@ function loadTilesetXML(fn::String)
     masks = Dict{Char, Array{MaskData, 1}}()
     padding = Dict{Char, Array{Coord, 1}}()
     center = Dict{Char, Array{Coord, 1}}()
-    ignores = Dict{Char, Set{Char}}()
+    ignores = Dict{Char, Ignore}()
 
     orderedElements = sort(collect(child_elements(xroot)), by=set -> attribute(set, "copy") !== nothing)
 
@@ -96,7 +118,7 @@ function loadTilesetXML(fn::String)
         paths[id] = "tilesets/$path"
 
         if ignore !== nothing
-            ignores[id] = Set{Char}(ignore)
+            ignores[id] = Ignore(ignore)
         end
 
         if copyTileset !== nothing
@@ -143,7 +165,7 @@ struct TilerMeta
     masks::Dict{Char, Array{MaskData, 1}}
     paddings::Dict{Char, Array{Coord, 1}}
     centers::Dict{Char, Array{Coord, 1}}
-    ignores::Dict{Char, Set{Char}}
+    ignores::Dict{Char, Ignore}
 end
 
 TilerMeta(s::String) = TilerMeta(loadTilesetXML(s)...)
@@ -264,32 +286,37 @@ function getTile(tiles::Tiles, x::Int, y::Int)
     return get(tiles.data, (y, x), ' ')
 end
 
-function checkPadding(tiles::Tiles, x::Int, y::Int)
-    # Checks for '0' even though getTile might return ' '
+function checkPadding(data::Array{Char, 2}, x::Int, y::Int, width::Int, height::Int)
+    # Checks for '0' even though getIfInboundsKnownSize might return ' '
     # This is due to quirks/special flags in the actuall autotiler
-    return getTile(tiles, x - 2, y) == '0' || getTile(tiles, x + 2, y) == '0' || getTile(tiles, x, y - 2) == '0' || getTile(tiles, x, y + 2) == '0'
+    return getIfInboundsKnownSize(data, y - 2, x, height, width, ' ') == '0' ||
+        getIfInboundsKnownSize(data, y + 2, x, height, width, ' ') == '0' ||
+        getIfInboundsKnownSize(data, y, x - 2, height, width, ' ') == '0' ||
+        getIfInboundsKnownSize(data, y, x + 2, height, width, ' ') == '0'
 end
 
-const ignoresDefault = Set{Char}()
+const ignoresDefault = Ignore("")
 
 # Return the "mask" value for a tile
-function checkTile(value::Char, target::Char, ignore::Set{Char}=ignoresDefault)
-    return !(target == '0' || target in ignore || ('*' in ignore && value != target))
+# Returns as UInt8 for performance
+# Manual string iteratation for performance
+function checkTile(value::Char, target::Char, ignore::Ignore=ignoresDefault)
+    if target == '0' || (ignore.wildcard && value != target)
+        return 0b0
+
+    else
+        for c in ignore.ignores
+            if target == c
+                return 0b0
+            end
+        end
+    end
+
+    return 0b1
 end
 
-# Unrolled for performance
-# We never need to check 5, otherwise we wouldn't be in this mask check
-function checkMask(mask::Mask, adj::Array{Bool, 1})
-    return @inbounds !(
-        adj[1] != mask[1] && mask[1] != 2 ||
-        adj[2] != mask[2] && mask[2] != 2 ||
-        adj[3] != mask[3] && mask[3] != 2 ||
-        adj[4] != mask[4] && mask[4] != 2 ||
-        adj[6] != mask[6] && mask[6] != 2 ||
-        adj[7] != mask[7] && mask[7] != 2 ||
-        adj[8] != mask[8] && mask[8] != 2 ||
-        adj[9] != mask[9] && mask[9] != 2
-    )
+function checkMask(mask::Mask, adj::UInt8)
+    return ((adj ⊻ mask.tiles) & mask.ignores) == 0
 end
 
 function getIfInboundsKnownSize(data::Array{Char, 2}, y::Int, x::Int, height::Int, width::Int, default::Char='0')::Char
@@ -301,20 +328,18 @@ function getIfInboundsKnownSize(data::Array{Char, 2}, y::Int, x::Int, height::In
     end
 end
 
-function getAdjacencyArray(data::Array{Char, 2}, y::Int, x::Int, height::Int, width::Int, default::Char, ignores::Set{Char})::Array{Bool, 1}
-    return Bool[
-        checkTile(default, getIfInboundsKnownSize(data, y - 1, x - 1, height, width, default), ignores),
-        checkTile(default, getIfInboundsKnownSize(data, y, x - 1, height, width, default), ignores),
-        checkTile(default, getIfInboundsKnownSize(data, y + 1, x - 1, height, width, default), ignores),
+# Unrolled for performance
+function getAdjacencyMask(data::Array{Char, 2}, y::Int, x::Int, height::Int, width::Int, default::Char, ignores::Ignore)::UInt8
+    return checkTile(default, getIfInboundsKnownSize(data, y - 1, x - 1, height, width, default), ignores) << 7 |
+        checkTile(default, getIfInboundsKnownSize(data, y - 1, x, height, width, default), ignores) << 6 |
+        checkTile(default, getIfInboundsKnownSize(data, y - 1, x + 1, height, width, default), ignores) << 5 |
 
-        checkTile(default, getIfInboundsKnownSize(data, y - 1, x, height, width, default), ignores),
-        true,
-        checkTile(default, getIfInboundsKnownSize(data, y + 1, x, height, width, default), ignores),
-    
-        checkTile(default, getIfInboundsKnownSize(data, y - 1, x + 1, height, width, default), ignores),
-        checkTile(default, getIfInboundsKnownSize(data, y, x + 1, height, width, default), ignores),
+        checkTile(default, getIfInboundsKnownSize(data, y, x - 1, height, width, default), ignores) << 4 |
+        checkTile(default, getIfInboundsKnownSize(data, y, x + 1, height, width, default), ignores) << 3 |
+
+        checkTile(default, getIfInboundsKnownSize(data, y + 1, x - 1, height, width, default), ignores) << 2 |
+        checkTile(default, getIfInboundsKnownSize(data, y + 1, x, height, width, default), ignores) << 1 |
         checkTile(default, getIfInboundsKnownSize(data, y + 1, x + 1, height, width, default), ignores)
-    ]
 end
 
 const defaultPaddingCoords = Coord[Coord(0, 0)]
@@ -328,7 +353,7 @@ function getMaskQuads(x::Int, y::Int, tiles::Tiles, meta::TilerMeta)
     masks = get(meta.masks, value, maskDataDefault)
     ignores = get(meta.ignores, value, ignoresDefault)
 
-    adjacent = getAdjacencyArray(data, y, x, height, width, value, ignores)
+    adjacent = getAdjacencyMask(data, y, x, height, width, value, ignores)
 
     for data in masks
         if checkMask(data.mask, adjacent)
@@ -336,7 +361,7 @@ function getMaskQuads(x::Int, y::Int, tiles::Tiles, meta::TilerMeta)
         end
     end
 
-    if checkPadding(tiles, x, y)
+    if checkPadding(tiles.data, x, y, width, height)
         return get(meta.paddings, value, defaultPaddingCoords), ""
         
     else
