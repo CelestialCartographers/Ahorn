@@ -263,7 +263,7 @@ function middleClickAbs(x::Number, y::Number)
     best = Ahorn.bestSelection(selections)
 
     if best !== nothing
-        name, rect, target = best
+        name, rect, target = best.layerName, best.rectangle, best.target
 
         if name == "fgDecals" || name == "bgDecals"
             global material = Ahorn.fixTexturePath(target.texture)

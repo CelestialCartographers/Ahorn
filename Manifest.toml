@@ -81,6 +81,9 @@ git-tree-sha1 = "e1b4190be75ba8d03ce2bec3a6cfc7a939c713ea"
 uuid = "2e619515-83b5-522b-bb60-26c02a35a201"
 version = "2.2.7+0"
 
+[[FileWatching]]
+uuid = "7b1f6079-737a-58dc-b8bc-7a2ca5c1b5ee"
+
 [[FixedPointNumbers]]
 git-tree-sha1 = "d14a6fa5890ea3a7e5dcab6811114f132fec2b4b"
 uuid = "53c48c17-4a7d-5ca2-90c5-79b7896eea93"

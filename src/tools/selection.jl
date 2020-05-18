@@ -866,12 +866,14 @@ function handleResize(event::Ahorn.eventKey)
     return redraw
 end
 
+# Requires a runtime dispatch regardless, using isa for less boilerplate
 function handleScaling(event::Ahorn.eventKey)
     redraw = false
     for selection in selections
         msx, msy = scaleMultipliers[event.keyval]
+        target = selection.target
 
-        if isa(selection.target, Maple.Decal)
+        if isa(target, Maple.Decal)
             target.scaleX *= msx
             target.scaleY *= msy
 

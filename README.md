@@ -62,6 +62,7 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - Ctrl + shift + z: Redo changes
  - Esc/Enter: Exit search field
  - v, h: vertical / horizontal mirror of decal
+ - r: Rotate selected brush
  - delete: delete the given node / target
  - n/+: add node to target (after the targeted node / entity)
  - Middle click: pick what's currently under the cursor in the selected layer
