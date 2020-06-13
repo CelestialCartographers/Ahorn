@@ -226,7 +226,7 @@ placements.entities.fallingBlock.tooltips.behind=Whether the block should visual
 
 # Fake Wall
 placements.entities.fakeWall.tooltips.tiletype=Changes the visual appearance of the wall.
-placements.entities.fakeWall.tooltips.playTransitionReveal=Determines whether entering the wall should play the reveal jingle.
+placements.entities.fakeWall.tooltips.playTransitionReveal=Determines whether entering the wall directly after a room transition should play the reveal jingle.
 
 # Bonfire
 placements.entities.bonfire.tooltips.mode=Changes the bonfire between lit, unlit, or smoking.
