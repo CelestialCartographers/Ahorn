@@ -91,12 +91,10 @@ function cleanup()
 end
 
 function setMaterials!(layer::Ahorn.Layer)
-    Ahorn.loadXMLMeta()
-
-    validTiles = Ahorn.validTiles(layer)
     tileNames = Ahorn.tileNames(layer)
+    displayNames = Ahorn.getBrushMaterialsNames(layer, get(Ahorn.config, "sort_brush_tiles_by_name", true))
 
-    Ahorn.setMaterialList!([tileNames[mat] for mat in validTiles], row -> row[1] == get(tileNames, material, nothing))
+    Ahorn.setMaterialList!(displayNames, row -> row[1] == get(tileNames, material, nothing))
 end
 
 function mouseMotion(x::Number, y::Number)
@@ -134,7 +132,7 @@ function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)
 
     startX = x1
     startY = y1
-    
+
     pixels = rotr90(selectedBrush.pixels, selectedBrush.rotation)
 
     bh, bw = size(pixels)
@@ -188,6 +186,27 @@ end
 function materialFiltered(list::Ahorn.ListContainer)
     tileNames = Ahorn.tileNames(targetLayer)
     Ahorn.selectRow!(list, row -> row[1] == get(tileNames, material, '0'))
+end
+
+function getFavorites()
+    if targetLayer !== nothing
+        key = "favorites_brushes_$(targetLayer.name)"
+
+        return Ahorn.getFavorites(Ahorn.persistence, key)
+    end
+
+    return []
+end
+
+function materialDoubleClicked(material::String)
+    if targetLayer !== nothing
+        key = "favorites_brushes_$(targetLayer.name)"
+        tileNames = Ahorn.tileNames(targetLayer)
+
+        Ahorn.toggleFavorite(Ahorn.persistence, key, material)
+        setMaterials!(targetLayer)
+        Ahorn.updateMaterialFilter!(targetLayer.name)
+    end
 end
 
 function layersChanged(layers::Array{Ahorn.Layer, 1})

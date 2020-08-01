@@ -221,7 +221,7 @@ function connectChanged(f::Function, container::ListContainer)
     end
 end
 
-function connectDoubleClick(container::ListContainer, f::Function)
+function connectDoubleClick(f::Function, container::ListContainer)
     @guarded signal_connect(container.tree, "row-activated") do widget, box, col
         if hasselection(container.selection)
             row = selected(container.selection)

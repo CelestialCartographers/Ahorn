@@ -59,6 +59,11 @@ function updateAhorn(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
         end
     catch e
         do_ask_dialog("The update check failed for some reason.\nDo you wish to update Ahorn anyway?\nThis will close the program afterwards and you will have to rerun it.")
+        println(Base.stderr, "Update check failed")
+        for (exc, bt) in Base.catch_stack()
+            showerror(Base.stderr, exc, bt)
+            println()
+        end
     end
 end
 

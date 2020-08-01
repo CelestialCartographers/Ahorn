@@ -62,7 +62,9 @@ function addMenubarItem!(choices::MenuChoices, parent)
     item = generateMenubarItem(choices)
     section = Menu(item)
 
-    addMenubarItem!.(choices.children, Ref(section))
+    for child in choices.children
+        addMenubarItem!(child, section)
+    end
 
     push!(parent, item)
 end
@@ -98,7 +100,9 @@ function addMenubarItem!(choice::MenuRadioGroup, parent)
 
     Ahorn.connectRadioGroupSignal(choice.funcs, radios)
 
-    push!.(Ref(parent), radios)
+    for radio in radios
+        push!(parent, radio)
+    end
 end
 
 function addMenubarItem!(choice::MenuCheck, parent)
@@ -114,7 +118,9 @@ end
 function generateMenubar(choices::Array{AbstractMenuItem, 1})
     menubar = MenuBar()
 
-    addMenubarItem!.(choices, Ref(menubar))
+    for choice in choices
+        addMenubarItem!(choice, menubar)
+    end
 
     return menubar
 end

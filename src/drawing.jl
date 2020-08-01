@@ -35,7 +35,7 @@ const fileNotFoundSpriteHolder = SpriteHolder(
 )
 
 function getResourceFromZip(filename::String, resource::String, atlas::String, allowRetry=true)
-    fileCache = get(spriteZipCache, filename, nothing)
+    fileCache = get(resourceZipCache, filename, nothing)
 
     if fileCache !== nothing
         return get(fileCache, "$atlas/$resource", nothing)
@@ -45,7 +45,7 @@ function getResourceFromZip(filename::String, resource::String, atlas::String, a
             cacheZipContent(filename)
 
             return getResourceFromZip(filename, resource, atlas, false)
-        
+
         else
             return nothing
         end
@@ -114,7 +114,7 @@ function addSprite!(resource::String, filename::String=""; atlas="Gameplay", for
         if !success && isa(meta, String)
             println(Base.stderr, "Problem with YAML file for resource '$resource', at file '$filename' - '$meta'")
         end
-        
+
         imWidth = Int(width(surface))
         imHeight = Int(height(surface))
 
@@ -128,15 +128,15 @@ function addSprite!(resource::String, filename::String=""; atlas="Gameplay", for
             Sprite(
                 0,
                 0,
-        
+
                 imWidth,
                 imHeight,
-        
+
                 offsetX,
                 offsetY,
                 realWidth,
                 realHeight,
-        
+
                 surface,
                 filename
             ),
@@ -227,7 +227,7 @@ function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x, y, q
 
             # Don't pass tint or alpha
             drawImage(tintedCtx, surface, 0, 0, quadX, quadY, width, height)
-            tinted = tintSurfaceMultiplicative(tinted, tint)
+            tintSurfaceMultiplicative!(tinted, tint)
 
             drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
 
@@ -240,19 +240,19 @@ function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x, y, q
 
             rectangle(ctx, x, y, width, height)
             clip(ctx)
-        
+
             set_source_surface(ctx, surface, x - quadX, y - quadY)
             pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
-        
+
             paint_with_alpha(ctx, drawingAlpha)
-        
+
             restore(ctx)
         end
     end
 end
 
 function drawImage(ctx::Cairo.CairoContext, surface::Cairo.CairoSurface, x, y; alpha=nothing, tint=nothing)
-    drawImage(ctx, surface, x, y, 0, 0, Int(surface.width), Int(surface.height); alpha=alpha, tint=tint)
+    drawImage(ctx, surface, x, y, 0, 0, round(Int, Cairo.width(surface))::Int, round(Int, Cairo.height(surface))::Int; alpha=alpha, tint=tint)
 end
 
 function drawImage(canvas::Gtk.GtkCanvas, name::String, x, y, quadX, quadY, width, height; alpha=nothing, tint=nothing, atlas="Gameplay")
@@ -267,7 +267,7 @@ function drawImage(canvas::Gtk.GtkCanvas, sprite::Sprite, x, y, quadX, quadY, wi
     drawImage(Gtk.getgc(canvas), sprite.surface, x, y, quadX, quadY, width, height, alpha=alpha, tint=tint)
 end
 
-function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x, y, quadX=0, quadY=0, width=sprite.width, height=sprite.height; alpha=nothing, tint=nothing)
+function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x, y, quadX=0, quadY=0, width=sprite.width, height=sprite.height; alpha=nothing, tint=nothing, guaranteedNoClip=false)
     if ctx.ptr != C_NULL
         if tint !== nothing
             tinted = CairoImageSurface(zeros(UInt32, height, width), Cairo.FORMAT_ARGB32)
@@ -275,7 +275,7 @@ function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x, y, quadX=0, quadY
 
             # Don't pass tint or alpha
             drawImage(tintedCtx, sprite, 0, 0, quadX, quadY, width, height)
-            tinted = tintSurfaceMultiplicative(tinted, tint)
+            tintSurfaceMultiplicative!(tinted, tint)
 
             drawImage(ctx, tinted, x, y, 0, 0, width, height, alpha=alpha)
 
@@ -284,17 +284,23 @@ function drawImage(ctx::Cairo.CairoContext, sprite::Sprite, x, y, quadX=0, quadY
         else
             drawingAlpha = something(alpha, getGlobalAlpha())
 
-            Cairo.save(ctx)
+            needsClip = !guaranteedNoClip && (quadX != 0 || quadY != 0 || width != round(Int, Cairo.width(sprite.surface))::Int || height != round(Int, Cairo.height(sprite.surface))::Int)
 
-            rectangle(ctx, x, y, width, height)
-            clip(ctx)
-        
+            if needsClip
+                Cairo.save(ctx)
+
+                rectangle(ctx, x, y, width, height)
+                clip(ctx)
+            end
+
             set_source_surface(ctx, sprite.surface, x - quadX - sprite.x, y - quadY - sprite.y)
             pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
-        
+
             paint_with_alpha(ctx, drawingAlpha)
-        
-            restore(ctx)
+
+            if needsClip
+                restore(ctx)
+            end
         end
     end
 end
@@ -318,9 +324,9 @@ function drawSprite(ctx::Cairo.CairoContext, texture::String, x, y; jx=0.5, jy=0
 
         width, height = sprite.realWidth, sprite.realHeight
         drawX, drawY = floor(Int, x - width * jx - sprite.offsetX) , floor(Int, y - height * jy - sprite.offsetY)
-        
+
         Cairo.save(ctx)
-        
+
         scale(ctx, sx, sy)
         translate(ctx, sx > 0 ? 0 : -2 * x, sy > 0 ? 0 : -2 * y)
         translate(ctx, drawX, drawY)
@@ -363,13 +369,11 @@ function tintSurfaceAdditive(surface::Cairo.CairoSurface, color::rgbaTupleType, 
     return surface
 end
 
-function tintSurfaceMultiplicative(surface::Cairo.CairoSurface, color::rgbaTupleType, width=width(surface), height=height(surface))
+function tintSurfaceMultiplicative!(surface::Cairo.CairoSurface, color::rgbaTupleType, width=width(surface), height=height(surface))
     for x in 1:floor(Int, width), y in 1:floor(Int, height)
         pixelColor = argb32ToRGBATuple(surface.data[x, y]) ./ 255
         surface.data[x, y] = normRGBA32Tuple2ARGB32(pixelColor .* color)
     end
-
-    return surface
 end
 
 # Shapes #

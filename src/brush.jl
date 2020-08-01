@@ -20,7 +20,7 @@ end
 
 validTiles(layer::Layer, removeTemplate::Bool=true) = validTiles(layerName(layer), removeTemplate)
 
-function tileNames(name::String) 
+function tileNames(name::String)
     meta = name == "fgTiles" ? fgTilerMeta : bgTilerMeta
     res = Dict{Any, Any}(
         '0' => "Air",
@@ -42,6 +42,23 @@ function tileNames(name::String)
 end
 
 tileNames(layer::Layer) = tileNames(layerName(layer))
+
+function getBrushMaterialsNames(name::String, sortByDisplayName::Bool=true)
+    loadXMLMeta()
+
+    validTileIds = validTiles(name)
+    tileTileNames = tileNames(name)
+
+    displayNames = [tileTileNames[mat] for mat in validTileIds]
+
+    if sortByDisplayName
+        sort!(displayNames)
+    end
+
+    return displayNames
+end
+
+getBrushMaterialsNames(layer::Layer, sortByDisplayName::Bool=true) = getBrushMaterialsNames(layerName(layer), sortByDisplayName)
 
 const nodeType = Tuple{Number, Number}
 const edgeType = Tuple{nodeType, nodeType}

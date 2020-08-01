@@ -65,17 +65,17 @@ function Ahorn.selection(entity::Maple.BridgeFixed)
 end
 
 const sizes = Ahorn.Rectangle[
-    Ahorn.Rectangle(0, 0, 16, 52),
-    Ahorn.Rectangle(16, 0, 8, 52),
-    Ahorn.Rectangle(24, 0, 8, 52),
-    Ahorn.Rectangle(32, 0, 8, 52),
-    Ahorn.Rectangle(40, 0, 8, 52),
-    Ahorn.Rectangle(48, 0, 8, 52),
-    Ahorn.Rectangle(56, 0, 8, 52),
-    Ahorn.Rectangle(64, 0, 8, 52),
-    Ahorn.Rectangle(72, 0, 8, 52),
-    Ahorn.Rectangle(80, 0, 16, 52),
-    Ahorn.Rectangle(96, 0, 8, 52)
+    Ahorn.Rectangle(0, 0, 16, 55),
+    Ahorn.Rectangle(16, 0, 8, 55),
+    Ahorn.Rectangle(24, 0, 8, 55),
+    Ahorn.Rectangle(32, 0, 8, 55),
+    Ahorn.Rectangle(40, 0, 8, 55),
+    Ahorn.Rectangle(48, 0, 8, 55),
+    Ahorn.Rectangle(56, 0, 8, 55),
+    Ahorn.Rectangle(64, 0, 8, 55),
+    Ahorn.Rectangle(72, 0, 8, 55),
+    Ahorn.Rectangle(80, 0, 16, 55),
+    Ahorn.Rectangle(96, 0, 8, 55)
 ]
 
 function renderBridgeTile(ctx::Ahorn.Cairo.CairoContext, x::Integer, y::Integer, size::Ahorn.Rectangle)
@@ -87,7 +87,7 @@ function renderBridgeTile(ctx::Ahorn.Cairo.CairoContext, x::Integer, y::Integer,
         py = 0
 
         while py < tileHeight
-            Ahorn.drawImage(ctx, bridgeSprite, x, y + py - 3, size.x, py, tileWidth, height)
+            Ahorn.drawImage(ctx, bridgeSprite, x, y + py - 3, size.x, py, tileWidth, min(height, tileHeight - py))
 
             py += height
             height = 12

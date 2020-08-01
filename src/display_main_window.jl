@@ -12,7 +12,7 @@ function displayMainWindow()
 
     disableLoadingScreen = get(debug.config, "DISABLE_LOADING_SCREEN", false)
     progressDialog = nothing
-    
+
     if !disableLoadingScreen
         progressDialog = getProgressDialog(
             title="Starting Ahorn",
@@ -23,7 +23,7 @@ function displayMainWindow()
 
         showall(progressDialog)
     end
-    
+
     configured = configureCelesteDir()
     if !configured
         error("Celeste installation not configured")
@@ -40,18 +40,17 @@ function displayMainWindow()
     @progress Backup.initBackup(persistence) "Starting backup handler..." progressDialog
     @progress FileWatcher.initFileWatcher(normpath(joinpath(config["celeste_dir"], "Mods"))) "Starting file watcher..." progressDialog
 
-    @progress updateToolDisplayNames!(loadedTools) "Getting tools ready..." progressDialog
-    @progress updateToolList!(toolList) "Getting tools ready..." progressDialog
-
     @progress initExternalModules() "Loading external plugins..." progressDialog
     @progress loadAllExternalSprites!() "Loading external sprites..." progressDialog
+
+    @progress updateToolDisplayNames!(loadedTools) "Getting tools ready..." progressDialog
+    @progress updateToolList!(toolList) "Getting tools ready..." progressDialog
 
     @progress updateTreeView!(roomList, getTreeData(loadedState.map)) "Populating room list..." progressDialog
 
     roomListVisiblityFunctions[get(persistence, "room_list_column_visibility", "all")]()
 
     selectLoadedRoom!(roomList)
-    selectRow!(toolList, 1)
 
     global box = Box(:v)
     global grid = generateMainGrid()
@@ -74,6 +73,6 @@ function displayMainWindow()
     if progressDialog !== nothing
         Gtk.destroy(progressDialog)
     end
-    
+
     interactiveWorkaround(window)
 end

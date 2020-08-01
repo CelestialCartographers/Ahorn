@@ -2,11 +2,11 @@
 # Comments start with '#'
 
 
-# -- Entity and Trigger Tooltips -- 
+# -- Entity and Trigger Tooltips --
 #    placements.entities.entityName.tooltips.attr=Tooltip
 #    placements.triggers.triggerName.tooltips.attr=Tooltip
 
-# -- Entities -- 
+# -- Entities --
 
 # Strawberry
 placements.entities.strawberry.tooltips.winged=The strawberry attempts to vertically rise offscreen when the player dashes.
@@ -82,6 +82,9 @@ placements.entities.towerviewer.tooltips.onlyY=Whether the watch tower can only 
 # Wall Booster
 placements.entities.wallBooster.tooltips.left=Whether the entity attaches to the left wall or not.
 placements.entities.wallBooster.tooltips.notCoreMode=Determines whether the entity should ignore the current core mode and default to ice variant.
+
+# Bounce Block
+placements.entities.bounceBlock.tooltips.notCoreMode=Determines whether the entity should ignore the current core mode and default to ice variant.
 
 # Dark Chaser
 placements.entities.darkChaser.tooltips.canChangeMusic=Whether the chaser should be able to change the music to the "chasing" track.
@@ -163,7 +166,7 @@ placements.entities.memorial.tooltips.dreaming=Changes the memorial's text to th
 
 # Memorial (Everest)
 placements.entities.everest/memorial.tooltips.dreaming=Changes the memorial's text to the dream state from Old Site.
-placements.entities.everest/memorial.tooltips.dialog=What dialogue ID to pull the memorial's text from.
+placements.entities.everest/memorial.tooltips.dialog=What dialog ID to pull the memorial's text from.
 placements.entities.everest/memorial.tooltips.sprite=What sprite to render for the memorial.
 placements.entities.everest/memorial.tooltips.spacing=The spacing for the letters.
 
@@ -176,7 +179,7 @@ placements.entities.npc.tooltips.npc=Changes which NPC entity appears from a lis
 # NPC (Everest)
 placements.entities.everest/npc.tooltips.indicatorOffsetX=Offset for the chat icon on the X axis.
 placements.entities.everest/npc.tooltips.indicatorOffsetY=Offset for the chat icon on the Y axis.
-placements.entities.everest/npc.tooltips.dialogId=The dialogue ID to use for the dialogue.
+placements.entities.everest/npc.tooltips.dialogId=The dialog ID to use for the dialogue.
 placements.entities.everest/npc.tooltips.flipY=Flips the sprite of the NPC vertically.
 placements.entities.everest/npc.tooltips.flipX=Flips the sprite of the NPC horizontally.
 placements.entities.everest/npc.tooltips.onlyOnce=Whether the dialogue should only be completable once.
@@ -318,6 +321,13 @@ placements.entities.bigWaterfall.tooltips.layer=Where the waterfall should rende
 # Sound Source
 placements.entities.soundSource.tooltips.sound=The sound event that will be played.
 
+# Summit Background Manager
+placements.entities.SummitBackgroundManager.tooltips.dark=Whether the background is dark or not.
+placements.entities.SummitBackgroundManager.tooltips.cutscene=Dialog ID of cutscene to display. Leave empty for no cutscene.
+placements.entities.SummitBackgroundManager.tooltips.index=Index of text to display when ascending. -1 for no text.
+placements.entities.SummitBackgroundManager.tooltips.intro_launch=Used for first boost in Summit. Does not start the cutscene dialogue.
+placements.entities.SummitBackgroundManager.tooltips.ambience=Ambience background music.
+
 # Hahaha
 placements.entities.hahaha.tooltips.ifset=Only show up if the given flag is set, or always if left empty.
 placements.entities.hahaha.tooltips.triggerLaughSfx=Whether the laugh should also play audio.
@@ -328,6 +338,7 @@ placements.entities.finalBossMovingBlock.tooltips.nodeIndex=The node index of th
 # Everest Core Message
 placements.entities.everest/coreMessage.tooltips.line=Which line of the dialogue to use.
 placements.entities.everest/coreMessage.tooltips.dialog=The dialogue key to use.
+placements.entities.everest/coreMessage.tooltips.outline=Whether the text has a black outline or not.
 
 # Star Jump Block
 placements.entities.starJumpBlock.tooltips.sinks=Whether the block sinks when the player stands on it.
@@ -383,6 +394,8 @@ placements.entities.birdPath.tooltips.speedMult=Speed multiplier for the flight 
 # Crystal Heart
 placements.entities.blackGem.tooltips.fake=Whether the heart is fake and should visually be grey. Triggers the Farewell fake heart cutscene.
 placements.entities.blackGem.tooltips.removeCameraTriggers=Whether the heart should remove camera triggers onces its triggered. Only usable if fake attribute is set.
+placements.entities.blackGem.tooltips.fakeHeartDialog=Initial dialogue for the fake heart.
+placements.entities.blackGem.tooltips.keepGoingDialog=Dialogue after the fake heart shatters.
 
 # Fake Crystal Heart
 placements.entities.fakeHeart.tooltips.color=Which colour to use for the heart.\nNormal - Blue\nBSide - Red\nCSide - Yellow
@@ -491,7 +504,7 @@ placements.triggers.cameraOffsetTrigger.tooltips.cameraY=Offsets the player came
 placements.triggers.noRefillTrigger.tooltips.state=Determines whether the player is capable of acquiring refills upon touching the ground.
 
 # Minitextbox Trigger
-placements.triggers.minitextboxTrigger.tooltips.only_once=Triggers the dialogue the dialogue ID references only once.
+placements.triggers.minitextboxTrigger.tooltips.only_once=Triggers the dialogue the dialog ID references only once.
 placements.triggers.minitextboxTrigger.tooltips.mode=Determines how the mini text box will trigger.
 placements.triggers.minitextboxTrigger.tooltips.dialog_id=References from English.txt in the map's Dialog folder to use as text in-game.
 placements.triggers.minitextboxTrigger.tooltips.death_count=Determines the exact amount of deaths required to activate the mini text box trigger. Will always trigger if set to -1.
@@ -511,7 +524,7 @@ placements.triggers.altMusicTrigger.tooltips.track=Changes the track that plays 
 
 # Dialog Trigger (Everest)
 placements.triggers.everest/dialogTrigger.tooltips.onlyOnce=Whether the dialogue should only trigger once.
-placements.triggers.everest/dialogTrigger.tooltips.dialogId=The dialogue ID to use for the dialogue.
+placements.triggers.everest/dialogTrigger.tooltips.dialogId=The dialog ID to use for the dialogue.
 placements.triggers.everest/dialogTrigger.tooltips.endLevel=Whether finishing the dialog triggers the level to end.
 placements.triggers.everest/dialogTrigger.tooltips.deathCount=Determines the exact amount of deaths required to activate dialog trigger. Will always trigger if set to -1.
 
@@ -533,18 +546,21 @@ placements.triggers.blackholeStrength.tooltips.strength=Sets the next visual app
 # Rumble Trigger
 placements.triggers.rumbleTrigger.tooltips.manualTrigger=If set to true, this is not triggered by a player walking into it and can only be triggered by code.
 placements.triggers.rumbleTrigger.tooltips.persistent=Once turned on, it will stay activated, even if the player dies.
+placements.triggers.rumbleTrigger.tooltips.constrainHeight=Whether the trigger respects the Y values of the nodes.
 
 # Detach Followers Trigger
 placements.triggers.detachFollowersTrigger.tooltips.global=Whether the entities following you should get the 'global' instead of the 'persistent' tag.
 
 # Everest Activate Dream Blocks Trigger
-placements.triggers.everest/activateDreamBlocksTrigger.tooltips.fullRoutine=Whether the Space Jam should play the whole animation of activation, rather than just instantly looking ready.
+placements.triggers.everest/activateDreamBlocksTrigger.tooltips.fullRoutine=Whether the Space Jam should play the whole animation, rather than just instantly looking ready.
+placements.triggers.everest/activateDreamBlocksTrigger.tooltips.activate=Whether the Space Jam should become usable or not.
+placements.triggers.everest/activateDreamBlocksTrigger.tooltips.fastAnimation=Whether a faster animation should be used.
 
 # Everest Custom Bird Tutorial
 placements.triggers.everest/customBirdTutorialTrigger.tooltips.birdId=Which bird the trigger should affect.
 placements.triggers.everest/customBirdTutorialTrigger.tooltips.showTutorial=If ticked, the targeted bird will show its speech bubble. If unchecked, the bird will fly away.
 
-# -- Effects -- 
+# -- Effects --
 
 placements.effects.tentacles.names.sides=Sides
 placements.effects.tentacles.names.offset=Offset
@@ -618,6 +634,7 @@ settings.config.names.camera_minimum_zoom=Minimum camera zoom
 settings.config.names.load_plugins_ahorn_zip=Load plugins from Ahorn zip files
 settings.config.names.use_simple_room_values=Simple room values
 settings.config.names.sort_rooms_on_save=Sort rooms on save
+settings.config.names.sort_brush_tiles_by_name=Sort brush tile names
 settings.config.names.use_grid_snapping=Use grid snapping
 settings.config.names.prompt_bad_resource_exts=Prompt on bad resources
 settings.config.names.search_entities_raw_name=Search entities by raw name
@@ -636,6 +653,7 @@ settings.config.names.backup_dialog_enabled=Backup Recovery Dialogue
 settings.config.names.allow_out_of_bounds_placement=Out of bounds placement
 settings.config.names.everest_rcon=Everest Remote Control
 settings.config.names.load_image_meta_yaml=Load Image Meta YAML
+settings.config.names.split_atlas_into_smaller_surfaces=Split Up Celeste Atlases
 
 settings.config.tooltips.language=The language file being used.
 settings.config.tooltips.camera_maximum_zoom=The greatest allowed camera zoom level.
@@ -652,6 +670,7 @@ settings.config.tooltips.camera_minimum_zoom=The smallest allowed camera zoom le
 settings.config.tooltips.load_plugins_ahorn_zip=Load plugins from zip files inside the Ahorn config directory.
 settings.config.tooltips.use_simple_room_values=Use tile units instead of pixels for positions and sizes. One tile unit equals 8 pixels.
 settings.config.tooltips.sort_rooms_on_save=When saving, rooms are reordered based on their name.
+settings.config.tooltips.sort_brush_tiles_by_name=Sort brush tile names by display name rather than tileset ID.
 settings.config.tooltips.use_grid_snapping=Snap selections and sizes to the tile grid. Can be overridden by holding Ctrl.
 settings.config.tooltips.prompt_bad_resource_exts=Prompt the user when resources (e.g. textures) with bad file extensions are detected and assist with fixing them.
 settings.config.tooltips.search_entities_raw_name=The search results include entities matching by raw name.
@@ -670,6 +689,7 @@ settings.config.tooltips.backup_dialog_enabled=Whether Ahorn should ask the user
 settings.config.tooltips.allow_out_of_bounds_placement=Whether you should be able to click outside of the room to place entities, triggers or decals.
 settings.config.tooltips.everest_rcon=URL for Everest remote control.
 settings.config.tooltips.load_image_meta_yaml=Loads the .meta.yaml image metadata files dumped by old Everest image dumps.\nNot recommended, If sprites are offset incorrectly, fix the sprite itself.
+settings.config.tooltips.split_atlas_into_smaller_surfaces=Splits the atlases from Celeste into smaller images for better performance. (Requires restart)
 
 
 settings.debug.names.DEBUG_MENU_DROPDOWN=Debug menu dropdown
@@ -685,6 +705,7 @@ settings.debug.names.ENABLE_HOTSWAP_HOTKEYS=Enable hotswap hotkeys
 settings.debug.names.DRAWING_VERBOSE=Verbose drawing
 settings.debug.names.DISABLE_LOADING_SCREEN=Disable loading screen
 settings.debug.names.SPRITE_DUMPER_REAL_SIZE=Sprite dumper: Use real size
+settings.debug.names.ZIP_CACHING_VERBOSE=Verbose zip caching
 
 settings.debug.tooltips.DEBUG_MENU_DROPDOWN=Activate the Debug menu dropdown for various functionality useful for developing Ahorn. (Requires restart)
 settings.debug.tooltips.IGNORE_MINIMUM_SIZE=Ignore the minimum size of entities and triggers when resizing them. Can cause major visual weirdness.
@@ -699,6 +720,7 @@ settings.debug.tooltips.ENABLE_HOTSWAP_HOTKEYS=Enable hotkeys for Ahorn code dev
 settings.debug.tooltips.DRAWING_VERBOSE=Verbosely log when redrawing layers.
 settings.debug.tooltips.DISABLE_LOADING_SCREEN=Disables the loading screen. Faster startup, but window will appear unresponsive.
 settings.debug.tooltips.SPRITE_DUMPER_REAL_SIZE=Whether the sprite dumper should use the real size of the sprite or cut off unused blank space.
+settings.debug.tooltips.ZIP_CACHING_VERBOSE=Verbosely log when caching zip files.
 
 
 # -- Room Window Displaynames and Tooltips --
@@ -868,7 +890,7 @@ meta_window.meta.tooltips.BloomStrength=The strength of the bloom.
 meta_window.meta.tooltips.CoreMode=Starting core mode (fire or ice). Can be changed in-game using core mode toggles.
 meta_window.meta.tooltips.CassetteSong=Song played in the cassette room.
 meta_window.meta.tooltips.IntroType=The way you enter the first room upon starting the map.
-meta_window.meta.tooltips.Wipe=The animation that plays when the player respawns.\nExample use cases from the game.\n Angled - Prologue\n Curtain - Forsaken City\n Dream - Old Site\n KeyDoor - Celestial Resort\n Wind - Golden Ridge\n Drop - Mirror Temple\n Fall - Reflection\n Mountain - Summit\n Heart - Core\n Fade - Cutscenes\n Spotlight - Cutscenes
+meta_window.meta.tooltips.Wipe=The animation that plays when the player respawns.\nExample use cases from the game.\n Curtain - Prologue\n Angled - Forsaken City\n Dream - Old Site\n KeyDoor - Celestial Resort\n Wind - Golden Ridge\n Drop - Mirror Temple\n Fall - Reflection\n Mountain - Summit\n Heart - Core\n Fade - Cutscenes\n Spotlight - Cutscenes
 meta_window.meta.tooltips.AnimatedTiles=The XML file to use for custom Animated Tiles. Relative to mod root, temporarily used in place of the vanilla XML.
 meta_window.meta.tooltips.ForegroundTiles=The XML file to use for custom Foreground Tiles. Relative to mod root, temporarily used in place of the vanilla XML.
 meta_window.meta.tooltips.BackgroundTiles=The XML file to use for custom Background Tiles. Relative to mod root, temporarily used in place of the vanilla XML.

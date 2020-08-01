@@ -1,5 +1,7 @@
 using ZipFile
 
+include("helpers/zip_file_helper.jl")
+
 function getAhornModDirs()
     if !get(config, "load_plugins_ahorn", true)
         return String[]
@@ -184,37 +186,48 @@ function warnBadExtensions(fixable::Array{String, 1}, nonFixable::Array{String, 
     return res
 end
 
-const spriteZipCache = Dict{String, Any}()
+const resourceZipCache = Dict{String, Any}()
+
+function getSpriteAtlasAndResource(filename::String)
+    parts = split(filename, "/")
+    atlas = parts[3]
+    resource = join(parts[3:end], "/")
+
+    return atlas, resource
+end
 
 # Resource prefix filters uneeded files, uses unix paths
-function cacheZipContent(filename::String, resourcePrefix::String="Graphics/Atlases/Gameplay/")
+function cacheZipContent(filename::String, resourcePrefix::String="Graphics/Atlases/Gameplay/", ahornPrefix::String="Ahorn/")
     debug.log("Caching zip content for $filename", "ZIP_CACHING_VERBOSE")
 
-    spriteZipCache[filename] = Dict{String, Any}()
+    resourceZipCache[filename] = Dict{String, Any}()
 
     # Always uses Unix path
     zipfh = ZipFile.Reader(filename)
 
     for file in zipfh.files
         if startswith(file.name, resourcePrefix)
-            parts = split(file.name, "/")
-            atlas = parts[3]
-            resource = join(parts[3:end], "/")
-
             if hasExt(file.name, ".png")
-                spriteZipCache[filename][resource] = Cairo.read_from_png(file)
+                atlas, resource = getSpriteAtlasAndResource(file.name)
+                resourceZipCache[filename][resource] = Cairo.read_from_png(fastZipFileRead(file, IOBuffer))
 
             elseif hasExt(file.name, ".meta.yaml")
                 try
-                    spriteZipCache[filename][resource] = YAML.load(String(read(file)))
+                    atlas, resource = getSpriteAtlasAndResource(file.name)
+                    resourceZipCache[filename][resource] = YAML.load(fastZipFileRead(file, String))
 
                 catch
                     # Bad yaml file
                 end
             end
+
+        elseif startswith(file.name, ahornPrefix)
+            if hasExt(file.name, ".jl")
+                resourceZipCache[filename][file.name] = fastZipFileRead(file, String)
+            end
         end
     end
-    
+
     close(zipfh)
 end
 
@@ -222,7 +235,7 @@ end
 function uncacheZipContent(filename::String)
     debug.log("Uncaching zip content for $filename", "ZIP_CACHING_VERBOSE")
 
-    fileCache = get(spriteZipCache, filename, nothing)
+    fileCache = get(resourceZipCache, filename, nothing)
 
     if fileCache !== nothing
         for (resource, data) in fileCache
@@ -235,7 +248,7 @@ end
 
 function findExternalSpritesInZip(filename::String, atlasesPath::String, atlasesUnixPath::String, badExt::Array{String, 1}, allowRetry::Bool=true)
     res = Tuple{String, String, String}[]
-    fileCache = get(spriteZipCache, filename, nothing)
+    fileCache = get(resourceZipCache, filename, nothing)
 
     if fileCache !== nothing
         for (resource, data) in fileCache
@@ -258,9 +271,6 @@ function findExternalSpritesInZip(filename::String, atlasesPath::String, atlases
             cacheZipContent(filename)
 
             return findExternalSpritesInZip(filename, atlasesPath, atlasesUnixPath, badExt, false)
-        
-        else
-            return res
         end
     end
 
@@ -308,7 +318,7 @@ function findAllExternalSprites()
 
     folderFileBadExt = String[]
     zipFileBadExt = String[]
-    
+
     targetFolders = getCelesteModDirs()
     targetZips = getCelesteModZips()
     atlasesPath = joinpath("Graphics", "Atlases")
@@ -331,7 +341,65 @@ function findAllExternalSprites()
             return findAllExternalSprites()
         end
     end
-    
+
+    return res
+end
+
+function findExternalModulesInZip(filename::String, pluginPath::String, allowRetry::Bool=true)
+    res = Tuple{String, String, String}[]
+    fileCache = get(resourceZipCache, filename, nothing)
+
+    if fileCache !== nothing
+        for (resource, data) in fileCache
+            if startswith(resource, pluginPath) && hasExt(resource, ".jl")
+                push!(res, (filename, resource, data))
+            end
+        end
+
+    else
+        if allowRetry
+            cacheZipContent(filename)
+
+            return findExternalModulesInZip(filename, pluginPath, false)
+        end
+    end
+
+    return res
+end
+
+function findExternalModulesInFolder(filename::String, pluginPath::String)
+    res = Tuple{String, String, String}[]
+
+    pluginDir = joinpath(filename, pluginPath)
+
+    if !isdir(pluginDir)
+        return res
+    end
+
+    for file in readdir(pluginDir)
+        if hasExt(file, ".jl")
+            rawpath = joinpath(pluginDir, file)
+            push!(res, (rawpath, rawpath, open(f -> read(f, String), rawpath)))
+        end
+    end
+
+    return res
+end
+
+function findAllExternalModules(pluginPath::String)
+    res = Tuple{String, String, String}[]
+
+    targetFolders = getCelesteModDirs()
+    targetZips = getCelesteModZips()
+
+    for target in targetFolders
+        append!(res, findExternalModulesInFolder(target, pluginPath))
+    end
+
+    for target in targetZips
+        append!(res, findExternalModulesInZip(target, pluginPath))
+    end
+
     return res
 end
 
@@ -384,25 +452,25 @@ function loadLangdata()
     lang = get(config, "language", "en_gb")
     internalFilename = abspath("../lang/$lang.lang")
 
-    res = parseLangfile(String(read(internalFilename)))
+    res = parseLangfile(read(internalFilename, String))
 
     for folder in targetFolders
         fn = joinpath(folder, "lang", "$(lang).lang")
         if ispath(fn)
-            content = String(read(fn))
+            content = read(fn, String)
             parseLangfile(content, init=res)
         end
     end
 
     for fn in targetZips
         zipfh = ZipFile.Reader(fn)
-        
+
         for file in zipfh.files
             name = file.name
             path, fnext = splitext(name)
 
             if path == "Ahorn/lang/$(lang)" && hasExt(name, ".lang")
-                content = String(read(file))
+                content = fastZipFileRead(file, String)
                 parseLangfile(content, init=res)
             end
         end
@@ -446,31 +514,26 @@ function loadExternalModules!(loadedModules::Dict{String, Module}, loadedNames::
     )
 
     for target in targets
-        zipfh = ZipFile.Reader(target)
+        targetMtime = stat(target).mtime
+        moduleData = findExternalModulesInZip(target, path)
 
-        for file in zipfh.files
-            name = file.name
+        for (rawpath, relative, content) in moduleData
+            fakeFn = rawpath * ":" * relative * ".from_zip"
 
-            if startswith(name, path) && file.uncompressedsize > 0
-                # Add .from_zip to the filename
-                # Prevents hotswaping from trying to access invalid file
-                fakeFn = name * ".from_zip"
-
-                try
-                    content = String(read(file))
-                    loadedModules[fakeFn] = eval(Meta.parse(content))
-
-                    if !(fakeFn in loadedNames)
-                        push!(loadedNames, fakeFn)
-                    end
-
-                catch e
-                    println(Base.stderr, "! Failed to load \"$name\" from \"$target\"")
-                    println(Base.stderr, e)
+            try
+                if targetMtime > get(loadedModulesTimes, fakeFn, 0)
+                    loadedModules[fakeFn] = Base.eval(Main, Meta.parse(content))
+                    loadedModulesTimes[fakeFn] = targetMtime
                 end
+
+                if !(fakeFn in loadedNames)
+                    push!(loadedNames, fakeFn)
+                end
+
+            catch e
+                println(Base.stderr, "! Failed to load \"$name\" from \"$target\"")
+                println(Base.stderr, e)
             end
         end
-
-        close(zipfh)
     end
 end

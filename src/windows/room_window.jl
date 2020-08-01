@@ -161,7 +161,7 @@ end
 function handleRoomSize(data::Dict{String, Any}, simple::Bool=get(Ahorn.config, "use_simple_room_values", true), parent::Gtk.GtkWindow=Ahorn.window)
     minimumRecommendedDisplay = (floor(Int, 320 / (simple ? 8 : 1)), floor(Int, 184 / (simple ? 8 : 1)))
     if any(data["size"] .< minimumRecommended)
-        if !Ahorn.topMostAskDialog("The size you have chosen is smaller than the recommended minimum size $minimumRecommended.\nAre you sure you want this size?", parent)
+        if !Ahorn.topMostAskDialog("The size you have chosen is smaller than the recommended minimum size $minimumRecommendedDisplay.\nAre you sure you want this size?", parent)
             return true
         end
     end

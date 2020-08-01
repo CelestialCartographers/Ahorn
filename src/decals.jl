@@ -33,7 +33,9 @@ function drawDecal(ctx::Cairo.CairoContext, decal::Maple.Decal; alpha=nothing)
     sx, sy = round(Int, decal.scaleX), round(Int, decal.scaleY)
 
     if width > 0 && height > 0
-        if ctx.ptr != C_NULL
+        # Don't render with either scale being 0, causes permanent issues to the drawing context
+        # For some reason this doesn't seem to be restored properly by restore
+        if ctx.ptr != C_NULL && sx != 0 && sy != 0
             Cairo.save(ctx)
 
             translate(ctx, x, y)
@@ -42,7 +44,7 @@ function drawDecal(ctx::Cairo.CairoContext, decal::Maple.Decal; alpha=nothing)
             translate(ctx, -realWidth / 2, -realHeight / 2)
 
             drawImage(ctx, sprite, 0, 0, alpha=alpha)
-            
+
             restore(ctx)
         end
 

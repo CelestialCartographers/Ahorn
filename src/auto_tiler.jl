@@ -97,6 +97,9 @@ struct Ignore
     Ignore(s::String) = new('*' in s, filter(c -> c != '*', s))
 end
 
+getTilesetId(id::String) = getTilesetId(id[1])
+getTilesetId(id::Char) = codepoint(id) <= 0xff ? id : nothing
+
 function loadTilesetXML(fn::String)
     xdoc = parse_file(fn)
     xroot = root(xdoc)
@@ -110,10 +113,15 @@ function loadTilesetXML(fn::String)
     orderedElements = sort(collect(child_elements(xroot)), by=set -> attribute(set, "copy") !== nothing)
 
     for set in orderedElements
-        id = attribute(set, "id")[1] # Char doesn't work on 1 length string?
+        rawId = attribute(set, "id")
+        id = getTilesetId(rawId)
         path = attribute(set, "path")
         copyTileset = attribute(set, "copy")
         ignore = attribute(set, "ignores")
+
+        if id === nothing
+            error("Tileset ID must be ASCII character, got '$rawId'")
+        end
 
         paths[id] = "tilesets/$path"
 

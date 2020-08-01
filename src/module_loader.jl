@@ -1,17 +1,24 @@
 const loadedModules = Dict{String, Module}()
+const loadedModulesTimes = Dict{String, Float64}()
 
-function loadModule(fn::String)
+function loadModule(fn::String, force::Bool=false)
     # Explicit check for .jl extensions
     # Modules from zip will have .jl.from_zip to prevent loading via this method
-    
+
     if !hasExt(fn, ".jl")
         return false
     end
 
     try
-        loadedModules[fn] = include(fn)
+        if stat(fn).mtime > get(loadedModulesTimes, fn, 0) || force
+            loadedModules[fn] = Base.eval(Main, Meta.parse(open(file -> read(file, String), fn)))
+            loadedModulesTimes[fn] = stat(fn).mtime
 
-        return true
+            return true
+
+        else
+            return false
+        end
 
     catch e
         println(Base.stderr, "! Failed to load \"$fn\"")

@@ -1,4 +1,4 @@
-struct Sprite
+mutable struct Sprite
     x::Int
     y::Int
 
@@ -12,6 +12,10 @@ struct Sprite
 
     surface::Cairo.CairoSurface
     filename::String
+
+    function Sprite(x, y, width, height, offsetX, offsetY, realWidth, realHeight, surface, filename)
+        return finalizer(s -> deleteSurface(s.surface), new(x, y, width, height, offsetX, offsetY, realWidth, realHeight, surface, filename))
+    end
 end
 
 mutable struct SpriteHolder
@@ -21,7 +25,18 @@ mutable struct SpriteHolder
     path::String
 end
 
+function prepareSurfaceForQuad(atlasSurface::Cairo.CairoSurface, x, y, width, height, offsetX, offsetY, realWidth, realHeight)
+    surface = CairoARGBSurface(width, height)
+    ctx = getSurfaceContext(surface)
+
+    drawImage(ctx, atlasSurface, 0, 0, x, y, width, height)
+
+    return surface
+end
+
 function loadSprites(metaFn::String, spritesFn::String)
+    splitAtlas = get(config, "split_atlas_into_smaller_surfaces", true)
+
     surface = open(Cairo.read_from_png, spritesFn)
     fh = open(metaFn)
 
@@ -40,19 +55,33 @@ function loadSprites(metaFn::String, spritesFn::String)
         for j in 1:sprites
             path = replace(Maple.readString(fh), "\\" => "/")
 
+            x = read(fh, Int16)
+            y = read(fh, Int16)
+
+            width = read(fh, Int16)
+            height = read(fh, Int16)
+
+            offsetX = read(fh, Int16)
+            offsetY = read(fh, Int16)
+            realWidth = read(fh, Int16)
+            realHeight = read(fh, Int16)
+
+            quadSurface = splitAtlas ? prepareSurfaceForQuad(surface, x, y, width, height, offsetX, offsetY, realWidth, realHeight) : surface
+
             sprite = Sprite(
-                read(fh, Int16),
-                read(fh, Int16),
+                splitAtlas ? 0 : x,
+                splitAtlas ? 0 : y,
 
-                read(fh, Int16),
-                read(fh, Int16),
+                width,
+                height,
 
-                read(fh, Int16),
-                read(fh, Int16),
-                read(fh, Int16),
-                read(fh, Int16),
+                offsetX,
+                offsetY,
 
-                surface,
+                realWidth,
+                realHeight,
+
+                quadSurface,
                 spritesFn
             )
 
@@ -63,6 +92,10 @@ function loadSprites(metaFn::String, spritesFn::String)
                 spritesFn
             )
         end
+    end
+
+    if splitAtlas
+        deleteSurface(surface)
     end
 
     close(fh)

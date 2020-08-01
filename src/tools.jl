@@ -4,6 +4,8 @@ const loadedTools = joinpath.(abs"tools", readdir(abs"tools"))
 loadModule.(loadedTools)
 currentTool = nothing
 
+const favoriteMark = "* "
+
 function getToolName(tool::String)
     if hasModuleField(tool, "displayName")
         return getModuleField(tool, "displayName")
@@ -44,9 +46,16 @@ connectChanged(layersList) do list::ListContainer, selected::String
     updateMaterialFilter!(selected)
 end
 
-materialList = generateTreeView("Material", Tuple{String}[], sortable=false)
-connectChanged(materialList) do list::ListContainer, selected::String
+materialList = generateTreeView(("", "Material"), Tuple{String, String}[], sortable=false, visible=[false, true])
+connectChanged(materialList) do list::ListContainer, selected::String, displayName::String
     eventToModule(currentTool, "materialSelected", list, selected)
+end
+
+connectDoubleClick(materialList) do list::ListContainer, selected::String, displayName::String
+    if currentTool !== nothing
+        eventToModule(currentTool, "materialDoubleClicked", selected)
+        eventToModule(currentTool, "materialDoubleClicked", list, selected)
+    end
 end
 
 function updateMaterialFilter!(layer::String)
@@ -55,7 +64,7 @@ function updateMaterialFilter!(layer::String)
         searchText = get(persistence, "material_search_$layer", "")
         Gtk.GLib.@sigatom GAccessor.text(materialFilterEntry, "")
         Gtk.GLib.@sigatom GAccessor.text(materialFilterEntry, searchText)
-    
+
     else
         Gtk.GLib.@sigatom GAccessor.text(materialFilterEntry, "")
     end
@@ -71,11 +80,15 @@ function changeTool!(tool::String)
 
         if tool in loadedTools
             global currentTool = tool
-        
+
+            persistence["selected_tool"] = tool
+
         elseif haskey(toolDisplayNames, tool)
             global currentTool = toolDisplayNames[tool]
+
+            persistence["selected_tool"] = tool
         end
-        
+
         # Clear the subtool and material list
         # Tools need to set up this themselves
         updateTreeView!(subtoolList, [])
@@ -108,8 +121,17 @@ connectChanged(toolList) do list::ListContainer, selected::String
     changeTool!(selected)
 end
 
+# Initialize the tree view and select the tool from last session
 function updateToolList!(list::ListContainer)
-    updateTreeView!(list, getSortedToolNames(loadedTools), 1)
+    if haskey(persistence, "selected_tool")
+        toolName = persistence["selected_tool"]
+        toolDisplayName = getToolName(persistence["selected_tool"])
+
+        updateTreeView!(list, getSortedToolNames(loadedTools), row -> row[1] == toolName || row[1] == toolDisplayName)
+
+    else
+        updateTreeView!(list, getSortedToolNames(loadedTools), 1)
+    end
 end
 
 function selectionRectangle(x1::Number, y1::Number, x2::Number, y2::Number)
@@ -128,7 +150,7 @@ function updateSelectionByCoords!(map::Map, ax::Number, ay::Number)
     if room != false && room.name != loadedState.roomName
         selectRow!(roomList, row -> row[1] == room.name)
         handleRoomChanged(Ahorn.loadedState.map, Ahorn.loadedState.room)
-    
+
         return true
     end
 
@@ -144,12 +166,31 @@ function selectMaterialList!(m::String)
     selectRow!(materialList, row -> row[1] == m)
 end
 
+function generateMaterialColumns(materials::Array{String, 1})
+    favorites = something(eventToModule(currentTool, "getFavorites"), [])
+    favorited = []
+    notFavorited = []
+
+    for (i, material) in enumerate(materials)
+        if material in favorites
+            push!(favorited, (material, favoriteMark * material))
+
+        else
+            push!(notFavorited, (material, material))
+        end
+    end
+
+    return vcat(favorited, notFavorited)
+end
+
 function setMaterialList!(materials::Array{String, 1}, selector::listViewSelectUnion=nothing)
+    materialColumns = generateMaterialColumns(materials)
+
     if selector !== nothing
-        updateTreeView!(materialList, materials, selector)
-    
+        updateTreeView!(materialList, materialColumns, selector)
+
     else
-        updateTreeView!(materialList, materials)
+        updateTreeView!(materialList, materialColumns)
     end
 end
 

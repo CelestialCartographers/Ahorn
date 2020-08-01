@@ -108,7 +108,7 @@ function updateMaterialsEntities!()
     sort!(selectables)
 
     if !isa(clonedEntity, Maple.Entity)
-        wantedEntity = get(Ahorn.persistence, "placements_placements_entity", selectables[1])
+        wantedEntity = get(Ahorn.persistence, "placements_placements_entity", nothing)
         Ahorn.setMaterialList!(selectables, row -> row[1] == wantedEntity)
     end
 end
@@ -118,7 +118,7 @@ function updateMaterialsTriggers!()
     sort!(selectables)
 
     if !isa(clonedEntity, Maple.Trigger)
-        wantedTrigger = get(Ahorn.persistence, "placements_placements_trigger", selectables[1])
+        wantedTrigger = get(Ahorn.persistence, "placements_placements_trigger", nothing)
         Ahorn.setMaterialList!(selectables, row -> row[1] == wantedTrigger)
     end
 end
@@ -126,7 +126,7 @@ end
 function updateMaterialsDecals!()
     textures = Ahorn.decalTextures()
 
-    wantedDecal = get(Ahorn.persistence, "placements_placements_decal", textures[1])
+    wantedDecal = get(Ahorn.persistence, "placements_placements_decal", nothing)
     Ahorn.setMaterialList!(textures, row -> row[1] == wantedDecal)
 end
 
@@ -146,19 +146,23 @@ function toolSelected(subTools::Ahorn.ListContainer, layers::Ahorn.ListContainer
     Ahorn.redrawLayer!(toolsLayer)
 end
 
-function layerSelected(list::Ahorn.ListContainer, materials::Ahorn.ListContainer, selected::String)
-    prevLayer = Ahorn.layerName(targetLayer)
-    global targetLayer = Ahorn.getLayerByName(drawingLayers, selected)
-
+function updateMaterials!(materials::Ahorn.ListContainer, selected::String)
     if selected == "entities"
         updateMaterialsEntities!()
 
     elseif selected == "triggers"
         updateMaterialsTriggers!()
 
-    elseif (selected == "fgDecals" || selected == "bgDecals") && prevLayer != "fgDecals" && prevLayer != "bgDecals" || isempty(materials.data)
+    elseif selected == "fgDecals" || selected == "bgDecals" || isempty(materials.data)
         updateMaterialsDecals!()
     end
+end
+
+function layerSelected(list::Ahorn.ListContainer, materials::Ahorn.ListContainer, selected::String)
+    prevLayer = Ahorn.layerName(targetLayer)
+    global targetLayer = Ahorn.getLayerByName(drawingLayers, selected)
+
+    updateMaterials!(materials, selected)
 
     global previewGhost = nothing
 
@@ -166,7 +170,7 @@ function layerSelected(list::Ahorn.ListContainer, materials::Ahorn.ListContainer
 end
 
 function subToolSelected(list::Ahorn.ListContainer, selected::String)
-    
+
 end
 
 function materialSelected(list::Ahorn.ListContainer, selected::String)
@@ -187,7 +191,7 @@ function materialSelected(list::Ahorn.ListContainer, selected::String)
             Ahorn.persistence["placements_placements_trigger"] = selected
         end
 
-    elseif layerName == "fgDecals" || layerName == "bgDecals" 
+    elseif layerName == "fgDecals" || layerName == "bgDecals"
         global material = selected
         Ahorn.persistence["placements_placements_decal"] = selected
     end
@@ -205,6 +209,26 @@ function materialFiltered(list::Ahorn.ListContainer)
     end
 
     Ahorn.selectRow!(list, row -> row[1] == materialName)
+end
+
+function getFavorites()
+    if targetLayer !== nothing
+        key = "favorites_placements_$(targetLayer.name)"
+
+        return Ahorn.getFavorites(Ahorn.persistence, key)
+    end
+
+    return []
+end
+
+function materialDoubleClicked(material::String)
+    if targetLayer !== nothing
+        key = "favorites_placements_$(targetLayer.name)"
+
+        Ahorn.toggleFavorite(Ahorn.persistence, key, material)
+        updateMaterials!(Ahorn.materialList, targetLayer.name)
+        Ahorn.updateMaterialFilter!(targetLayer.name)
+    end
 end
 
 function updatePreviewGhost(x::Number, y::Number)
@@ -326,7 +350,7 @@ end
 function rightClickAbs(x::Number, y::Number)
     Ahorn.displayProperties(x, y, Ahorn.loadedState.room, targetLayer, toolsLayer)
 
-    Ahorn.redrawLayer!(toolsLayer)        
+    Ahorn.redrawLayer!(toolsLayer)
 end
 
 function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)

@@ -10,47 +10,68 @@ function getFilesRecursively(path::String)
     files = String[]
     folders = String[]
 
-    for file in readdir(path)
-        filename = joinpath(path, file)
+    if isdir(path)
+        for file in readdir(path)
+            filename = joinpath(path, file)
 
-        if isdir(filename)
-            subFiles, subFolders = getFilesRecursively(filename)
+            if isdir(filename)
+                subFiles, subFolders = getFilesRecursively(filename)
 
-            push!(folders, filename)
-            append!(folders, subFolders)
-            append!(files, subFiles)
+                push!(folders, filename)
+                append!(folders, subFolders)
+                append!(files, subFiles)
 
-        elseif isfile(filename)
-            push!(files, filename)
+            elseif isfile(filename)
+                push!(files, filename)
+            end
         end
     end
 
     return files, folders
 end
 
+function attemptToWatchFolder(path::String, timeout::Number=0.0)
+    if !(path in watchedFolders)
+        try
+            watch_folder(path, timeout)
+            push!(watchedFolders, path)
+
+        catch e
+            println(Base.stderr, "Failed to watch $path")
+
+            for (exc, bt) in Base.catch_stack()
+                showerror(Base.stderr, exc, bt)
+                println()
+            end
+        end
+    end
+end
+
 # Returns all added/updated filenames since last call
 # This is good enough for us, removed files don't need to be handled
 function processWatchEvents(basePath::String, recursive::Bool=true, timeout::Number=0.0)
-    if !(basePath in watchedFolders)
-        watch_folder(basePath, timeout)
-        push!(watchedFolders, basePath)
-    end
+    attemptToWatchFolder(basePath, timeout)
 
     addedFiles = Set{String}()
     removedFolders = Set{String}()
 
     for path in watchedFolders
-        # TODO - Check for better way for unwatching
-        if !ispath(path)
-            unwatch_folder(path)
-            push!(removedFolders, path)
+        try
+            # TODO - Check for better way for unwatching
+            if !ispath(path)
+                unwatch_folder(path)
+                push!(removedFolders, path)
 
-            continue
+                continue
+            end
+
+        catch
+            # Do nothing, check again next time
         end
 
         while true
             relative, event = watch_folder(path, timeout)
-            
+
             if event.timedout
                 # No changes since last check
 
@@ -71,9 +92,8 @@ function processWatchEvents(basePath::String, recursive::Bool=true, timeout::Num
                         watch_folder(filename, timeout)
                         push!(watchedFolders, filename)
 
-                        for folder in folders 
-                            watch_folder(folder, timeout)
-                            push!(watchedFolders, folder)
+                        for folder in folders
+                            attemptToWatchFolder(folder, timeout)
                         end
                     end
 

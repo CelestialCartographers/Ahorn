@@ -47,10 +47,10 @@ function loadConfig(fn::String, buffertime::Number=0, default::Dict{K, V}=Dict{A
     end
 
     if isfile(fn)
-        return Config(fn, open(JSON.parse, fn))
+        return Config(fn, buffertime, open(JSON.parse, fn))
 
     else
-        config = Config(fn, default)
+        config = Config(fn, buffertime, default)
         saveConfig(config)
 
         return config

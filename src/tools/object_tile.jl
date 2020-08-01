@@ -48,7 +48,7 @@ function cleanup()
     Ahorn.redrawLayer!(toolsLayer)
 end
 
-function setMaterials!(layer::Ahorn.Layer)
+function getMaterials()
     materials = String[Ahorn.ObjectTileNames.names[-1]]
     objSprite = Ahorn.getSprite("tilesets/scenery", "Gameplay")
 
@@ -64,7 +64,7 @@ function setMaterials!(layer::Ahorn.Layer)
     Ahorn.drawImage(ctx, "tilesets/scenery", 0, 0, atlas="Gameplay")
 
     data = surface.data
-    
+
     for x in 0:cellWidth - 1
         for y in 0:cellHeight - 1
             if !all(data[x * 8 + 1:x * 8 + 8, y * 8 + 1:y * 8 + 8] .== 0)
@@ -73,7 +73,13 @@ function setMaterials!(layer::Ahorn.Layer)
         end
     end
 
-    Ahorn.setMaterialList!(sort(materials), row -> row[1] == string(material))
+    sort!(materials)
+
+    return materials
+end
+
+function setMaterials!(layer::Ahorn.Layer)
+    Ahorn.setMaterialList!(getMaterials(), row -> row[1] == string(material))
 end
 
 function mouseMotion(x::Number, y::Number)
@@ -134,6 +140,26 @@ function materialFiltered(list::Ahorn.ListContainer)
     targetName = idToDisplayName(material)
 
     Ahorn.selectRow!(list, row -> row[1] == targetName)
+end
+
+function getFavorites()
+    if targetLayer !== nothing
+        key = "favorites_objtiles_$(targetLayer.name)"
+
+        return Ahorn.getFavorites(Ahorn.persistence, key)
+    end
+
+    return []
+end
+
+function materialDoubleClicked(material::String)
+    if targetLayer !== nothing
+        key = "favorites_objtiles_$(targetLayer.name)"
+
+        Ahorn.toggleFavorite(Ahorn.persistence, key, material)
+        Ahorn.setMaterialList!(getMaterials(), row -> row[1] == material)
+        Ahorn.updateMaterialFilter!(targetLayer.name)
+    end
 end
 
 function layersChanged(layers::Array{Ahorn.Layer, 1})

@@ -108,6 +108,7 @@ include("backups.jl")
 include("file_watcher.jl")
 include("loading_spinner.jl")
 include("object_tile_names.jl")
+include("favorites.jl")
 
 # Time Machine workaround
 sleep(0)

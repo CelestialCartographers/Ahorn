@@ -70,6 +70,7 @@ Ahorn supports a couple of keybinds and special mouse functionality, with more t
  - Alt + arrow keys: move a room
  - Alt + delete: delete room
  - Double click layer name in selection menu: toggle visibility
+ - Double click material name in tools: toggle favourite
  - Right click entity / trigger with placements / selection tool: open properties menu
  - Double click with selections selects all similar targets
  - Holding ctrl when doing the above restricts it to targets in a more strict manner
