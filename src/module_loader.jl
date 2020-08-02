@@ -11,7 +11,7 @@ function loadModule(fn::String, force::Bool=false)
 
     try
         if stat(fn).mtime > get(loadedModulesTimes, fn, 0) || force
-            loadedModules[fn] = Base.eval(Main, Meta.parse(open(file -> read(file, String), fn)))
+            loadedModules[fn] = Base.eval(Ahorn, Meta.parse(open(file -> read(file, String), fn)))
             loadedModulesTimes[fn] = stat(fn).mtime
 
             return true
