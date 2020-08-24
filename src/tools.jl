@@ -24,11 +24,13 @@ function getToolGroup(tool::String)
     end
 end
 
-toolDisplayNames = Dict{String, String}()
+const toolDisplayNames = Dict{String, String}()
+
 function updateToolDisplayNames!(tools::Array{String, 1})
-    global toolDisplayNames = Dict{String, String}(
-        getToolName(tool) => tool for tool in loadedTools if haskey(loadedModules, tool)
-    )
+    empty!(toolDisplayNames)
+    merge!(toolDisplayNames, Dict{String, String}(
+        getToolName(tool) => tool for tool in tools if haskey(loadedModules, tool)
+    ))
 end
 
 subtoolList = generateTreeView("Mode", Tuple{String}[], sortable=false)
@@ -104,12 +106,12 @@ function getSortedToolNames(tools::Array{String, 1})
     res = Tuple{String, String}[]
     for tool in tools
         group, name = getToolGroup(tool), getToolName(tool)
-        
+
         if group !== nothing && name !== nothing
             push!(res, (group, name))
         end
     end
-    
+
     sort!(res)
 
     return String[r[2] for r in res]

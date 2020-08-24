@@ -10,9 +10,11 @@ function loadModule(fn::String, force::Bool=false)
     end
 
     try
-        if stat(fn).mtime > get(loadedModulesTimes, fn, 0) || force
+        fileMtime = stat(fn).mtime
+
+        if fileMtime > get(loadedModulesTimes, fn, 0) || force
             loadedModules[fn] = Base.eval(Ahorn, Meta.parse(open(file -> read(file, String), fn)))
-            loadedModulesTimes[fn] = stat(fn).mtime
+            loadedModulesTimes[fn] = fileMtime
 
             return true
 
@@ -51,14 +53,14 @@ function eventToModule(modul::Module, funcname::String, args...)
 
                 for (exc, bt) in Base.catch_stack()
                     showerror(Base.stderr, exc, bt)
-                    println()
+                    println(Base.stderr, "")
                 end
             end
 
         else
             # Can't call the function with the arguments we have
             # This is normal, event is not consumed
-            
+
             return false
         end
 

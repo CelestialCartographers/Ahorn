@@ -329,6 +329,5 @@ function fillPlacementCache!(cache::Dict{String, T}, placements::PlacementDict, 
 end
 
 const loadedEntities = joinpath.(abs"entities", readdir(abs"entities"))
-loadModule.(loadedEntities)
 const entityPlacements = PlacementDict()
 const entityPlacementsCache = Dict{String, Entity}()

@@ -11,6 +11,8 @@ using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Cairo
 using Maple
 using Random
+using ZipFile
+using YAML
 
 function abspath(path::String)
     return normpath(joinpath(@__DIR__, path))
@@ -58,6 +60,7 @@ sleep(0)
 include("helpers/helpers.jl")
 include("helpers/macros.jl")
 include("helpers/config_helper.jl")
+include("helpers/zip_file_helper.jl")
 include("lang.jl")
 include("validation_entry.jl")
 include("mods.jl")

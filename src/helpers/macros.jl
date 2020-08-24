@@ -8,7 +8,7 @@ macro catchall(expr)
             
             for (exc, bt) in Base.catch_stack()
                 showerror(Base.stderr, exc, bt)
-                println()
+                println(Base.stderr, "")
             end
         end
     end

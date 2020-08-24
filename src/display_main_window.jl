@@ -34,14 +34,19 @@ function displayMainWindow()
     @progress initSprites() "Getting sprites ready..." progressDialog
     @progress initTilerMetas() "Getting tiles ready..." progressDialog
     @progress initCamera() "Getting camera ready..." progressDialog
-    @progress initLangdata() "Getting language files ready..." progressDialog
-    @progress initMenubar() "Getting menubar ready..." progressDialog
 
     @progress Backup.initBackup(persistence) "Starting backup handler..." progressDialog
     @progress FileWatcher.initFileWatcher(normpath(joinpath(config["celeste_dir"], "Mods"))) "Starting file watcher..." progressDialog
 
+    @progress initEntities() "Loading entities..." progressDialog
+    @progress initTriggers() "Loading triggers..." progressDialog
+    @progress initEffects() "Loading effects..." progressDialog
+
     @progress initExternalModules() "Loading external plugins..." progressDialog
     @progress loadAllExternalSprites!() "Loading external sprites..." progressDialog
+
+    @progress initLangdata() "Getting language files ready..." progressDialog
+    @progress initMenubar() "Getting menubar ready..." progressDialog
 
     @progress updateToolDisplayNames!(loadedTools) "Getting tools ready..." progressDialog
     @progress updateToolList!(toolList) "Getting tools ready..." progressDialog

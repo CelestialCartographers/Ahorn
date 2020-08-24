@@ -13,7 +13,7 @@ minimumRecommended = (320, 184)
 const roomFieldOrder = String[
     "name", "color",
     "x", "y",
-    "width", "height", 
+    "width", "height",
     "cameraOffsetX", "cameraOffsetY",
     "windPattern", "underwater", "space",
     "disableDownTransition", "checkpoint", "dark", "whisper",
@@ -22,16 +22,20 @@ const roomFieldOrder = String[
     "music",
 ]
 
+const songNames = sort(collect(keys(Maple.Songs.songs)))
+const windPatterns = sort(Maple.wind_patterns)
+const colors = collect(0:length(Ahorn.colors.background_room_color_coded_fill) - 1)
+
 const dropdownOptions = Dict{String, Any}(
-    "music" => sort(collect(keys(Maple.Songs.songs))),
-    "altMusic" => sort(collect(keys(Maple.Songs.songs))),
-    "windPattern" => sort(Maple.wind_patterns),
-    "color" => collect(0:length(Ahorn.colors.background_room_color_coded_fill) - 1)
+    "music" => songNames,
+    "altMusic" => songNames,
+    "windPattern" => windPatterns,
+    "color" => colors
 )
 
 # Symbols reads and sets values on the room, other values are stored in data dict
 const fields = Dict{String, Any}(
-    "checkpoint" => (room, simple) -> findfirst(e -> e.name == "checkpoint", room.entities) != nothing,
+    "checkpoint" => (room, simple) -> findfirst(e -> e.name == "checkpoint", room.entities) !== nothing,
 
     "width" => (room, simple) -> round(Int, room.size[1] / (simple ? 8 : 1)),
     "height" => (room, simple) -> round(Int, room.size[2] / (simple ? 8 : 1)),
@@ -66,17 +70,9 @@ const fields = Dict{String, Any}(
     "cameraOffsetY" => :cameraOffsetY
 )
 
-function getValue(room::Maple.Room, value::Any, simple::Bool)
-    if isa(value, Symbol)
-        return getfield(room, value)
-
-    elseif isa(value, Function)
-        return value(room, simple)
-
-    else
-        return value
-    end
-end
+getValue(room::Maple.Room, value::Symbol, simple::Bool) = getfield(room, value)
+getValue(room::Maple.Room, value::Function, simple::Bool) = value(room, simple)
+getValue(room::Maple.Room, value, simple::Bool) = value
 
 function getOptions(room::Maple.Room, dropdownOptions::Dict{String, Any}, langdata::Ahorn.LangData, simple::Bool=get(Ahorn.config, "use_simple_room_values", true))
     res = Ahorn.Form.Option[]
@@ -171,7 +167,7 @@ end
 
 function handleRoomName(data::Dict{String, Any}, currentRoom::Maple.Room, map::Maple.Map, creating::Bool=true, parent::Gtk.GtkWindow=Ahorn.window)
     exists = isa(Maple.getRoomByName(map, data["name"]), Maple.Room)
-    
+
     if exists
         if !creating && currentRoom.name == data["name"]
             return false

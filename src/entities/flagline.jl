@@ -23,7 +23,7 @@ function Ahorn.selection(entity::flagLineUnion)
     x, y = Ahorn.position(entity)
 
     res = Ahorn.Rectangle[Ahorn.Rectangle(x - 4, y - 4, 8, 8)]
-    
+
     for node in nodes
         nx, ny = node
 
@@ -68,7 +68,7 @@ const cliffMaxSpace = 8
 
 const flaglineUnion = Union{Maple.ClothesLine, Maple.CliffFlags}
 
-function renderFlagLine(ctx::Ahorn.Cairo.CairoContext, entity::flaglineUnion, lineColor::Ahorn.colorTupleType, pinColor::Ahorn.colorTupleType, colors::Array{Ahorn.colorTupleType, 1},
+function renderFlagLine(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Entity, lineColor::Ahorn.colorTupleType, pinColor::Ahorn.colorTupleType, colors::Array{Ahorn.colorTupleType, 1},
         minFlagHeight::Integer, maxFlagHeight::Integer, minFlagLength::Integer, maxFlagLength::Integer, minSpace::Integer, maxSpace::Integer)
     rng = Ahorn.getSimpleEntityRng(entity)
     x, y = Ahorn.position(entity)
@@ -123,15 +123,15 @@ function renderFlagLine(ctx::Ahorn.Cairo.CairoContext, entity::flaglineUnion, li
 
             flagCurve = Ahorn.SimpleCurve(lastPoint, point, (lastPoint .+ point) ./ 2 .+ (0, droopAmount * length))
             prevFlagPoint = Ahorn.getPoint(flagCurve, 1 / length)
-            
+
             Ahorn.setSourceColor(ctx, color)
 
             for i in 0:length
                 flagPoint = Ahorn.getPoint(flagCurve, i / length)
 
-                if flagPoint[1] > prevFlagPoint[1] 
+                if flagPoint[1] > prevFlagPoint[1]
                     segmentWidth = min(floor(Int, flagPoint[1] - prevFlagPoint[1]), point[1] - flagPoint[1])
-    
+
                     Ahorn.rectangle(ctx, flagPoint[1], flagPoint[2], segmentWidth, height - 1)
                 end
 
@@ -173,12 +173,12 @@ function Ahorn.renderSelectedAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Cl
             cliffMinFlagLength, cliffMaxFlagLength, cliffMinSpace, cliffMaxSpace)
 end
 
-function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.ClothesLine, room::Maple.Room)
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.ClothesLine)
     renderFlagLine(ctx, entity, clothesLineColor, clothesPinColor, clothesColors, clothesMinFlagHeight, clothesMaxFlagHeight,
             clothesMinFlagLength, clothesMaxFlagLength, clothesMinSpace, clothesMaxSpace)
 end
 
-function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CliffFlags, room::Maple.Room)
+function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CliffFlags)
     renderFlagLine(ctx, entity, cliffLineColor, cliffPinColor, cliffColors, cliffMinFlagHeight, cliffMaxFlagHeight,
             cliffMinFlagLength, cliffMaxFlagLength, cliffMinSpace, cliffMaxSpace)
 end

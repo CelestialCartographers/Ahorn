@@ -11,9 +11,7 @@ function spawnWindowIfAbsent!()
         version = ""
         try
             local ctx = Pkg.Types.Context()
-            local pkg = PackageSpec(name="Ahorn", uuid=ctx.env.project.deps["Ahorn"])
-            Pkg.Operations.resolve_versions!(ctx, [pkg])
-            version *= "Hash " * string(pkg.repo.tree_sha)[1:7]
+            version *= "Hash " * string(ctx.env.manifest[ctx.env.project.deps["Ahorn"]].tree_hash)[1:7]
         catch e
             version *= "Don't expect a version number"
         end

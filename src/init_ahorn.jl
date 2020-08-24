@@ -112,33 +112,31 @@ function needsExtraction(from::String, to::String, force::Bool=false)
 end
 
 function extractGamedata(storage::String, force::Bool=false)
-    celesteGraphics = joinpath(config["celeste_dir"], "Content", "Graphics") 
+    celesteGraphics = joinpath(config["celeste_dir"], "Content", "Graphics")
     celesteAtlases = joinpath(celesteGraphics, "Atlases")
 
     storageXML = joinpath(storage, "XML")
     storageSprites = joinpath(storage, "Sprites")
-    
-    requiredFiles = (
+
+    requiredFiles = Tuple{String, String}[
         (joinpath(celesteGraphics, "ForegroundTiles.xml"), joinpath(storageXML, "ForegroundTiles.xml")),
         (joinpath(celesteGraphics, "BackgroundTiles.xml"), joinpath(storageXML, "BackgroundTiles.xml")),
         (joinpath(celesteGraphics, "AnimatedTiles.xml"), joinpath(storageXML, "AnimatedTiles.xml")),
         (joinpath(celesteGraphics, "Sprites.xml"), joinpath(storageXML, "Sprites.xml")),
         (joinpath(celesteGraphics, "Portraits.xml"), joinpath(storageXML, "Portraits.xml")),
-    
+
         (joinpath(celesteAtlases, "Gameplay.meta"), joinpath(storageSprites, "Gameplay.meta")),
         (joinpath(celesteAtlases, "Gui.meta"), joinpath(storageSprites, "Gui.meta")),
         (joinpath(celesteAtlases, "Portraits.meta"), joinpath(storageSprites, "Portraits.meta")),
         (joinpath(celesteAtlases, "Misc.meta"), joinpath(storageSprites, "Misc.meta"))
-    )
+    ]
 
-    requiredAtlases = (
+    requiredAtlases = Tuple{String, String}[
         (joinpath(celesteAtlases, "Gameplay0.data"), joinpath(storageSprites, "Gameplay.png")),
         (joinpath(celesteAtlases, "Gui0.data"), joinpath(storageSprites, "Gui.png"))
-    )
+    ]
 
-    gameplaySprites = joinpath(storage, "Gameplay.png")
-    
-    needsInclude = any(Bool[needsExtraction(from, to, force) for (from, to) in requiredAtlases])    
+    needsInclude = any(Bool[needsExtraction(from, to, force) for (from, to) in requiredAtlases])
 
     if needsInclude
         include(Ahorn.abs"extract_sprites_images.jl")

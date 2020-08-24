@@ -688,7 +688,7 @@ settings.config.tooltips.backup_enabled=Whether automatic backups of maps should
 settings.config.tooltips.backup_dialog_enabled=Whether Ahorn should ask the user to restore from a backup after an unexpected shutdown.
 settings.config.tooltips.allow_out_of_bounds_placement=Whether you should be able to click outside of the room to place entities, triggers or decals.
 settings.config.tooltips.everest_rcon=URL for Everest remote control.
-settings.config.tooltips.load_image_meta_yaml=Loads the .meta.yaml image metadata files dumped by old Everest image dumps.\nNot recommended, If sprites are offset incorrectly, fix the sprite itself.
+settings.config.tooltips.load_image_meta_yaml=Loads the .meta.yaml image metadata files dumped by old Everest image dumps.\nNot recommended, If sprites are offset incorrectly, fix the sprite itself. Increases load times.
 settings.config.tooltips.split_atlas_into_smaller_surfaces=Splits the atlases from Celeste into smaller images for better performance. (Requires restart)
 
 

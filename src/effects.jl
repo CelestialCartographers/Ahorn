@@ -24,5 +24,4 @@ function registerPlacements!(placements::Array{Type{Maple.Effect{T}} where T, 1}
 end
 
 const loadedEffects = joinpath.(abs"effects", readdir(abs"effects"))
-loadModule.(loadedEffects)
 const effectPlacements = Array{Type{Maple.Effect{T}} where T, 1}()

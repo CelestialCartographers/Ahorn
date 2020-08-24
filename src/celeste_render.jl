@@ -12,7 +12,7 @@ include("helpers/tileset_splitter.jl")
 
 struct TileData
     coord::Coord
-    sprite::String
+    sprites::Array{String, 1}
     path::String
 end
 
@@ -34,10 +34,10 @@ function getTileData(x::Int, y::Int, tiles::Tiles, meta::TilerMeta, states::Tile
 
     if haskey(meta.paths, tileValue)
         imagePath::String = meta.paths[tileValue]
-        quads::Array{Coord, 1}, sprite::String = getMaskQuads(x, y, tiles, meta)
+        quads::Array{Coord, 1}, sprites::Array{String, 1} = getMaskQuads(x, y, tiles, meta)
         targetQuad::Coord = quads[Int(mod1(states.rands[y, x], length(quads)))]
 
-        return TileData(targetQuad, sprite, imagePath)
+        return TileData(targetQuad, sprites, imagePath)
     end
 
     return nothing
@@ -84,26 +84,30 @@ function drawTile(ctx::Cairo.CairoContext, x, y, tile, tiles, meta, states, exis
         tileData = getTileData(x, y, tiles, meta, states)
 
         if tileData !== nothing
-            quad, sprite = tileData.coord, tileData.sprite
+            quad, sprites = tileData.coord, tileData.sprites
             imagePathExists = existingPaths[tile]
 
             if imagePathExists
                 quadX, quadY = quad.x, quad.y
 
-                if !isempty(sprite)
-                    animatedMeta = filter(m -> m.name == sprite, animatedTilesMeta)[1]
-                    frames = findTextureAnimations(animatedMeta.path, getAtlas("Gameplay"))
+                if !isempty(sprites)
+                    animatedMetas = filter(m -> m.name in sprites, animatedTilesMeta)
 
-                    if !isempty(frames)
-                        frame = frames[Int(mod1(states.rands[y, x], length(frames)))]
-                        frameSprite = getSprite(frame, "Gameplay")
+                    if !isempty(animatedMetas)
+                        animatedMeta = animatedMetas[Int(mod1(states.rands[y, x], length(animatedMetas)))]
+                        frames = findTextureAnimations(animatedMeta.path, getAtlas("Gameplay"))
 
-                        ox = animatedMeta.posX - frameSprite.offsetX
-                        oy = animatedMeta.posY - frameSprite.offsetY
+                        if !isempty(frames)
+                            frame = frames[Int(mod1(states.rands[y, x], length(frames)))]
+                            frameSprite = getSprite(frame, "Gameplay")
 
-                        # TODO - What do we actually have to clear here?
-                        #clearArea(ctx, drawX + ox, drawY + oy, 8, 8)
-                        drawImage(ctx, frame, drawX + ox, drawY + oy, alpha=alpha)
+                            ox = animatedMeta.posX - frameSprite.offsetX
+                            oy = animatedMeta.posY - frameSprite.offsetY
+
+                            # TODO - What do we actually have to clear here?
+                            #clearArea(ctx, drawX + ox, drawY + oy, 8, 8)
+                            drawImage(ctx, frame, drawX + ox, drawY + oy, alpha=alpha)
+                        end
                     end
                 end
 

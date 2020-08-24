@@ -65,6 +65,5 @@ function triggerSelection(trigger::Maple.Trigger, room::Maple.Room, node::Int=0)
 end
 
 const loadedTriggers = joinpath.(abs"triggers", readdir(abs"triggers"))
-loadModule.(loadedTriggers)
 const triggerPlacements = PlacementDict()
 const triggerPlacementsCache = Dict{String, Trigger}()

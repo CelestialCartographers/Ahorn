@@ -1,12 +1,15 @@
 const eventMouse = Union{Gtk.GdkEventButton, Gtk.GdkEventMotion, Gtk.GdkEventCrossing}
 const eventKey = Gtk.GdkEventKey
 
+# Text won't update unless we sleep a reasonable amount of time
+# LoadingSpinner usually sleeps for us when animating
 macro progress(e::Expr, msg, dialog)
     return quote
         if !disableLoadingScreen && $dialog !== nothing
             set_gtk_property!($dialog, :secondary_text, $msg)
-            LoadingSpinner.animate($dialog)
-            waitForIdle()
+            if !LoadingSpinner.animate($dialog)
+                sleep(0.025)
+            end
         end
 
         $e

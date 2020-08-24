@@ -4,6 +4,9 @@ using ..Ahorn
 using Gtk, Gtk.ShortNames
 using Cairo
 
+animationPreviousTime = 0
+animationDelay = 5
+
 const baseWidth = ceil(Int, width(Ahorn.Assets.crowIdle))
 const baseHeight = ceil(Int, height(Ahorn.Assets.crowIdle))
 
@@ -23,10 +26,20 @@ const frames = Tuple{Gtk.Pixbuf, Number}[
 ]
 
 function animate(dlg::Gtk.GObject)
-    for (frame, delay) in frames
-        Ahorn.setProgressDialogPixbuf!(dlg, frame)
-        sleep(delay)
+    global animationPreviousTime
+
+    if time() > animationPreviousTime + animationDelay
+        for (frame, delay) in frames
+            Ahorn.setProgressDialogPixbuf!(dlg, frame)
+            sleep(delay)
+        end
+
+        animationPreviousTime = time()
+
+        return true
     end
+
+    return false
 end
 
 end

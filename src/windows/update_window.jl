@@ -31,9 +31,7 @@ pkgpath(pkg) = pathof(pkg) |> dirname |> dirname
 function pkghash()
     try
         local ctx = Pkg.Types.Context()
-        local pkg = PackageSpec(name="Ahorn", uuid=ctx.env.project.deps["Ahorn"])
-        Pkg.Operations.resolve_versions!(ctx, [pkg])
-        return string(pkg.repo.tree_sha)[1:7]
+        return string(ctx.env.manifest[ctx.env.project.deps["Ahorn"]].tree_hash)[1:7]
     catch e
         return nothing
     end
@@ -62,7 +60,7 @@ function updateAhorn(widget::Union{Ahorn.MenuItemsTypes, Nothing}=nothing)
         println(Base.stderr, "Update check failed")
         for (exc, bt) in Base.catch_stack()
             showerror(Base.stderr, exc, bt)
-            println()
+            println(Base.stderr, "")
         end
     end
 end

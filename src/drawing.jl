@@ -1,5 +1,3 @@
-using YAML
-
 include("extract_sprites_meta.jl")
 
 const atlases = Dict{String, Dict{String, SpriteHolder}}()
@@ -35,6 +33,10 @@ const fileNotFoundSpriteHolder = SpriteHolder(
 )
 
 function getResourceFromZip(filename::String, resource::String, atlas::String, allowRetry=true)
+    if !hasExt(filename, ".zip")
+        return nothing
+    end
+
     fileCache = get(resourceZipCache, filename, nothing)
 
     if fileCache !== nothing
@@ -70,6 +72,7 @@ function getSpriteSurface(resource::String, filename::String, atlas="Gameplay")
     return fileNotFoundSurface, filename
 end
 
+# Getting sprite meta from zip is slow with this method
 function getSpriteMeta(resource::String, filename::String, atlas="Gameplay")
     if !get(config, "load_image_meta_yaml", false)
         return false, false
@@ -82,7 +85,6 @@ function getSpriteMeta(resource::String, filename::String, atlas="Gameplay")
     if hasExt(filename, ".png")
         if isfile(yamlFilename)
             try
-
                 return true, open(YAML.load, yamlFilename)
 
             catch
@@ -94,7 +96,7 @@ function getSpriteMeta(resource::String, filename::String, atlas="Gameplay")
         end
 
     elseif hasExt(filename, ".zip")
-        data = getResourceFromZip(resource, yamlFilename, atlas)
+        data = getResourceFromZip(filename, resource * ".meta.yaml", atlas)
 
         return data !== nothing, something(data, metaYamlResourceNotFound)
     end
@@ -183,6 +185,7 @@ function loadChangedExternalSprites!()
     for (texture, raw, atlas) in externalSprites
         if !(raw in unloadedZips) && hasExt(raw, ".zip")
             uncacheZipContent(raw)
+            push!(unloadedZips, raw)
         end
 
         addSprite!(fixTexturePath(texture), raw, atlas=atlas, force=true)

@@ -83,7 +83,7 @@ function pushPreview!(layer::Ahorn.Layer, room::Maple.Room, preview::Any)
         if x < 0 || x > width || y < 0 || y > height
             return false
         end
-    end 
+    end
 
     name = Ahorn.layerName(layer)
 
@@ -107,20 +107,16 @@ function updateMaterialsEntities!()
     selectables = collect(keys(Ahorn.entityPlacements))
     sort!(selectables)
 
-    if !isa(clonedEntity, Maple.Entity)
-        wantedEntity = get(Ahorn.persistence, "placements_placements_entity", nothing)
-        Ahorn.setMaterialList!(selectables, row -> row[1] == wantedEntity)
-    end
+    wantedEntity = get(Ahorn.persistence, "placements_placements_entity", nothing)
+    Ahorn.setMaterialList!(selectables, row -> row[1] == wantedEntity)
 end
 
 function updateMaterialsTriggers!()
     selectables = collect(keys(Ahorn.triggerPlacements))
     sort!(selectables)
 
-    if !isa(clonedEntity, Maple.Trigger)
-        wantedTrigger = get(Ahorn.persistence, "placements_placements_trigger", nothing)
-        Ahorn.setMaterialList!(selectables, row -> row[1] == wantedTrigger)
-    end
+    wantedTrigger = get(Ahorn.persistence, "placements_placements_trigger", nothing)
+    Ahorn.setMaterialList!(selectables, row -> row[1] == wantedTrigger)
 end
 
 function updateMaterialsDecals!()
@@ -174,20 +170,23 @@ function subToolSelected(list::Ahorn.ListContainer, selected::String)
 end
 
 function materialSelected(list::Ahorn.ListContainer, selected::String)
-    global materialName = selected
     layerName = Ahorn.layerName(targetLayer)
 
     if layerName == "entities"
         if haskey(Ahorn.entityPlacements, selected)
             global clonedEntity = nothing
+            global materialName = selected
             global material = Ahorn.entityPlacements[selected]
+
             Ahorn.persistence["placements_placements_entity"] = selected
         end
 
     elseif layerName == "triggers"
         if haskey(Ahorn.triggerPlacements, selected)
             global clonedEntity = nothing
+            global materialName = selected
             global material = Ahorn.triggerPlacements[selected]
+
             Ahorn.persistence["placements_placements_trigger"] = selected
         end
 
@@ -281,6 +280,42 @@ function placementFunc(target::Union{Maple.Entity, Maple.Trigger})
     return (x::Number, y::Number) -> constructor(target.name, x=x, y=y)
 end
 
+function generateClonedEntityPlacement(name::String, target)
+    horizontal, vertical = Ahorn.canResizeWrapper(target)
+    placementType = horizontal || vertical ? "rectangle" : "point"
+
+    # Fake a entity/trigger of the target
+    # Copy all allowed attributes and store a fake (x, y) position for offseting nodes properly
+    # If the entity/trigger is resizeable use "rectangle" placement rather than "point"
+
+    return Ahorn.EntityPlacement(
+        placementFunc(target),
+        placementType,
+        merge(
+            Dict{String, Any}((k, v) for (k, v) in deepcopy(target.data) if !(k in blacklistedCloneAttrs)),
+            Dict{String, Any}("__x" => target.data["x"], "__y" => target.data["y"])
+        ),
+        function(entity::Union{Maple.Entity, Maple.Trigger})
+            nodes = get(entity.data, "nodes", Tuple{Integer, Integer}[])
+            if length(nodes) > 0
+                x, y = entity.data["x"], entity.data["y"]
+                origx, origy = entity.data["__x"], entity.data["__y"]
+                newNodes = Tuple{Integer, Integer}[]
+
+                for node in nodes
+                    nx, ny = node
+                    push!(newNodes, (x + nx - origx, y + ny - origy))
+                end
+
+                entity.data["nodes"] = newNodes
+            end
+
+            delete!(entity.data, "__x")
+            delete!(entity.data, "__y")
+        end
+    )
+end
+
 function middleClickAbs(x::Number, y::Number)
     layerName = Ahorn.layerName(targetLayer)
     selections = Ahorn.getSelected(Ahorn.loadedState.room, layerName, Ahorn.Rectangle(x, y, 1, 1))
@@ -291,46 +326,14 @@ function middleClickAbs(x::Number, y::Number)
 
         if name == "fgDecals" || name == "bgDecals"
             global material = Ahorn.fixTexturePath(target.texture)
+
             Ahorn.selectMaterialList!(material)
             Ahorn.persistence["placements_placements_decal"] = material
 
         elseif name == "entities" || name == "triggers"
-            horizontal, vertical = Ahorn.canResizeWrapper(target)
-            placementType = horizontal || vertical ? "rectangle" : "point"
-
-            # Fake a entity/trigger of the target
-            # Copy all allowed attributes and store a fake (x, y) position for offseting nodes properly
-            # If the entity/trigger is resizeable use "rectangle" placement rather than "point"
-
             global materialName = nothing
-            global material = Ahorn.EntityPlacement(
-                placementFunc(target),
-                placementType,
-                merge(
-                    Dict{String, Any}((k, v) for (k, v) in deepcopy(target.data) if !(k in blacklistedCloneAttrs)),
-                    Dict{String, Any}("__x" => target.data["x"], "__y" => target.data["y"])
-                ),
-                function(entity::Union{Maple.Entity, Maple.Trigger})
-                    nodes = get(entity.data, "nodes", Tuple{Integer, Integer}[])
-                    if length(nodes) > 0
-                        x, y = entity.data["x"], entity.data["y"]
-                        origx, origy = entity.data["__x"], entity.data["__y"]
-                        newNodes = Tuple{Integer, Integer}[]
+            global material = generateClonedEntityPlacement(name, target)
 
-                        for node in nodes
-                            nx, ny = node
-                            push!(newNodes, (x + nx - origx, y + ny - origy))
-                        end 
-
-                        entity.data["nodes"] = newNodes
-                    end
-
-                    delete!(entity.data, "__x")
-                    delete!(entity.data, "__y")
-                end
-            )
-
-            global clonedEntity = nothing
             updatePreviewGhost(x, y)
         end
 

@@ -30,7 +30,7 @@ end
 function initConfigs()
     if Sys.iswindows()
         global storageDirectory = joinpath(ENV["LOCALAPPDATA"], "Ahorn")
-        
+
     else
         global storageDirectory = joinpath(get(ENV, "XDG_CONFIG_HOME", joinpath(get(ENV, "HOME", ""), ".config")) , "Ahorn")
     end
@@ -56,4 +56,16 @@ function initMenubar()
     append!(choices, menubarEndChoices)
 
     global menubar = Menubar.generateMenubar(choices)
+end
+
+function initEntities()
+    loadModule.(loadedEntities)
+end
+
+function initTriggers()
+    loadModule.(loadedTriggers)
+end
+
+function initEffects()
+    loadModule.(loadedEffects)
 end

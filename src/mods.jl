@@ -1,7 +1,3 @@
-using ZipFile
-
-include("helpers/zip_file_helper.jl")
-
 function getAhornModDirs()
     if !get(config, "load_plugins_ahorn", true)
         return String[]
@@ -197,38 +193,52 @@ function getSpriteAtlasAndResource(filename::String)
 end
 
 # Resource prefix filters uneeded files, uses unix paths
-function cacheZipContent(filename::String, resourcePrefix::String="Graphics/Atlases/Gameplay/", ahornPrefix::String="Ahorn/")
+function cacheZipContent(filename::String, resourcePrefix::String="Graphics/Atlases/Gameplay/", ahornPrefix::String="Ahorn/", languagePrefix::String="Ahorn/lang/")
+    loadMetaYaml = get(config, "load_image_meta_yaml", false)
+
     debug.log("Caching zip content for $filename", "ZIP_CACHING_VERBOSE")
 
     resourceZipCache[filename] = Dict{String, Any}()
 
     # Always uses Unix path
-    zipfh = ZipFile.Reader(filename)
+    try
+        zipfh = ZipFile.Reader(filename)
 
-    for file in zipfh.files
-        if startswith(file.name, resourcePrefix)
-            if hasExt(file.name, ".png")
-                atlas, resource = getSpriteAtlasAndResource(file.name)
-                resourceZipCache[filename][resource] = Cairo.read_from_png(fastZipFileRead(file, IOBuffer))
+        for file in zipfh.files
+            name = file.name
 
-            elseif hasExt(file.name, ".meta.yaml")
-                try
-                    atlas, resource = getSpriteAtlasAndResource(file.name)
-                    resourceZipCache[filename][resource] = YAML.load(fastZipFileRead(file, String))
+            if startswith(name, resourcePrefix)
+                if hasExt(name, ".png")
+                    atlas, resource = getSpriteAtlasAndResource(name)
+                    resourceZipCache[filename][resource] = Cairo.read_from_png(fastZipFileRead(file, IOBuffer))
 
-                catch
-                    # Bad yaml file
+                elseif loadMetaYaml && hasExt(name, ".yaml")
+                    try
+                        atlas, resource = getSpriteAtlasAndResource(name)
+                        resourceZipCache[filename][resource * ".meta.yaml"] = YAML.load(fastZipFileRead(file, String))
+
+                    catch
+                        # Bad yaml file
+                    end
                 end
-            end
 
-        elseif startswith(file.name, ahornPrefix)
-            if hasExt(file.name, ".jl")
-                resourceZipCache[filename][file.name] = fastZipFileRead(file, String)
+            elseif startswith(name, ahornPrefix) && hasExt(name, ".jl")
+                resourceZipCache[filename][name] = fastZipFileRead(file, String)
+
+            elseif startswith(name, languagePrefix) && hasExt(name, ".lang")
+                resourceZipCache[filename][name] = fastZipFileRead(file, String)
             end
         end
-    end
 
-    close(zipfh)
+        close(zipfh)
+
+    catch e
+        println(Base.stderr, "Failed to get content of zip file: $filename")
+        for (exc, bt) in Base.catch_stack()
+            showerror(Base.stderr, exc, bt)
+            println(Base.stderr, "")
+        end
+    end
 end
 
 # Cleanup and destroy surfaces
@@ -445,6 +455,27 @@ function findChangedExternalSprites()
     return res
 end
 
+function findLanguageFileInZip(filename::String, languageFilename::String, allowRetry::Bool=true)
+    fileCache = get(resourceZipCache, filename, nothing)
+
+    if fileCache !== nothing
+        for (resource, data) in fileCache
+            if resource == languageFilename
+                return data
+            end
+        end
+
+    else
+        if allowRetry
+            cacheZipContent(filename)
+
+            return findLanguageFileInZip(filename, languagePath, false)
+        end
+    end
+
+    return nothing
+end
+
 function loadLangdata()
     targetFolders = joinpath.(getCelesteModDirs(), "Ahorn")
     targetZips = getCelesteModZips()
@@ -455,7 +486,7 @@ function loadLangdata()
     res = parseLangfile(read(internalFilename, String))
 
     for folder in targetFolders
-        fn = joinpath(folder, "lang", "$(lang).lang")
+        fn = joinpath(folder, "lang", "$lang.lang")
         if ispath(fn)
             content = read(fn, String)
             parseLangfile(content, init=res)
@@ -463,19 +494,11 @@ function loadLangdata()
     end
 
     for fn in targetZips
-        zipfh = ZipFile.Reader(fn)
+        content = findLanguageFileInZip(fn, "Ahorn/lang/$(lang).lang")
 
-        for file in zipfh.files
-            name = file.name
-            path, fnext = splitext(name)
-
-            if path == "Ahorn/lang/$(lang)" && hasExt(name, ".lang")
-                content = fastZipFileRead(file, String)
-                parseLangfile(content, init=res)
-            end
+        if content !== nothing
+            parseLangfile(content, init=res)
         end
-
-        close(zipfh)
     end
 
     return res
@@ -504,7 +527,7 @@ function findExternalModules(args::String...)
 end
 
 function loadExternalModules!(loadedModules::Dict{String, Module}, loadedNames::Array{String, 1}, args::String...)
-    # ZipFile uses unix paths 
+    # ZipFile uses unix paths
     path = joinpath("Ahorn", args...)
     path = replace(path, "\\" => "/")
 
@@ -531,7 +554,7 @@ function loadExternalModules!(loadedModules::Dict{String, Module}, loadedNames::
                 end
 
             catch e
-                println(Base.stderr, "! Failed to load \"$name\" from \"$target\"")
+                println(Base.stderr, "! Failed to load \"$relative\" from \"$target\"")
                 println(Base.stderr, e)
             end
         end

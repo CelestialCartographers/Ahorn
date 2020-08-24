@@ -47,7 +47,8 @@ function convertTileString(s::String)
     res = Coord[]
 
     for part in parts
-        x, y = parse.(Int, split(part, ","))
+        rawX, rawY = split(part, ",")
+        x, y = parse(Int, rawX), parse(Int, rawY)
 
         push!(res, Coord(x, y))
     end
@@ -87,7 +88,7 @@ end
 struct MaskData
     mask::Mask
     coords::Array{Coord, 1}
-    sprites::String
+    sprites::Array{String, 1}
 end
 
 struct Ignore
@@ -150,11 +151,13 @@ function loadTilesetXML(fn::String)
                 center[id] = quads
 
             else
-                sprites = attribute(c, "sprites")
+                spritesRaw = attribute(c, "sprites")
+                sprites = isa(spritesRaw, String) ? split(spritesRaw, ",") : String[]
+
                 push!(currMasks, MaskData(
                     getMaskFromString(mask),
                     quads,
-                    isa(sprites, String) ? sprites : ""
+                    sprites
                 ))
             end
         end
@@ -199,7 +202,7 @@ function loadFgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bo
 
     try
         global fgTilerMeta = TilerMeta(path)
-    
+
     catch e
         if !loadDefault
             println(Base.stderr, "Failed to load custom ForegroundTiles XML")
@@ -370,9 +373,9 @@ function getMaskQuads(x::Int, y::Int, tiles::Tiles, meta::TilerMeta)
     end
 
     if checkPadding(tiles.data, x, y, width, height)
-        return get(meta.paddings, value, defaultPaddingCoords), ""
-        
+        return get(meta.paddings, value, defaultPaddingCoords), String[]
+
     else
-        return get(meta.centers, value, defaultPaddingCoords), ""
+        return get(meta.centers, value, defaultPaddingCoords), String[]
     end
 end
