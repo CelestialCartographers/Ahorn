@@ -39,12 +39,12 @@ updateTileStates!(room::Room, package::String, states::TileStates, width::Int, h
 
 function getDrawingLayers()
     return Layer[
-        Layer("bgParallax"),
+        Layer("bgParallax", dummy=true), # Not currently used, kept to keep order intact
         Layer("bgTiles", clearOnReset=false),
         Layer("bgDecals"),
         Layer("entities"),
         Layer("fgTiles", clearOnReset=false),
-        Layer("fgParallax"),
+        Layer("fgParallax", dummy=true), # Not currently used, kept to keep order intact
         Layer("fgDecals"),
         Layer("triggers"),
 

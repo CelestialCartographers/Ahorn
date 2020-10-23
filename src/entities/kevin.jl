@@ -81,4 +81,19 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.CrushBlock, r
     Ahorn.drawImage(ctx, frame, width - 8, height - 8, 24, 24, 8, 8)
 end
 
+function Ahorn.rotated(entity::Maple.CrushBlock, steps::Int)
+    if abs(steps) % 2 == 1
+        if entity.axes == "horizontal"
+            entity.axes = "vertical"
+
+            return entity
+
+        elseif entity.axes == "vertical"
+            entity.axes = "horizontal"
+
+            return entity
+        end
+    end
+end
+
 end

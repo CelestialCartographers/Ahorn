@@ -1,4 +1,4 @@
-struct Ellipse
+@valueequals struct Ellipse
     x::Number
     y::Number
 
@@ -9,8 +9,6 @@ end
 function circumference(ellipse::Ellipse)
     return pi * (3 * (ellipse.rh + ellipse.rv) - sqrt(10 * ellipse.rh * ellipse.rv + 3 * (ellipse.rh^2 + ellipse.rv^2)))
 end
-
-Base.:(==)(lhs::Ellipse, rhs::Ellipse) = lhs.x == rhs.x && lhs.y == rhs.y && lhs.rv == rhs.rv && lhs.rh == rhs.rh
 
 ellipse_t(theta, e::Ellipse) = atan(e.rh / e.rv * tan(theta))
 

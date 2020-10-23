@@ -42,5 +42,13 @@ const hotkeys = Hotkey[
     Hotkey(
         "ctrl + f",
         focusFilterEntry!
+    ),
+    Hotkey(
+        "ctrl + plus",
+        zoomIn!
+    ),
+    Hotkey(
+        "ctrl + minus",
+        zoomOut!
     )
 ]

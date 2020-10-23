@@ -45,9 +45,11 @@ selectedBrush = brushes[1]
 hoveringBrush = nothing
 const phantomBrushes = Dict{Tuple{Integer, Integer}, Ahorn.Brush}()
 
+lastX, lastY = nothing, nothing
+
 function applyPhantomBrushes()
     if !isempty(phantomBrushes)
-        Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Brush ($(selectedBrush.name), $material)", Ahorn.loadedState.room))    
+        Ahorn.History.addSnapshot!(Ahorn.History.RoomSnapshot("Brush ($(selectedBrush.name), $material)", Ahorn.loadedState.room))
     end
 
     for (pos, brush) in phantomBrushes
@@ -81,6 +83,30 @@ function drawBrushes(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn
             Ahorn.drawBrush(brush, layer, x, y)
         end
     end
+end
+
+function addPhantomBrush(x::Int, y::Int, selectedBrush::Ahorn.Brush)
+    if !haskey(phantomBrushes, (x, y))
+        phantomBrushes[(x, y)] = deepcopy(selectedBrush)
+
+        return true
+    end
+
+    return false
+end
+
+function addPhantomBrush(points::Array{Tuple{Int, Int}, 1}, selectedBrush::Ahorn.Brush)
+    res = false
+
+    for (x, y) in points
+        res |= addPhantomBrush(x, y, selectedBrush)
+    end
+
+    return res
+end
+
+function addBrushOffset(bx, bw, ox, box, by, bh, oy, boy)
+    return div(bx, bw) * bw + ox - box + 1, div(by, bh) * bh + oy - boy + 1
 end
 
 function cleanup()
@@ -138,16 +164,35 @@ function selectionMotion(x1::Number, y1::Number, x2::Number, y2::Number)
     bh, bw = size(pixels)
     ox, oy = mod(startX, bw), mod(startY, bh)
 
-    bx, by = div(x2, bw) * bw + ox - box + 1, div(y2, bh) * bh + oy - boy + 1
+    bx, by = addBrushOffset(x2, bw, ox, box, y2, bw, oy, boy)
 
-    if !haskey(phantomBrushes, (bx, by)) 
-        phantomBrushes[(bx, by)] = deepcopy(selectedBrush)
+    smoothWithLines = get(Ahorn.config, "tools_brushes_smoother_brushes", true)
+    redraw = false
 
+    if smoothWithLines && lastX !== nothing && lastY !== nothing
+        pointsRaw = Ahorn.pointsOnLine(Ahorn.Line(x2, y2, lastX, lastY))
+        points = Tuple{Int, Int}[]
+
+        for (x, y) in pointsRaw
+            push!(points, addBrushOffset(x, bw, ox, box, y, bw, oy, boy))
+        end
+
+        redraw = addPhantomBrush(points, selectedBrush)
+
+    else
+        redraw = addPhantomBrush(bx, by, selectedBrush)
+    end
+
+    if redraw
         Ahorn.redrawLayer!(toolsLayer)
     end
+
+    global lastX, lastY = x2, y2
 end
 
 function selectionFinish(rect::Ahorn.Rectangle)
+    global lastX, lastY = nothing, nothing
+
     applyPhantomBrushes()
 end
 
@@ -230,12 +275,12 @@ function keyboard(event::Ahorn.eventKey)
     shouldRedraw = false
 
     if event.keyval == Ahorn.keyval("l")
-        selectedBrush.rotation = mod(selectedBrush.rotation + 1, 4)
+        selectedBrush.rotation = mod(selectedBrush.rotation - 1, 4)
 
         shouldRedraw |= true
 
     elseif event.keyval == Ahorn.keyval("r")
-        selectedBrush.rotation = mod(selectedBrush.rotation - 1, 4)
+        selectedBrush.rotation = mod(selectedBrush.rotation + 1, 4)
 
         shouldRedraw |= true
     end

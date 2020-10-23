@@ -44,7 +44,7 @@ end
 tileNames(layer::Layer) = tileNames(layerName(layer))
 
 function getBrushMaterialsNames(name::String, sortByDisplayName::Bool=true)
-    loadXMLMeta()
+    loadXMLMeta(false)
 
     validTileIds = validTiles(name)
     tileTileNames = tileNames(name)

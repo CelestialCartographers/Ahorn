@@ -133,7 +133,7 @@ function minimumSizeWrapper(target::Union{Maple.Entity, Maple.Trigger})
     if get(debug.config, "IGNORE_MINIMUM_SIZE", false)
         return 0, 0
     end
-    
+
     return minimumSize(target)
 end
 
@@ -152,6 +152,20 @@ resizable(entity::Maple.Entity) = false, false
 nodeLimits(entity::Maple.Entity) = 0, 0
 
 editingOptions(entity::Maple.Entity) = Dict{String, Any}()
+editingOrder(entity::Maple.Entity) = String["x", "y", "width", "height"]
+editingIgnored(entity::Maple.Entity, multiple::Bool=false) = multiple ? String["x", "y", "width", "height", "nodes"] : String[]
+
+deleted(entity::Maple.Entity, node::Int) = nothing
+
+moved(entity::Maple.Entity) = nothing
+moved(entity::Maple.Entity, x::Int, y::Int) = nothing
+
+resized(entity::Maple.Entity) = nothing
+resized(entity::Maple.Entity, width::Int, height::Int) = nothing
+
+flipped(entity::Maple.Entity, horizontal::Bool) = nothing
+
+rotated(entity::Maple.Entity, steps::Int) = nothing
 
 function registerPlacements!(placements::PlacementDict, loaded::Array{String, 1})
     empty!(placements)
@@ -187,17 +201,19 @@ function updateEntityPosition!(target::Union{Entity, Trigger}, ep::EntityPlaceme
     elseif ep.placement == "rectangle"
         rect = selectionRectangle(x, y, nx, ny)
 
-        resizeW, resizeH = canResizeWrapper(target)
-        minW, minH = minimumSizeWrapper(target)
-        
-        w = resizeW ? max(minW, rect.w - 1) : minW
-        h = resizeH ? max(minH, rect.h - 1) : minH
+        resizeHorizontal, resizeVertical = canResizeWrapper(target)
+        minWidth, minHeight = minimumSizeWrapper(target)
 
         target.x = rect.x
         target.y = rect.y
 
-        target.width = w
-        target.height = h
+        if resizeHorizontal
+            target.width = max(minWidth, rect.w - 1)
+        end
+
+        if resizeVertical
+            target.height = max(minHeight, rect.h - 1)
+        end
 
     elseif ep.placement == "line"
         target.x = x
@@ -226,7 +242,7 @@ function updateCachedEntityPosition!(cache::Dict{String, T}, placements::Placeme
     return updateEntityPosition!(target, ep, map, room, x, y, nx, ny)
 end
 
-function entityConfigOptions(entity::Union{Maple.Entity, Maple.Trigger}, ignores::Array{String, 1}=String[])
+function propertyOptions(entity::Union{Maple.Entity, Maple.Trigger}, ignores::Array{String, 1}=String[])
     addedNodes = false
     res = Form.Option[]
 

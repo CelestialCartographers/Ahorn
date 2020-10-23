@@ -124,6 +124,9 @@ function drawTile(ctx::Cairo.CairoContext, x, y, tile, tiles, meta, states, exis
             else
                 drawRectangle(ctx, drawX, drawY, 8, 8, colors.unknown_tile_color, (0.0, 0.0, 0.0, 0.0))
             end
+
+        else
+            drawRectangle(ctx, drawX, drawY, 8, 8, colors.unknown_tile_color, (0.0, 0.0, 0.0, 0.0))
         end
 
     else
@@ -203,11 +206,6 @@ function drawBackground(layer::Layer, dr::DrawableRoom, camera::Camera, fg::Bool
     backdrops = fg ? dr.map.style.foregrounds : dr.map.style.backgrounds
     ctx = getSurfaceContext(layer.surface)
 
-    if !fg
-        color = something(dr.fillColor, getRoomBackgroundColor(dr.room))
-        paintSurface(ctx, color)
-    end
-
     for backdrop in backdrops
         t = typeof(backdrop)
 
@@ -256,7 +254,7 @@ end
 
 drawingLayers = nothing
 
-const drawableRooms = Dict{Map, Dict{Room, DrawableRoom}}()
+const drawableRooms = Dict{String, Dict{String, DrawableRoom}}()
 
 redrawingFuncs["fgDecals"] = (layer, room, camera) -> drawDecals(layer, room, true)
 redrawingFuncs["bgDecals"] = (layer, room, camera) -> drawDecals(layer, room, false)
@@ -271,23 +269,28 @@ redrawingFuncs["entities"] = (layer, room, camera) -> drawEntities(layer, room)
 redrawingFuncs["triggers"] = (layer, room, camera) -> drawTriggers(layer, room)
 
 function getDrawableRooms(map::Map)
-    if !haskey(drawableRooms, map)
-        drawableRooms[map] = Dict{Room, DrawableRoom}()
+    package = map.package
+
+    if !haskey(drawableRooms, package)
+        drawableRooms[package] = Dict{String, DrawableRoom}()
     end
 
-    return collect(values(drawableRooms[map]))
+    return collect(values(drawableRooms[package]))
 end
 
 function getDrawableRoom(map::Map, room::Room)
-    if !haskey(drawableRooms, map)
-        drawableRooms[map] = Dict{Room, DrawableRoom}()
+    package = map.package
+    roomName = room.name
+
+    if !haskey(drawableRooms, package)
+        drawableRooms[package] = Dict{String, DrawableRoom}()
     end
 
-    if !haskey(drawableRooms[map], room)
-        drawableRooms[map][room] = DrawableRoom(map, room)
+    if !haskey(drawableRooms[package], roomName)
+        drawableRooms[package][roomName] = DrawableRoom(map, room)
     end
 
-    return drawableRooms[map][room]
+    return drawableRooms[package][roomName]
 end
 
 function deleteDrawableRoomCache(map::Map)
@@ -296,7 +299,7 @@ function deleteDrawableRoomCache(map::Map)
         destroy(room)
     end
 
-    delete!(drawableRooms, map)
+    delete!(drawableRooms, map.package)
 end
 
 function updateDrawingLayers!(map::Map, room::Room)
@@ -306,6 +309,7 @@ end
 function drawMap(ctx::Cairo.CairoContext, camera::Camera, map::Map; adjacentAlpha::Number=colors.adjacent_room_alpha, backgroundFill::colorTupleType=colors.background_canvas_fill)
     deleteNonVisibleRooms = get(config, "delete_non_visible_rooms_cache", false)
     width, height = floor(Int, ctx.surface.width), floor(Int, ctx.surface.height)
+    package = map.package
 
     paintSurface(ctx, backgroundFill)
     pattern_set_filter(get_source(ctx), Cairo.FILTER_NEAREST)
@@ -327,10 +331,12 @@ function drawMap(ctx::Cairo.CairoContext, camera::Camera, map::Map; adjacentAlph
 
         else
             if deleteNonVisibleRooms
-                if haskey(drawableRooms, map)
-                    if haskey(drawableRooms[map], room)
-                        destroy(drawableRooms[map][room])
-                        delete!(drawableRooms[map], room)
+                if haskey(drawableRooms, package)
+                    roomName = room.name
+
+                    if haskey(drawableRooms[package], roomName)
+                        destroy(drawableRooms[package][roomName])
+                        delete!(drawableRooms[package], roomName)
                     end
                 end
             end
@@ -360,6 +366,10 @@ function drawRoom(ctx::Cairo.CairoContext, camera::Camera, room::DrawableRoom; a
     scale(ctx, camera.scale, camera.scale)
     translate(ctx, room.room.position...)
 
+    backgroundColor = something(room.fillColor, getRoomBackgroundColor(room.room))
+    width, height = room.room.size
+
+    drawRectangle(ctx, 0, 0, width, height, backgroundColor, (0.0, 0.0, 0.0, 0.0))
     applyLayer!(ctx, renderingLayer, alpha=alpha)
 
     restore(ctx)

@@ -38,4 +38,16 @@ Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Spring, room::Maple.Ro
 Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SpringLeft, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 9, -11, rot=pi / 2)
 Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.SpringRight, room::Maple.Room) = Ahorn.drawSprite(ctx, sprite, 3, 1, rot=-pi / 2)
 
+function Ahorn.flipped(entity::Maple.SpringLeft, horizontal::Bool)
+    if horizontal
+        return Maple.SpringRight(entity.x, entity.y)
+    end
+end
+
+function Ahorn.flipped(entity::Maple.SpringRight, horizontal::Bool)
+    if horizontal
+        return Maple.SpringLeft(entity.x, entity.y)
+    end
+end
+
 end

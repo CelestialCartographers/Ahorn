@@ -12,6 +12,8 @@ const directions = Dict{String, Tuple{Type, String, Bool}}(
     "right" => (Maple.DashSwitchHorizontal, "leftSide", true),
 )
 
+const clockwiseDirections = String["up", "right", "down", "left"]
+
 for texture in textures
     for (dir, data) in directions
         key = "Dash Switch ($(uppercasefirst(dir)), $(uppercasefirst(texture)))"
@@ -35,7 +37,7 @@ function Ahorn.selection(entity::Maple.DashSwitchHorizontal)
         return Ahorn.Rectangle(x, y - 1, 10, 16)
 
     else
-        return Ahorn.Rectangle(x - 2, y, 10, 16)
+        return Ahorn.Rectangle(x - 2, y - 1, 10, 16)
     end
 end
 
@@ -60,7 +62,7 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.DashSwitchHor
         Ahorn.drawSprite(ctx, texture, 20, 25, rot=pi)
 
     else
-        Ahorn.drawSprite(ctx, texture, 8, 8)
+        Ahorn.drawSprite(ctx, texture, 8, 7)
     end
 end
 
@@ -74,6 +76,48 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.DashSwitchVer
 
     else
         Ahorn.drawSprite(ctx, texture, 27, 7, rot=pi / 2)
+    end
+end
+
+function Ahorn.flipped(entity::Maple.DashSwitchHorizontal, horizontal::Bool)
+    if horizontal
+        entity.leftSide = !entity.leftSide
+
+        return entity
+    end
+end
+
+function Ahorn.flipped(entity::Maple.DashSwitchVertical, horizontal::Bool)
+    if !horizontal
+        entity.ceiling = !entity.ceiling
+
+        return entity
+    end
+end
+
+# TODO - Might need rotation offset
+function Ahorn.rotated(entity::Maple.DashSwitchHorizontal, steps::Int)
+    sideIndex = entity.leftSide ? 2 : 4
+    targetIndex = mod1(sideIndex + steps, 4)
+
+    if targetIndex != sideIndex
+        side = clockwiseDirections[targetIndex]
+        func, attr, value = directions[side]
+
+        return func(entity.x, entity.y, value)
+    end
+end
+
+# TODO - Might need rotation offset
+function Ahorn.rotated(entity::Maple.DashSwitchVertical, steps::Int)
+    sideIndex = entity.ceiling ? 3 : 1
+    targetIndex = mod1(sideIndex + steps, 4)
+
+    if targetIndex != sideIndex
+        side = clockwiseDirections[targetIndex]
+        func, attr, value = directions[side]
+
+        return func(entity.x, entity.y, value)
     end
 end
 

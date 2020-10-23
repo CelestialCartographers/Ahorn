@@ -25,7 +25,7 @@ function renderTriggerSelection(ctx::Cairo.CairoContext, layer::Layer, trigger::
     width, height = Int(trigger.data["width"]), Int(trigger.data["height"])
     nodes = get(trigger.data, "nodes", Tuple{Int, Int}[])
     offsetCenterX, offsetCenterY = floor(Int, width / 2), floor(Int, height / 2)
-    
+
     text = humanizeVariableName(trigger.name)
 
     for node in nodes
@@ -39,9 +39,23 @@ end
 nodeLimits(trigger::Maple.Trigger) = 0, 0
 
 editingOptions(trigger::Maple.Trigger) = Dict{String, Any}()
+editingOrder(trigger::Maple.Trigger) = String["x", "y", "width", "height"]
+editingIgnored(trigger::Maple.Trigger, multiple::Bool=false) = multiple ? String["x", "y", "width", "height", "nodes"] : String[]
 
 minimumSize(trigger::Maple.Trigger) = 8, 8
 resizable(trigger::Maple.Trigger) = true, true
+
+deleted(trigger::Maple.Trigger, node::Int) = nothing
+
+moved(trigger::Maple.Trigger) = nothing
+moved(trigger::Maple.Trigger, x::Int, y::Int) = nothing
+
+resized(trigger::Maple.Trigger) = nothing
+resized(trigger::Maple.Trigger, width::Int, height::Int) = nothing
+
+flipped(trigger::Maple.Trigger, horizontal::Bool) = nothing
+
+rotated(trigger::Maple.Trigger, steps::Int) = nothing
 
 function triggerSelection(trigger::Maple.Trigger, room::Maple.Room, node::Int=0)
     x, y = Int(trigger.x), Int(trigger.y)

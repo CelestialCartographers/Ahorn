@@ -1,6 +1,6 @@
 abstract type Snapshot end
 
-mutable struct HistoryTimeline
+@valueequals mutable struct HistoryTimeline
     snapshots::Array{Snapshot, 1}
     index::Int
     skip::Bool

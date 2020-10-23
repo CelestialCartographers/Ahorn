@@ -18,7 +18,7 @@ function generateTilesetSpriteMatrix(sprite::Ahorn.Sprite, tileWidth=8, tileHeig
         surface = CairoARGBSurface(tileWidth, tileHeight)
         ctx = Ahorn.getSurfaceContext(surface)
 
-        Ahorn.drawImage(ctx, sprite.surface, 0, 0, sprite.x + x * tileWidth, sprite.y + y * tileHeight, tileWidth, tileHeight)
+        Ahorn.drawImage(ctx, sprite.surface, 0, 0, sprite.x + x * tileWidth, sprite.y + y * tileHeight, tileWidth, tileHeight, alpha=1.0)
 
         res[y + 1, x + 1] = Ahorn.Sprite(
             0,

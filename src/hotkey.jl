@@ -16,6 +16,11 @@ const modifierNames = Dict{String, Function}(
     "meta" => modifierMeta
 )
 
+const specialNames = Dict{String, Int}(
+    "plus" => Int('+'),
+    "minus" => Int('-'),
+)
+
 struct Hotkey
     key::Integer
     callback::Function
@@ -46,7 +51,10 @@ function Hotkey(s::String, callback::Function,  modifiers::Array{Function, 1}=Fu
         if i == length(words)
             if length(word) == 1
                 key = Int(word[1])
-            
+
+            elseif haskey(specialNames, word)
+                key = specialNames[word]
+
             # This is case sensitive!
             # Use values from Gtk.GdkKeySyms
             elseif isdefined(Gtk.GdkKeySyms, Symbol(word))
@@ -54,7 +62,7 @@ function Hotkey(s::String, callback::Function,  modifiers::Array{Function, 1}=Fu
 
             else
                 println(Base.stderr, "Invalid hotkey sequence")
-                
+
                 return nothing
             end
         end

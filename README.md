@@ -43,40 +43,81 @@ Hold right click to move around the map. Left click is your main way to place an
 In any menu, you can hover over the name of an option or field for a detailed tooltip explaining its meaning and usage.
 
 Ahorn supports a couple of keybinds and special mouse functionality, with more to come. The following list might not be comprehensive.
- - Ctrl + t: New room
- - Ctrl + shift + t: Configure current room
- - Ctrl + n: New map
- - Ctrl + m: Metadata window
- - Ctrl + shift + alt + s: Open settings window
- - q, e: shrink / grow width on selected
- - a, d: shrink / grow height on selected
- - Arrow keys: move selected
- - Left mouse button over selected: dragging selected
- - Holding ctrl + any of the above: use 1 as step size instead of 8 for more fine-grained placements
- - Shift selecting keeps previous selection as well
- - Ctrl + f: Focus search field
- - Ctrl + c: Copy selection
- - Ctrl + x: Cut selection
- - Ctrl + v: Paste selection
- - Ctrl + z: Undo changes
- - Ctrl + shift + z: Redo changes
- - Esc/Enter: Exit search field
- - v, h: vertical / horizontal mirror of decal
- - r: Rotate selected brush
- - delete: delete the given node / target
- - n/+: add node to target (after the targeted node / entity)
- - Middle click: pick what's currently under the cursor in the selected layer
- - Ctrl + number key row 0-9: shortcuts to select tools
- - Alt + arrow keys: move a room
- - Alt + delete: delete room
- - Double click layer name in selection menu: toggle visibility
- - Double click material name in tools: toggle favourite
- - Right click entity / trigger with placements / selection tool: open properties menu
- - Double click with selections selects all similar targets
- - Holding ctrl when doing the above restricts it to targets in a more strict manner
 
- With Everest installed and Celeste running in debug mode, it supports some more:
- - Ctrl + alt + leftclick on a room in Ahorn: teleport to that room in the game
+---
+
+#### General Controls
+
+ - Ctrl + N: New map
+ - Ctrl + S: Save map
+ - Ctrl + Shift + S: Save map as...
+ - Ctrl + T: New room
+ - Ctrl + Shift + T: Configure current room
+ - Alt + Arrow keys: Move room
+ - Alt + Delete: Delete room
+ - Right click & drag: Move around the map
+ - Ctrl + M: Metadata window
+ - Ctrl + Shift + Alt + S: Open settings window
+ - Ctrl + Z: Undo action
+ - Ctrl + Shift + Z: Redo action
+ - Ctrl + F: Focus search field
+ - Return in search field: Exit and clear search field
+ - Escape in search field: Exit search field
+ - Scroll wheel: Zoom
+ - Ctrl + ➕ (plus): Zoom in
+ - Ctrl + ➖ (minus): Zoom out
+ - Double Left click material name in tools: Toggle favourite
+ - Double Left click preview in stylegrounds window: Toggle preview
+ - Ctrl + number key row 0-9: Shortcuts to select tools
+
+#### Placements
+
+ - Left click: Place object
+ - Holding Ctrl + Left click: Use 1 as step size instead of 8 for more fine-grained placements
+ - Right click: Open properties of object under cursor
+ - Left click & drag: Adjust size of resizeable objects while placing
+ - Middle click: Clone object under cursor
+ - Q, E: Shrink / grow width on decal
+ - A, D: Shrink / grow height on decal
+ - L, R: Rotate supported objects counter-clockwise / clockwise
+ - V, H: Flip supported objects vertically / horizontally
+
+#### Selections
+
+ - Left click & drag: Select objects
+ - Shift + Left click & drag: Add to current selection
+ - Right click selection: Open properties of selected object(s)
+ - Holding Left mouse button over selection: Drag selected objects
+ - Double Left click: Select all similar objects
+ - Ctrl + Double Left click: Select all similar objects but more strict
+ - Arrow keys: Move selected objects
+ - Q, E: Shrink / grow width on selected entities/triggers
+ - A, D: Shrink / grow height on selected entities/triggers
+ - Holding Ctrl + any of the above: use 1 as step size instead of 8 for more fine-grained control
+ - L, R: Rotate supported objects counter-clockwise / clockwise
+ - V, H: Flip supported objects vertically / horizontally
+ - Shift + V / Shift + H: Flip selected area vertically / horizontally
+ - N or ➕ (plus) on entity/trigger: Add starting node to entity/trigger
+ - N or ➕ (plus) on node: Add node to entity/trigger after selected node
+ - Delete: Delete selected object(s)
+ - Return or Escape: Clear selection
+ - Ctrl + C: Copy selection
+ - Ctrl + X: Cut selection
+ - Ctrl + V: Paste selection
+
+#### Brushes
+
+ - Left click: Place brush
+ - Left click & drag: Drag brush
+ - Middle click: Change material to tile under cursor
+ - L, R: Rotate supported brush counter-clockwise / clockwise
+
+#### Everest Integration
+
+With Everest installed and Celeste running in debug mode, it supports some more:
+ - Ctrl + Alt + Left click on a room in Ahorn: Teleport to that room in the game
+
+---
 
 If you are serious about making maps, it is highly recommended to use [Everest](https://github.com/EverestAPI/Everest) for the F5 (force map reload) and F6 (open map editor for the current map) features.
 

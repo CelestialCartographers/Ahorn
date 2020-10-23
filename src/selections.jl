@@ -1,4 +1,4 @@
-mutable struct TileSelection
+@valueequals mutable struct TileSelection
     fg::Bool
     tiles::Array{Char, 2}
     selection::Rectangle
@@ -8,7 +8,7 @@ mutable struct TileSelection
     offsetY::Number
 end
 
-struct SelectedObject
+@valueequals mutable struct SelectedObject
     layerName::String
     rectangle::Rectangle
     target
@@ -16,6 +16,34 @@ struct SelectedObject
 end
 
 TileSelection(fg::Bool, tiles::Array{Char, 2}, selection::Rectangle) = TileSelection(fg, tiles, selection, selection.x, selection.y, 0, 0)
+
+deleted(tiles::TileSelection, node::Int) = nothing
+
+moved(tiles::TileSelection) = nothing
+moved(tiles::TileSelection, x::Int, y::Int) = nothing
+
+resized(tiles::TileSelection) = nothing
+resized(tiles::TileSelection, width::Int, height::Int) = nothing
+
+function flipped(tiles::TileSelection, horizontal::Bool)
+    tiles.tiles = reverse(tiles.tiles, dims=horizontal ? 2 : 1)
+
+    return tiles
+end
+
+function rotated(tiles::TileSelection, steps::Int)
+    rotationFunc = steps > 0 ? rotr90 : rotl90
+
+    for i in 1:abs(steps) % 4
+        tiles.tiles = rotationFunc(tiles.tiles)
+    end
+
+    # -16 to remove air padding around the tiles
+    height, width = size(tiles.tiles)
+    tiles.selection = Rectangle(tiles.selection.x, tiles.selection.y, width * 8 - 16, height * 8 - 16)
+
+    return tiles
+end
 
 const selectableLayers = ["fgTiles", "bgTiles", "entities", "triggers", "fgDecals", "bgDecals"]
 const selectionTargets = Dict{String, Function}(

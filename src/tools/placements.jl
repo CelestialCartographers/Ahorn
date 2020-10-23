@@ -20,9 +20,14 @@ selectionRect = nothing
 previewGhost = nothing
 clonedEntity = nothing
 
+lastPreviewX = -1
+lastPreviewY = -1
+
 blacklistedCloneAttrs = ["id", "x", "y"]
 
 placementLayers = String["entities", "triggers", "fgDecals", "bgDecals"]
+
+const EntityTriggerUnion = Union{Maple.Entity, Maple.Trigger}
 
 function drawPlacements(layer::Ahorn.Layer, room::Ahorn.DrawableRoom, camera::Ahorn.Camera)
     ctx = Ahorn.getSurfaceContext(toolsLayer.surface)
@@ -60,9 +65,7 @@ function generatePreview!(layer::Ahorn.Layer, material::Any, x, y; sx=1, sy=1, n
                 return Ahorn.updateCachedEntityPosition!(placementsCache, placements, Ahorn.loadedState.map, Ahorn.loadedState.room, materialName, x, y, nx, ny)
 
             else
-                if clonedEntity === nothing
-                    global clonedEntity = Ahorn.generateEntity(Ahorn.loadedState.map, Ahorn.loadedState.room, material, x, y, nx, ny)
-                end
+                global clonedEntity = Ahorn.generateEntity(Ahorn.loadedState.map, Ahorn.loadedState.room, material, x, y, nx, ny)
 
                 return Ahorn.updateEntityPosition!(clonedEntity, material, Ahorn.loadedState.map, Ahorn.loadedState.room, x, y, nx, ny)
             end
@@ -75,7 +78,7 @@ function generatePreview!(layer::Ahorn.Layer, material::Any, x, y; sx=1, sy=1, n
     end
 end
 
-function pushPreview!(layer::Ahorn.Layer, room::Maple.Room, preview::Any)
+function pushPreview!(layer::Ahorn.Layer, room::Maple.Room, preview)
     if !get(Ahorn.config, "allow_out_of_bounds_placement", false)
         width, height = room.size
         x, y = Ahorn.position(preview)
@@ -230,29 +233,20 @@ function materialDoubleClicked(material::String)
     end
 end
 
-function updatePreviewGhost(x::Number, y::Number)
-    targetX, targetY = x, y
+samePosition(a::Maple.Decal, b::Maple.Decal) = a.x == b.x && a.y == b.y
+samePosition(a::EntityTriggerUnion, b::EntityTriggerUnion) = a.x == b.x && a.y == b.y
+samePosition(a, b) = false
 
-    if !Ahorn.modifierControl()
-        targetX = x * 8 - 8
-        targetY = y * 8 - 8
-    end
+function updatePreviewGhost(x::Number, y::Number, force::Bool=false)
+    global lastPreviewX, lastPreviewY = x, y
 
     prevGhost = deepcopy(previewGhost)
-    newGhost = generatePreview!(targetLayer, material, targetX, targetY, sx=scaleX, sy=scaleY)
+    newGhost = generatePreview!(targetLayer, material, x, y, sx=scaleX, sy=scaleY)
 
     if newGhost != prevGhost
         # No need to redraw if the target is on the same tile
-        if isa(prevGhost, Maple.Entity) || isa(prevGhost, Maple.Trigger)
-            if newGhost.data["x"] == prevGhost.data["x"] && newGhost.data["y"] == prevGhost.data["y"]
-                return false
-            end
-        end
-
-        if isa(prevGhost, Maple.Decal)
-            if newGhost.x == prevGhost.x && newGhost.y == prevGhost.y
-                return false
-            end
+        if !force && samePosition(newGhost, prevGhost)
+            return false
         end
 
         global previewGhost = newGhost
@@ -264,7 +258,7 @@ end
 
 function mouseMotion(x::Number, y::Number)
     if !Ahorn.modifierControl() && selectionRect === nothing
-        updatePreviewGhost(x, y)
+        updatePreviewGhost(x * 8 - 8, y * 8 - 8)
     end
 end
 
@@ -274,7 +268,7 @@ function mouseMotionAbs(x::Number, y::Number)
     end
 end
 
-function placementFunc(target::Union{Maple.Entity, Maple.Trigger})
+function placementFunc(target::EntityTriggerUnion)
     constructor = isa(target, Maple.Entity) ? Maple.Entity : Maple.Trigger
 
     return (x::Number, y::Number) -> constructor(target.name, x=x, y=y)
@@ -295,7 +289,7 @@ function generateClonedEntityPlacement(name::String, target)
             Dict{String, Any}((k, v) for (k, v) in deepcopy(target.data) if !(k in blacklistedCloneAttrs)),
             Dict{String, Any}("__x" => target.data["x"], "__y" => target.data["y"])
         ),
-        function(entity::Union{Maple.Entity, Maple.Trigger})
+        function(entity::EntityTriggerUnion)
             nodes = get(entity.data, "nodes", Tuple{Integer, Integer}[])
             if length(nodes) > 0
                 x, y = entity.data["x"], entity.data["y"]
@@ -352,8 +346,6 @@ end
 
 function rightClickAbs(x::Number, y::Number)
     Ahorn.displayProperties(x, y, Ahorn.loadedState.room, targetLayer, toolsLayer)
-
-    Ahorn.redrawLayer!(toolsLayer)
 end
 
 function selectionMotionAbs(x1::Number, y1::Number, x2::Number, y2::Number)
@@ -450,44 +442,97 @@ resizeModifiers = Dict{Integer, Tuple{Number, Number}}(
     Int('d') => (0, -1)
 )
 
-scaleMultipliers = Dict{Integer, Tuple{Number, Number}}(
+# (Key, steps clockwise)
+rotationSteps = Dict{Integer, Integer}(
+    Int('r') => 1,
+    Int('l') => -1,
+)
+
+# (Key code, horizontal flip)
+flipDirections = Dict{Integer, Bool}(
     # Vertical Flip
-    Int('v') => (1, -1),
+    Int('v') => false,
 
     # Horizontal Flip
-    Int('h') => (-1, 1),
+    Int('h') => true,
 )
+
+function handleFlipping(event::Ahorn.eventKey, ghost::Maple.Decal)
+    horizontal = flipDirections[event.keyval]
+    Ahorn.flipped(ghost, horizontal)
+
+    global scaleX = ghost.scaleX
+    global scaleY = ghost.scaleY
+
+    return true
+end
+
+function handleFlipping(event::Ahorn.eventKey, ghost::EntityTriggerUnion)
+    horizontal = flipDirections[event.keyval]
+    flipped = Ahorn.flipped(ghost, horizontal)
+
+    if flipped !== nothing
+        global materialName = nothing
+        global material = generateClonedEntityPlacement(targetLayer.name, flipped)
+
+        updatePreviewGhost(lastPreviewX, lastPreviewY, true)
+    end
+
+    return flipped !== nothing
+end
+
+handleFlipping(event::Ahorn.eventKey, ghost) = false
+
+function handleRotation(event::Ahorn.eventKey, ghost::EntityTriggerUnion)
+    steps = rotationSteps[event.keyval]
+    rotated = Ahorn.rotated(ghost, steps)
+
+    if rotated !== nothing
+        global materialName = nothing
+        global material = generateClonedEntityPlacement(targetLayer.name, rotated)
+
+        updatePreviewGhost(lastPreviewX, lastPreviewY, true)
+    end
+
+    return rotated !== nothing
+end
+
+handleRotation(event::Ahorn.eventKey, ghost::Maple.Decal) = false
+handleRotation(event::Ahorn.eventKey, ghost) = false
+
+function handleResize(event::Ahorn.eventKey, ghost::Maple.Decal)
+    extraW, extraH = resizeModifiers[event.keyval]
+    minVal, maxVal = decalScaleVals
+
+    global scaleX = floor(Int, sign(scaleX) * clamp(abs(scaleX) * 2.0^extraW, minVal, maxVal))
+    global scaleY = floor(Int, sign(scaleY) * clamp(abs(scaleY) * 2.0^extraH, minVal, maxVal))
+
+    ghost.scaleX = scaleX
+    ghost.scaleY = scaleY
+
+    return true
+end
+
+handleResize(event::Ahorn.eventKey, ghost::EntityTriggerUnion) = false
+handleResize(event::Ahorn.eventKey, ghost) = false
 
 function keyboard(event::Ahorn.eventKey)
     redraw = false
 
-    if haskey(scaleMultipliers, event.keyval)
-        msx, msy = scaleMultipliers[event.keyval]
-        
-        global scaleX *= msx
-        global scaleY *= msy
+    if haskey(flipDirections, event.keyval)
+        redraw |= handleFlipping(event, previewGhost)
+    end
 
-        redraw = true
+    if haskey(rotationSteps, event.keyval)
+        redraw |= handleRotation(event, previewGhost)
     end
 
     if haskey(resizeModifiers, event.keyval)
-        extraW, extraH = resizeModifiers[event.keyval]
-        minVal, maxVal = decalScaleVals
-        
-        global scaleX = floor(Int, sign(scaleX) * clamp(abs(scaleX) * 2.0^extraW, minVal, maxVal))
-        global scaleY = floor(Int, sign(scaleY) * clamp(abs(scaleY) * 2.0^extraH, minVal, maxVal))
-
-        redraw = true
+        redraw |= handleResize(event, previewGhost)
     end
 
     if redraw
-        name = Ahorn.layerName(targetLayer)
-
-        if name == "fgDecals" || name == "bgDecals"
-            global previewGhost = generatePreview!(targetLayer, material, previewGhost.x, previewGhost.y, sx=scaleX, sy=scaleY)
-
-            Ahorn.redrawLayer!(toolsLayer)
-        end
+        Ahorn.redrawLayer!(toolsLayer)
     end
 
     return true

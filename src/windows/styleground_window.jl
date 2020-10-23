@@ -7,19 +7,15 @@ stylegroundWindow = nothing
 effectSectionGrid = nothing
 effectOptions = nothing
 
-const effectFieldOrder = String[
-    "name", "only", "exclude", "tag",
-    "flag", "notflag"
-]
-
 const parallaxFieldOrder = String[
     "texture", "only", "exclude", "tag",
     "flag", "notflag", "blendmode", "color",
     "x", "y", "scrollx", "scrolly",
-    "speedx", "speedy", "alpha"
+    "speedx", "speedy", "fadex", "fadey",
+    "alpha"
 ]
 
-function drawPreviewFailed(canvas::Gtk.GtkCanvas, reason::String, width::Int=320, height::Int=180, scale::Number=3)
+function drawPreviewText(canvas::Gtk.GtkCanvas, reason::String, width::Int=320, height::Int=180, scale::Number=3)
     ctx = Gtk.getgc(canvas)
 
     set_gtk_property!(canvas, :width_request, width)
@@ -34,28 +30,34 @@ function drawPreview(canvas::Gtk.GtkCanvas, textureOption::Ahorn.Form.Option, co
     texture = Ahorn.Form.getValue(textureOption)
     sprite = Ahorn.getSprite(texture, "Gameplay")
     rawColor = Ahorn.Form.getValue(colorOption)
-
     width, height = sprite.width, sprite.height
 
-    if width > 0 && height > 0 && !(sprite.surface == Ahorn.Assets.missingImage)
-        try
-            @assert length(rawColor) == 6
-            color = Ahorn.argb32ToRGBATuple(parse(Int, "0x" * rawColor) + 255 << 24) ./ 255.0
+    hidePreview = get(Ahorn.config, "hide_styleground_parallax_preview", false)
 
-            offsetX, offsetY = sprite.offsetX, sprite.offsetY
-
-            set_gtk_property!(canvas, :width_request, width)
-            set_gtk_property!(canvas, :height_request, height)
-
-            Ahorn.clearSurface(ctx)
-            Ahorn.drawImage(ctx, sprite, -offsetX, -offsetY, tint=color)
-
-        catch e
-            drawPreviewFailed(canvas, "Color is invalid.\nExpected hex triplet without #.")
-        end
+    if hidePreview
+        drawPreviewText(canvas, "Preview has been disabled.\nDouble click to reenable.")
 
     else
-        drawPreviewFailed(canvas, "Unable to preview backdrop, image not found.\nAhorn can only preview from the Gameplay atlas.")
+        if width > 0 && height > 0 && !(sprite.surface == Ahorn.Assets.missingImage)
+            try
+                @assert length(rawColor) == 6
+                color = Ahorn.argb32ToRGBATuple(parse(Int, "0x" * rawColor) + 255 << 24) ./ 255.0
+
+                offsetX, offsetY = sprite.offsetX, sprite.offsetY
+
+                set_gtk_property!(canvas, :width_request, width)
+                set_gtk_property!(canvas, :height_request, height)
+
+                Ahorn.clearSurface(ctx)
+                Ahorn.drawImage(ctx, sprite, -offsetX, -offsetY, tint=color)
+
+            catch e
+                drawPreviewText(canvas, "Color is invalid.\nExpected hex triplet without #.")
+            end
+
+        else
+            drawPreviewText(canvas, "Unable to preview backdrop, image not found.\nAhorn can only preview from the Gameplay atlas.")
+        end
     end
 end
 
@@ -111,6 +113,9 @@ const parallaxFields = Dict{String, Any}(
     "instantIn" => false,
     "instantOut" => false,
     "fadeIn" => false,
+
+    "fadex" => "",
+    "fadey" => "",
 
     "tag" => ""
 )
@@ -251,7 +256,7 @@ function getParallaxOptions(fields::Dict{String, Any}, langdata::Ahorn.LangData)
     return options
 end
 
-function getEffectOptions(effect::Maple.Effect, langdata::Ahorn.LangData, fg::Bool=true)
+function getEffectOptions(effect::Maple.Effect, langdata::Ahorn.LangData, fg::Bool=true, ignored::Array{String, 1}=String[])
     updateEffectTemplates()
 
     options = Ahorn.Form.Option[]
@@ -278,6 +283,10 @@ function getEffectOptions(effect::Maple.Effect, langdata::Ahorn.LangData, fg::Bo
     end
 
     for (dataName, value) in merge(effectFields, data)
+        if dataName in ignored
+            continue
+        end
+
         symbolDataName = Symbol(dataName)
         keyOptions = get(dropdownOptions, dataName, nothing)
         displayName = haskey(names, symbolDataName) ? names[symbolDataName] : Ahorn.humanizeVariableName(dataName)
@@ -299,8 +308,6 @@ function updateEffect(effect::Maple.Effect, data::Dict{String, Any}, fg::Bool=tr
         for (attr, value) in effectTemplates[newName]
             res.data[attr] = get(effect.data, attr, value)
         end
-
-        res.data = merge(get(effectTemplates, newName, Dict{String, Any}()), effect.data)
 
     else
         res.data = data
@@ -356,7 +363,10 @@ function updateEffectSectionGrid(grid::Gtk.GtkGrid, backdrop::Maple.Effect, fg::
         :tooltips => merge(get(langdataEffect, :tooltips), get(langdataEffects, :tooltips))
     ))
 
-    global effectOptions = getEffectOptions(backdrop, langdataCombined, fg)
+    effectFieldOrder = Ahorn.editingOrder(backdrop)
+    ignoredFields = Ahorn.editingIgnored(backdrop)
+
+    global effectOptions = getEffectOptions(backdrop, langdataCombined, fg, ignoredFields)
     section = Ahorn.Form.Section("Effect", effectOptions, fieldOrder=effectFieldOrder)
     global effectSectionGrid = Ahorn.Form.generateSectionGrid(section, columns=8)
 
@@ -537,11 +547,26 @@ function getParallaxGrid(map::Maple.Map)
             Ahorn.updateTreeView!(parallaxList, getParallaxListRows(map.style), select, updateByReplacement=true)
         end
     end
-    
+
     Ahorn.connectChanged(parallaxRowHandler, parallaxList)
 
     signal_connect(widget -> draw(preview), textureOption.combobox, "changed")
     signal_connect(widget -> draw(preview), colorOption.entry, "changed")
+
+    add_events(preview,
+        GConstants.GdkEventMask.BUTTON_PRESS |
+        GConstants.GdkEventType.DOUBLE_BUTTON_PRESS
+    )
+
+    signal_connect(preview, "button-press-event") do widget, event
+        # Double click
+        if event.event_type == 5
+            hidePreview = get(Ahorn.config, "hide_styleground_parallax_preview", false)
+            Ahorn.config["hide_styleground_parallax_preview"] = !hidePreview
+
+            draw(preview)
+        end
+    end
 
     @guarded draw(preview) do widget
         drawPreview(preview, textureOption, colorOption)

@@ -5,13 +5,37 @@ function position(decal::Maple.Decal)::Tuple{Int, Int}
     )
 end
 
+editingOrder(decal::Maple.Decal) = String["x", "y", "scaleX", "scaleY", "texture"]
+editingIgnored(decal::Maple.Decal, multiple::Bool=false) = multiple ? String["x", "y"] : String[]
+
+deleted(decal::Maple.Decal, node::Int) = nothing
+
+moved(decal::Maple.Decal) = nothing
+moved(decal::Maple.Decal, x::Int, y::Int) = nothing
+
+resized(decal::Maple.Decal) = nothing
+resized(decal::Maple.Decal, width::Int, height::Int) = nothing
+
+function flipped(decal::Maple.Decal, horizontal::Bool)
+    if horizontal
+        decal.scaleX *= -1
+
+    else
+        decal.scaleY *= -1
+    end
+
+    return true
+end
+
+rotated(decal::Maple.Decal, steps::Int) = nothing
+
 function decalSelection(decal::Maple.Decal)
     texture = "decals/$(decal.texture)"
     sprite = getTextureSprite(texture)
 
     x, y = round(Int, decal.x), round(Int, decal.y)
     sx, sy = round(Int, decal.scaleX), round(Int, decal.scaleY)
-    
+
     width, height = sprite.width, sprite.height
     realWidth, realHeight = sprite.realWidth, sprite.realHeight
 
@@ -63,7 +87,7 @@ function spritesToDecalTextures(sprites::Dict{String, SpriteHolder})
             end
         end
     end
-    
+
     return res
 end
 
@@ -83,7 +107,7 @@ function decalTextures(animationFrames::Bool=false)
     return textures
 end
 
-function decalConfigOptions(decal::Maple.Decal, ignores::Array{String, 1}=String[])
+function propertyOptions(decal::Maple.Decal, ignores::Array{String, 1}=String[])
     res = Form.Option[]
 
     names = get(langdata, ["placements", "decals", "names"])
@@ -101,7 +125,7 @@ function decalConfigOptions(decal::Maple.Decal, ignores::Array{String, 1}=String
         displayName = isempty(name) ? humanizeVariableName(attr) : name
         tooltip = expandTooltipText(get(tooltips, Symbol(attr), ""))
         textures = attr == "texture" ? decalTextures() : nothing
-        
+
         push!(res, Form.suggestOption(displayName, value, dataName=attr, tooltip=tooltip, choices=textures, editable=true))
     end
 

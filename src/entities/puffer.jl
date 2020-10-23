@@ -16,7 +16,7 @@ const placements = Ahorn.PlacementDict(
         Dict{String, Any}(
             "right" => false
         )
-    )    
+    )
 )
 
 sprite = "objects/puffer/idle00"
@@ -32,6 +32,14 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.Puffer, room:
     scaleX = get(entity, "right", false) ? 1 : -1
 
     Ahorn.drawSprite(ctx, sprite, 0, 0, sx=scaleX)
+end
+
+function Ahorn.flipped(entity::Maple.Puffer, horizontal::Bool)
+    if horizontal
+        entity.right = !entity.right
+
+        return entity
+    end
 end
 
 end

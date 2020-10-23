@@ -328,6 +328,9 @@ placements.entities.SummitBackgroundManager.tooltips.index=Index of text to disp
 placements.entities.SummitBackgroundManager.tooltips.intro_launch=Used for first boost in Summit. Does not start the cutscene dialogue.
 placements.entities.SummitBackgroundManager.tooltips.ambience=Ambience background music.
 
+# Cutscene Node
+placements.entities.cutsceneNode.tooltips.nodeName=Name of node. Used to find the entity from code.
+
 # Hahaha
 placements.entities.hahaha.tooltips.ifset=Only show up if the given flag is set, or always if left empty.
 placements.entities.hahaha.tooltips.triggerLaughSfx=Whether the laugh should also play audio.
@@ -579,6 +582,8 @@ placements.effects.planets.names.color=Colour
 placements.effects.planets.names.scrollx=Scroll X
 placements.effects.planets.names.scrolly=Scroll Y
 
+placements.effects.windsnow.names.color=Colour
+
 
 placements.effects.tentacles.tooltips.sides=The side of the screen that the tentacles should attach to.
 placements.effects.tentacles.tooltips.offset=Determines the lerp strength of the tentacles, and their offset compared to the player's position.
@@ -596,6 +601,8 @@ placements.effects.planets.tooltips.color=The colour of the planets.
 placements.effects.planets.tooltips.size=The sprite to use for the planets.\nLocated at "Gameplay/bgs/10/$size00", where "$size" is the size attribute value.
 placements.effects.planets.tooltips.scrollx=Determines the parallax scrolling of the planets along the X axis.
 placements.effects.planets.tooltips.scrolly=Determines the parallax scrolling of the planets along the Y axis.
+
+placements.effects.windsnow.tooltips.color=The colour of the snow.
 
 
 # -- Decals Properties --
@@ -653,7 +660,9 @@ settings.config.names.backup_dialog_enabled=Backup Recovery Dialogue
 settings.config.names.allow_out_of_bounds_placement=Out of bounds placement
 settings.config.names.everest_rcon=Everest Remote Control
 settings.config.names.load_image_meta_yaml=Load Image Meta YAML
-settings.config.names.split_atlas_into_smaller_surfaces=Split Up Celeste Atlases
+settings.config.names.split_atlas_into_smaller_surfaces=Split up Celeste atlases
+settings.config.names.hide_styleground_parallax_preview=Hide styleground parallax preview
+settings.config.names.tools_brushes_smoother_brushes=Smoother brushing
 
 settings.config.tooltips.language=The language file being used.
 settings.config.tooltips.camera_maximum_zoom=The greatest allowed camera zoom level.
@@ -690,6 +699,8 @@ settings.config.tooltips.allow_out_of_bounds_placement=Whether you should be abl
 settings.config.tooltips.everest_rcon=URL for Everest remote control.
 settings.config.tooltips.load_image_meta_yaml=Loads the .meta.yaml image metadata files dumped by old Everest image dumps.\nNot recommended, If sprites are offset incorrectly, fix the sprite itself. Increases load times.
 settings.config.tooltips.split_atlas_into_smaller_surfaces=Splits the atlases from Celeste into smaller images for better performance. (Requires restart)
+settings.config.tooltips.hide_styleground_parallax_preview=Whether the parallax preview should be hidden. Useful for larger previews.\nCan be toggled by double clicking the preview in styleground window.
+settings.config.tooltips.tools_brushes_smoother_brushes=Whether the brush tool should attempt to smoothen movement by approximating lost movement information with lines.
 
 
 settings.debug.names.DEBUG_MENU_DROPDOWN=Debug menu dropdown
@@ -706,6 +717,7 @@ settings.debug.names.DRAWING_VERBOSE=Verbose drawing
 settings.debug.names.DISABLE_LOADING_SCREEN=Disable loading screen
 settings.debug.names.SPRITE_DUMPER_REAL_SIZE=Sprite dumper: Use real size
 settings.debug.names.ZIP_CACHING_VERBOSE=Verbose zip caching
+settings.debug.names.DISPLAY_ALL_META_ATTRIBUTES=Display custom meta attributes
 
 settings.debug.tooltips.DEBUG_MENU_DROPDOWN=Activate the Debug menu dropdown for various functionality useful for developing Ahorn. (Requires restart)
 settings.debug.tooltips.IGNORE_MINIMUM_SIZE=Ignore the minimum size of entities and triggers when resizing them. Can cause major visual weirdness.
@@ -721,6 +733,7 @@ settings.debug.tooltips.DRAWING_VERBOSE=Verbosely log when redrawing layers.
 settings.debug.tooltips.DISABLE_LOADING_SCREEN=Disables the loading screen. Faster startup, but window will appear unresponsive.
 settings.debug.tooltips.SPRITE_DUMPER_REAL_SIZE=Whether the sprite dumper should use the real size of the sprite or cut off unused blank space.
 settings.debug.tooltips.ZIP_CACHING_VERBOSE=Verbosely log when caching zip files.
+settings.debug.tooltips.DISPLAY_ALL_META_ATTRIBUTES=Whether custom meta attributes should be shown.
 
 
 # -- Room Window Displaynames and Tooltips --
@@ -797,6 +810,8 @@ styleground_window.parallax.names.texture=Texture
 styleground_window.parallax.names.fadeIn=Fade In
 styleground_window.parallax.names.flipx=Flip X
 styleground_window.parallax.names.flipy=Flip Y
+styleground_window.parallax.names.fadex=Fade X
+styleground_window.parallax.names.fadey=Fade Y
 styleground_window.parallax.names.instantOut=Instant Out
 styleground_window.parallax.names.instantIn=Instant In
 styleground_window.parallax.names.loopx=Loop X
@@ -821,6 +836,8 @@ styleground_window.parallax.tooltips.texture=The texture that the styleground sh
 styleground_window.parallax.tooltips.fadeIn=Determines whether the styleground should fade in when transitioning to it.
 styleground_window.parallax.tooltips.flipx=Flips the styleground on the X axis.
 styleground_window.parallax.tooltips.flipy=Flips the styleground on the Y axis.
+styleground_window.parallax.tooltips.fadex=Advanced horizontal fading zones.\nFormat is "FromPosition-ToPosition,FromAlpha-ToAlpha". Example "n500-500,1-0".\nNegative numbers in position are denoted with "n" rather than minus. Position numbers are in pixels and use map coordinates.\nMultiple zones can be set up by using ":" as separator.
+styleground_window.parallax.tooltips.fadey=Advanced vertical fading zones.\nFormat is "FromPosition-ToPosition,FromAlpha-ToAlpha". Example "n500-500,1-0".\nNegative numbers in position are denoted with "n" rather than minus. Position numbers are in pixels and use map coordinates.\nMultiple zones can be set up by using ":" as separator.
 styleground_window.parallax.tooltips.instantOut=Determines whether the styleground should instantly fade out when transitioning away from it.
 styleground_window.parallax.tooltips.instantIn=Determines whether the styleground should instantly fade in when transitioning away from it.
 styleground_window.parallax.tooltips.loopx=Loops the styleground on the X axis.

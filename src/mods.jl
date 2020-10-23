@@ -386,10 +386,13 @@ function findExternalModulesInFolder(filename::String, pluginPath::String)
         return res
     end
 
-    for file in readdir(pluginDir)
-        if hasExt(file, ".jl")
-            rawpath = joinpath(pluginDir, file)
-            push!(res, (rawpath, rawpath, open(f -> read(f, String), rawpath)))
+    for (root, dirs, files) in walkdir(pluginDir)
+        for file in files
+            if hasExt(file, ".jl")
+                rawpath = joinpath(root, file)
+
+                push!(res, (rawpath, rawpath, open(f -> read(f, String), rawpath)))
+            end
         end
     end
 
@@ -515,9 +518,11 @@ function findExternalModules(args::String...)
     for folder in targetFolders
         path = joinpath(folder, args...)
         if isdir(path)
-            for file in readdir(path)
-                if hasExt(file, ".jl")
-                    push!(res, joinpath(path, file))
+            for (root, dirs, files) in walkdir(path)
+                for file in files
+                    if hasExt(file, ".jl")
+                        push!(res, joinpath(root, file))
+                    end
                 end
             end
         end
@@ -526,7 +531,7 @@ function findExternalModules(args::String...)
     return res
 end
 
-function loadExternalModules!(loadedModules::Dict{String, Module}, loadedNames::Array{String, 1}, args::String...)
+function loadExternalZipModules!(loadedModules::Dict{String, Module}, loadedNames::Array{String, 1}, args::String...)
     # ZipFile uses unix paths
     path = joinpath("Ahorn", args...)
     path = replace(path, "\\" => "/")
@@ -545,7 +550,7 @@ function loadExternalModules!(loadedModules::Dict{String, Module}, loadedNames::
 
             try
                 if targetMtime > get(loadedModulesTimes, fakeFn, 0)
-                    loadedModules[fakeFn] = Base.eval(Main, Meta.parse(content))
+                    loadedModules[fakeFn] = Base.eval(Ahorn, Meta.parse(strip(content)))
                     loadedModulesTimes[fakeFn] = targetMtime
                 end
 

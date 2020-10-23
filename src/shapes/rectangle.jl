@@ -1,4 +1,4 @@
-struct Rectangle
+@valueequals struct Rectangle
     x::Union{Int64, Float64}
     y::Union{Int64, Float64}
     w::Union{Int64, Float64}
@@ -7,8 +7,6 @@ struct Rectangle
     Rectangle(x::Integer, y::Integer, w::Integer, h::Integer) = new(Int64(x), Int64(y), Int64(w), Int64(h))
     Rectangle(x, y, w, h) = new(Float64(x), Float64(y), Float64(w), Float64(h))
 end
-
-Base.:(==)(lhs::Rectangle, rhs::Rectangle) = lhs.x == rhs.x && lhs.y == rhs.y && lhs.w == rhs.w && lhs.h == rhs.h
 
 # AABB check
 function checkCollision(box1::Rectangle, box2::Rectangle)

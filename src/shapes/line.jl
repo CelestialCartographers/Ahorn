@@ -1,14 +1,12 @@
 const tolerance = 10.0^-10
 
-struct Line
+@valueequals struct Line
     x1::Number
     y1::Number
 
     x2::Number
     y2::Number
 end
-
-Base.:(==)(lhs::Line, rhs::Line) = lhs.x1 == rhs.x1 && lhs.y1 == rhs.y1 && lhs.x2 == rhs.x2 && lhs.y2 == rhs.y2
 
 # How much is missing to get to the closest new "grid square"
 function rayDelta(n, a)

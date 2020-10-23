@@ -102,6 +102,10 @@ getTilesetId(id::String) = getTilesetId(id[1])
 getTilesetId(id::Char) = codepoint(id) <= 0xff ? id : nothing
 
 function loadTilesetXML(fn::String)
+    if !isfile(fn)
+        error("File '$fn' not found")
+    end
+
     xdoc = parse_file(fn)
     xroot = root(xdoc)
 
@@ -122,6 +126,10 @@ function loadTilesetXML(fn::String)
 
         if id === nothing
             error("Tileset ID must be ASCII character, got '$rawId'")
+        end
+
+        if haskey(paths, id)
+            error("Tileset ID '$id' is already in use")
         end
 
         paths[id] = "tilesets/$path"
@@ -185,112 +193,113 @@ fgTilerMeta = nothing
 bgTilerMeta = nothing
 animatedTilesMeta = nothing
 
-function loadFgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bool=false)
-    path = joinpath(storageDirectory, "XML", "ForegroundTiles.xml")
+# Filename => (result, load time)
+const loadedXMLCache = Dict{String, Tuple{Any, Number}}()
 
-    if side !== nothing && !loadDefault
+function displayCustomXMLWarning(title::String, message::String)
+    topMostInfoDialog("$title\n$message")
+end
+
+function displayCustomXMLWarning(title::String, exception::Exception)
+    message = sprint(showerror, exception)
+
+    displayCustomXMLWarning(title, message)
+end
+
+function getCustomTilesXMLPath(side::Union{Side, Nothing}, filename::String, key::String)
+    if side !== nothing
         meta = get(Dict{String, Any}, side.data, "meta")
-        metaPath = get(meta, "ForegroundTiles", "")
+        metaPath = get(meta, key, "")
 
-        hasRoot, modRoot = getModRoot(fn)
+        hasRoot, modRoot = getModRoot(filename)
         xmlPath = joinpath(modRoot, metaPath)
 
         if !isempty(metaPath) && hasRoot
-            path = xmlPath
-        end
-    end
-
-    try
-        global fgTilerMeta = TilerMeta(path)
-
-    catch e
-        if !loadDefault
-            println(Base.stderr, "Failed to load custom ForegroundTiles XML")
-            println(Base.stderr, e)
-
-            for (exc, bt) in Base.catch_stack()
-                showerror(Base.stderr, exc, bt)
-                println()
-            end
-
-            loadFgTilerMeta(side, fn, true)
+            return xmlPath
         end
     end
 end
 
-function loadBgTilerMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bool=false)
-    path = joinpath(storageDirectory, "XML", "BackgroundTiles.xml")
+function loadCustomXML(loader::Union{Function, Type}, filename::String, errorTitle::String, force::Bool=false, quiet::Bool=false)
+    if !force
+        result, modified = get(loadedXMLCache, filename, (nothing, 0))
 
-    if side !== nothing && !loadDefault
-        meta = get(Dict{String, Any}, side.data, "meta")
-        metaPath = get(meta, "BackgroundTiles", "")
-
-        hasRoot, modRoot = getModRoot(fn)
-        xmlPath = joinpath(modRoot, metaPath)
-
-        if !isempty(metaPath) && hasRoot
-            path = xmlPath
+        if modified >= mtime(filename)
+            return result
         end
     end
 
     try
-        global bgTilerMeta = TilerMeta(path)
+        result = loader(filename)
+        loadedXMLCache[filename] = (result, mtime(filename))
+
+        return result
 
     catch e
-        if !loadDefault
-            println(Base.stderr, "Failed to load custom BackgroundTiles XML")
+        if !quiet
+            displayCustomXMLWarning(errorTitle, e)
+
             println(Base.stderr, e)
 
             for (exc, bt) in Base.catch_stack()
                 showerror(Base.stderr, exc, bt)
-                println()
+                println(Base.stderr, "")
             end
-
-            loadBgTilerMeta(side, fn, true)
         end
+
+        loadedXMLCache[filename] = (nothing, mtime(filename))
     end
+
+    return nothing
 end
 
-function loadAnimatedTilesMeta(side::Union{Side, Nothing}, fn::String, loadDefault::Bool=false)
-    path = joinpath(storageDirectory, "XML", "AnimatedTiles.xml")
-
-    if side !== nothing && !loadDefault
-        meta = get(Dict{String, Any}, side.data, "meta")
-        metaPath = get(meta, "AnimatedTiles", "")
-
-        hasRoot, modRoot = getModRoot(fn)
-        xmlPath = joinpath(modRoot, metaPath)
-
-        if !isempty(metaPath) && hasRoot
-            path = xmlPath
-        end
-    end
-
-    try
-        global animatedTilesMeta = loadAnimatedTilesXML(path)
-
-    catch e
-        if !loadDefault
-            println(Base.stderr, "Failed to load custom AnimatedTiles XML")
-            println(Base.stderr, e)
-
-            for (exc, bt) in Base.catch_stack()
-                showerror(Base.stderr, exc, bt)
-                println()
-            end
-
-            loadAnimatedTilesMeta(side, fn, true)
-        end
-    end
+# Good enough to cache and retrieve via the custom XML loader
+# We don't need any error message, vanilla assets shouldn't fail
+# Never need to force reloads, that is mostly just for error message sake
+function loadVanillaXML(loader::Union{Function, Type}, filename::String)
+    return loadCustomXML(loader, filename, "", false, true)
 end
 
-function loadXMLMeta()
+function loadTilesMeta(side::Union{Side, Nothing}, filename::String, fg::Bool=false, force::Bool=false)
+    defaultPath = joinpath(storageDirectory, "XML", fg ? "ForegroundTiles.xml" : "BackgroundTiles.xml")
+    customPath = getCustomTilesXMLPath(side, filename, fg ? "ForegroundTiles" : "BackgroundTiles")
+
+    if customPath !== nothing
+        xmlType = fg ? "Forground Tiles" : "Bakground Tiles"
+        errorTitle = "Failed to load custom $xmlType XML"
+        customMeta = loadCustomXML(TilerMeta, customPath, errorTitle, force)
+
+        if customMeta !== nothing
+            return customMeta
+        end
+    end
+
+    return loadVanillaXML(TilerMeta, defaultPath)
+end
+
+function loadAnimatedTilesMeta(side::Union{Side, Nothing}, filename::String, force::Bool=false)
+    defaultPath = joinpath(storageDirectory, "XML",  "AnimatedTiles.xml")
+    customPath = getCustomTilesXMLPath(side, filename, "AnimatedTiles")
+
+    if customPath !== nothing
+        errorTitle = "Failed to load custom Animated Tiles XML"
+        customMeta = loadCustomXML(loadAnimatedTilesXML, customPath, errorTitle, force)
+
+        if customMeta !== nothing
+            return customMeta
+        end
+    end
+
+    return loadVanillaXML(loadAnimatedTilesXML, defaultPath)
+end
+
+function loadXMLMeta(force::Bool=true)
     side = loadedState.side
     filename = loadedState.filename
 
-    loadFgTilerMeta(side, filename)
-    loadBgTilerMeta(side, filename)
-    loadAnimatedTilesMeta(side, filename)
+    global fgTilerMeta = loadTilesMeta(side, filename, true, force)
+    global bgTilerMeta = loadTilesMeta(side, filename, false, force)
+    global animatedTilesMeta = loadAnimatedTilesMeta(side, filename, force)
 end
 
 function getTile(tiles::Tiles, x::Int, y::Int)

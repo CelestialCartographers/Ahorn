@@ -2,9 +2,12 @@ function canFgBg(effect::Maple.Effect)
     return true, true
 end
 
-function editingOptions(effect::Maple.Effect)
-    return Dict{String, Any}()
-end
+editingOptions(entity::Maple.Effect) = Dict{String, Any}()
+editingIgnored(entity::Maple.Effect) = String[]
+editingOrder(entity::Maple.Effect) = String[
+    "name", "only", "exclude", "tag",
+    "flag", "notflag"
+]
 
 function registerPlacements!(placements::Array{Type{Maple.Effect{T}} where T, 1}, loaded::Array{String, 1})
     empty!(placements)

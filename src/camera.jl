@@ -36,13 +36,13 @@ function updateCameraZoomVariables()
     global defaultZoom = 2.0^round(Int, log(2, get(config, "camera_default_zoom", defaultZoom)))
 end
 
-function zoomIn!(camera::Camera, event::Gtk.GdkEventScroll)
+function zoomIn!(camera::Camera, x::Number, y::Number)
     updateCameraZoomVariables()
 
     if minimumZoom <= camera.scale * 2 <= maximumZoom
         camera.scale = camera.scale * 2
-        camera.x = round(Int, camera.x * 2 + event.x)
-        camera.y = round(Int, camera.y * 2 + event.y)
+        camera.x = round(Int, camera.x * 2 + x)
+        camera.y = round(Int, camera.y * 2 + y)
 
         draw(canvas)
 
@@ -52,19 +52,27 @@ function zoomIn!(camera::Camera, event::Gtk.GdkEventScroll)
     return false
 end
 
-function zoomOut!(camera::Camera, event::Gtk.GdkEventScroll)
+zoomIn!(camera::Camera, event::Gtk.GdkEventScroll) = zoomIn!(camera, event.x, event.y)
+zoomIn!(camera::Camera=camera) = zoomIn!(camera, width(canvas) / 2, height(canvas) / 2)
+
+function zoomOut!(camera::Camera, x::Number, y::Number)
     updateCameraZoomVariables()
 
     if minimumZoom <= camera.scale / 2 <= maximumZoom
         camera.scale = camera.scale / 2
-        camera.x = round(Int, (camera.x - event.x) / 2)
-        camera.y = round(Int, (camera.y - event.y) / 2)
+        camera.x = round(Int, (camera.x - x) / 2)
+        camera.y = round(Int, (camera.y - y) / 2)
+
+        draw(canvas)
 
         return true
     end
 
     return false
 end
+
+zoomOut!(camera::Camera, event::Gtk.GdkEventScroll) = zoomOut!(camera, event.x, event.y)
+zoomOut!(camera::Camera=camera) = zoomOut!(camera, width(canvas) / 2, height(canvas) / 2)
 
 minimumZoom = 2.0^-6
 maximumZoom = 2.0^6

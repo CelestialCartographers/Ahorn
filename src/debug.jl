@@ -23,12 +23,16 @@ function log(s::String, key::String)
 end
 
 function reloadTools!()
+    if Ahorn.currentTool !== nothing
+        Ahorn.eventToModule(Ahorn.currentTool, "cleanup")
+    end
+
     empty!(Ahorn.loadedTools)
     append!(Ahorn.loadedTools, joinpath.(Ahorn.abs"tools", readdir(Ahorn.abs"tools")))
     Ahorn.initExternalTools()
 
     Ahorn.loadModule.(Ahorn.loadedTools)
-    Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedTools, "tools")
+    Ahorn.loadExternalZipModules!(Ahorn.loadedModules, Ahorn.loadedTools, "tools")
     Ahorn.changeTool!(Ahorn.loadedTools[1])
     Ahorn.selectRow!(Ahorn.toolList, 1)
 
@@ -43,7 +47,7 @@ function reloadEntities!()
     Ahorn.initExternalEntities()
 
     Ahorn.loadModule.(Ahorn.loadedEntities)
-    Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedEntities, "entities")
+    Ahorn.loadExternalZipModules!(Ahorn.loadedModules, Ahorn.loadedEntities, "entities")
     Ahorn.registerPlacements!(Ahorn.entityPlacements, Ahorn.loadedEntities)
 
     Ahorn.getLayerByName(dr.layers, "entities").redraw = true
@@ -62,8 +66,21 @@ function reloadEffects!()
     Ahorn.initExternalEffects()
 
     Ahorn.loadModule.(Ahorn.loadedEffects)
-    Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedEffects, "effects")
+    Ahorn.loadExternalZipModules!(Ahorn.loadedModules, Ahorn.loadedEffects, "effects")
     Ahorn.registerPlacements!(Ahorn.effectPlacements, Ahorn.loadedEffects)
+
+    return true
+end
+
+# Ahorn doesn't use libraries
+# Strictly a plugin feature
+function reloadLibraries!()
+    empty!(Ahorn.loadedLibraries)
+
+    Ahorn.initExternalLibraries()
+
+    Ahorn.loadModule.(Ahorn.loadedLibraries)
+    Ahorn.loadExternalZipModules!(Ahorn.loadedModules, Ahorn.loadedLibraries, "libraries")
 
     return true
 end
@@ -76,7 +93,7 @@ function reloadTriggers!()
     Ahorn.initExternalTriggers()
 
     Ahorn.loadModule.(Ahorn.loadedTriggers)
-    Ahorn.loadExternalModules!(Ahorn.loadedModules, Ahorn.loadedTriggers, "triggers")
+    Ahorn.loadExternalZipModules!(Ahorn.loadedModules, Ahorn.loadedTriggers, "triggers")
     Ahorn.registerPlacements!(Ahorn.triggerPlacements, Ahorn.loadedTriggers)
 
     Ahorn.getLayerByName(dr.layers, "triggers").redraw = true

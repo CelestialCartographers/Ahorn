@@ -6,7 +6,7 @@ using ..Ahorn
 
 include("history.jl")
 
-struct RoomSnapshot <: Snapshot
+@valueequals struct RoomSnapshot <: Snapshot
     description::String
     room::Maple.Room
     layers::Array{String, 1}
@@ -14,7 +14,7 @@ struct RoomSnapshot <: Snapshot
     RoomSnapshot(description::String, room::Maple.Room, layers::Array{String, 1}=String[]) = new(description, deepcopy(room), layers)
 end
 
-struct SelectionSnapshot <: Snapshot
+@valueequals struct SelectionSnapshot <: Snapshot
     description::String
     room::Maple.Room
     selections::Set{Ahorn.SelectedObject}
@@ -22,7 +22,7 @@ struct SelectionSnapshot <: Snapshot
     SelectionSnapshot(description::String, room::Maple.Room, selections::Set{Ahorn.SelectedObject}) = new(description, room, deepcopy(selections))
 end
 
-struct MultiSnapshot <: Snapshot
+@valueequals struct MultiSnapshot <: Snapshot
     description::String
     snapshots::Array{Snapshot, 1}
 end
@@ -84,16 +84,18 @@ function getToolSelections()
     return Set{Ahorn.SelectedObject}()
 end
 
-const historyTimelines = Dict{Maple.Map, HistoryTimeline}()
+const historyTimelines = Dict{String, HistoryTimeline}()
 
 currentMap() = Ahorn.loadedState.map
 
 function getHistory(map::Maple.Map)
-    if !haskey(historyTimelines, map)
-        historyTimelines[map] = HistoryTimeline()
+    package = map.package
+
+    if !haskey(historyTimelines, package)
+        historyTimelines[package] = HistoryTimeline()
     end
 
-    return historyTimelines[map]
+    return historyTimelines[package]
 end
 
 function undo!(map::Maple.Map=currentMap())

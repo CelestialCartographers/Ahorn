@@ -1,4 +1,4 @@
-struct Circle
+@valueequals struct Circle
     x::Number
     y::Number
 
@@ -11,8 +11,6 @@ end
 function circumference(circle::Circle)
     return 2 * pi * circle.r
 end
-
-Base.:(==)(lhs::Circle, rhs::Circle) = lhs.x == rhs.x && lhs.y == rhs.y && lhs.r == rhs.r
 
 # Efficient enough, checks might be too small for huge circles
 function pointsOnCircle(circle::Circle; filled::Bool=false, checks::Int=max(1, ceil(Int, circumference(circle))))

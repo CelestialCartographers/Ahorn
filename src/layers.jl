@@ -15,6 +15,7 @@ end
 include("drawable_room.jl")
 
 Base.:(==)(lhs::Layer, rhs::Layer) = lhs.name == rhs.name
+Base.hash(l::Layer, h::UInt) = hash(l.name, h)
 
 const redrawingFuncs = Dict{String, Function}()
 

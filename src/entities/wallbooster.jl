@@ -62,4 +62,14 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::Maple.WallBooster, 
     end
 end
 
+# Offset X position so it flips in place
+function Ahorn.flipped(entity::Maple.WallBooster, horizontal::Bool)
+    if horizontal
+        entity.left = !entity.left
+        entity.x += entity.left ? 8 : -8
+
+        return entity
+    end
+end
+
 end

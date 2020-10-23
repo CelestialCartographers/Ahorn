@@ -251,7 +251,7 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
                 Ahorn.drawSprite(ctx, "danger/triggertentacle/wiggle_v03", drawX + 3 * updown, drawY + 3 * !updown, rot=rotations[direction], tint=color2)
             end
 
-        else        
+        else
             width = get(entity.data, "width", 8)
             height = get(entity.data, "height", 8)
 
@@ -262,6 +262,93 @@ function Ahorn.render(ctx::Ahorn.Cairo.CairoContext, entity::spikesUnion)
                 Ahorn.drawSprite(ctx, "danger/spikes/$(variant)_$(direction)00", drawX, drawY)
             end
         end
+    end
+end
+
+for (to, from) in [(Maple.SpikesUp, Maple.SpikesDown), (Maple.TriggerSpikesUp, Maple.TriggerSpikesDown), (Maple.TriggerSpikesOriginalUp, Maple.TriggerSpikesOriginalDown)]
+    @eval function Ahorn.flipped(entity::$to, horizontal::Bool)
+        if !horizontal
+            return $from(entity.x, entity.y, entity.width, entity.type)
+        end
+    end
+
+    @eval function Ahorn.flipped(entity::$from, horizontal::Bool)
+        if !horizontal
+            return $to(entity.x, entity.y, entity.width, entity.type)
+        end
+    end
+end
+
+for (to, from) in [(Maple.SpikesLeft, Maple.SpikesRight), (Maple.TriggerSpikesLeft, Maple.TriggerSpikesRight), (Maple.TriggerSpikesOriginalLeft, Maple.TriggerSpikesOriginalRight)]
+    @eval function Ahorn.flipped(entity::$to, horizontal::Bool)
+        if horizontal
+            return $from(entity.x, entity.y, entity.height, entity.type)
+        end
+    end
+
+    @eval function Ahorn.flipped(entity::$from, horizontal::Bool)
+        if horizontal
+            return $to(entity.x, entity.y, entity.height, entity.type)
+        end
+    end
+end
+
+# TODO - Rotations might need offsets
+
+const spikesUp = [Maple.SpikesUp, Maple.TriggerSpikesUp, Maple.TriggerSpikesOriginalUp]
+const spikesRight = [Maple.SpikesRight, Maple.TriggerSpikesRight, Maple.TriggerSpikesOriginalRight]
+const spikesDown = [Maple.SpikesDown, Maple.TriggerSpikesDown, Maple.TriggerSpikesOriginalDown]
+const spikesLeft = [Maple.SpikesLeft, Maple.TriggerSpikesLeft, Maple.TriggerSpikesOriginalLeft]
+
+for (left, normal, right) in zip(spikesLeft, spikesUp, spikesRight)
+    @eval function Ahorn.rotated(entity::$normal, steps::Int)
+        if steps > 0
+            return Ahorn.rotated($right(entity.x, entity.y, entity.width, entity.type), steps - 1)
+
+        elseif steps < 0
+            return Ahorn.rotated($left(entity.x, entity.y, entity.width, entity.type), steps + 1)
+        end
+
+        return entity
+    end
+end
+
+for (left, normal, right) in zip(spikesUp, spikesRight, spikesDown)
+    @eval function Ahorn.rotated(entity::$normal, steps::Int)
+        if steps > 0
+            return Ahorn.rotated($right(entity.x, entity.y, entity.height, entity.type), steps - 1)
+
+        elseif steps < 0
+            return Ahorn.rotated($left(entity.x, entity.y, entity.height, entity.type), steps + 1)
+        end
+
+        return entity
+    end
+end
+
+for (left, normal, right) in zip(spikesRight, spikesDown, spikesLeft)
+    @eval function Ahorn.rotated(entity::$normal, steps::Int)
+        if steps > 0
+            return Ahorn.rotated($right(entity.x, entity.y, entity.width, entity.type), steps - 1)
+
+        elseif steps < 0
+            return Ahorn.rotated($left(entity.x, entity.y, entity.width, entity.type), steps + 1)
+        end
+
+        return entity
+    end
+end
+
+for (left, normal, right) in zip(spikesDown, spikesLeft, spikesUp)
+    @eval function Ahorn.rotated(entity::$normal, steps::Int)
+        if steps > 0
+            return Ahorn.rotated($right(entity.x, entity.y, entity.height, entity.type), steps - 1)
+
+        elseif steps < 0
+            return Ahorn.rotated($left(entity.x, entity.y, entity.height, entity.type), steps + 1)
+        end
+
+        return entity
     end
 end
 

@@ -1,4 +1,4 @@
-struct SimpleCurve
+@valueequals struct SimpleCurve
     start::Tuple{Number, Number}
     stop::Tuple{Number, Number}
     control::Tuple{Number, Number}
