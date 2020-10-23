@@ -72,8 +72,15 @@ function eventToModule(modul::Module, funcname::String, args...)
     end
 end
 
-eventToModule(fn::String, funcname::String, args...) = eventToModule(loadedModules[fn], funcname, args...)
 eventToModule(v::Nothing, funcname::String, args...) = false
+
+function eventToModule(fn::String, funcname::String, args...)
+    # Make sure the module is properly loaded
+    # If it isn't we can just return nothing
+    if haskey(loadedModules, fn)
+        return eventToModule(loadedModules[fn], funcname, args...)
+    end
+end
 
 function eventToModules(funcname::String, args...)
     for (filename, modul) in loadedModules

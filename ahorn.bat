@@ -57,7 +57,7 @@ if %displayHelp% equ 1 (
     echo.
 
     echo --dark
-    echo   Sets environmental variables to use the default GTK.jl dark theme.
+    echo   Sets environmental variables to use the default Gtk.jl dark theme.
     echo   This is not a native Windows theme, some interface elements might look different.
     echo.
 
@@ -82,12 +82,12 @@ rem Check if Julia runs at all when set with PATH
 rem For some reason Windows might ship without `where` program
 julia -e "exit(0)" >nul 2>nul
 if %ERRORLEVEL% equ 0 (
-    echo Using Julia from PATH environmental variable.
+    echo Using Julia from PATH environment variable.
     echo Making sure this version is meeting the requirements for Ahorn.
 
     julia -e "exit(Int(VERSION < %minimum_version%))"
     if !ERRORLEVEL! neq 0 (
-        echo The Path Julia version is too old to run Ahorn. Attempting to use auto detected version.
+        echo The PATH Julia version is too old to run Ahorn. Attempting to use auto detected version.
 
         goto :autodetect
     )
@@ -135,7 +135,7 @@ for /F " tokens=*" %%i in ('dir /b /ad-h /o-d "%LocalAppData%"') do (
 )
 
 echo Julia installation not found in default install directory "%LocalAppData%\Programs\".
-echo Please install to the default directory or add Julia manually to the PATH environmental variable.
+echo Please install to the default directory or add Julia manually to the PATH environment variable.
 
 goto :installPrompt
 
@@ -152,7 +152,7 @@ if %ERRORLEVEL% neq 0 (
     set /p "confirmJuliaInstall=Do you want to install a compatible version of Julia? [y/N]: "
     IF /I "!confirmJuliaInstall!" equ "y" (
         echo Downloading compatible Julia version and starting the installer.
-        echo Install it into the default directory unless you want to manually add julia to the PATH environmental variable.
+        echo Install it into the default directory unless you want to manually add julia to the PATH environment variable.
         echo Make sure to restart the script after adding julia to the PATH if you are using a custom location.
 
         echo Downloading installer
@@ -200,7 +200,7 @@ if %ERRORLEVEL% equ 0 (
         if !ERRORLEVEL! neq 0 (
             echo Unable to download Ahorn install script.
             echo Might be due to TLS issues or PowerShell version.
-            echo Please manually download install_ahorn.jl and put it in the same folder as Ahorn.bat and then rerun.
+            echo Please manually download install_ahorn.jl and put it in the same folder as ahorn.bat and then rerun.
             echo Optionally install Ahorn manually via cross platform instructions.
 
             goto :end
@@ -222,7 +222,7 @@ if %ERRORLEVEL% equ 0 (
 :update
 
 if %updateFirst% equ 1 (
-    echo Attemtping to update Ahorn.
+    echo Attempting to update Ahorn.
 
     if !developerMode! equ 1 (
         julia -e "using Pkg; Pkg.activate(%AHORN_ENV%); Pkg.update()"
