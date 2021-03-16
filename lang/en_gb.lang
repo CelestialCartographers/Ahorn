@@ -229,7 +229,6 @@ placements.entities.fallingBlock.tooltips.behind=Whether the block should visual
 
 # Fake Wall
 placements.entities.fakeWall.tooltips.tiletype=Changes the visual appearance of the wall.
-placements.entities.fakeWall.tooltips.playTransitionReveal=Determines whether entering the wall should play the reveal jingle.
 
 # Bonfire
 placements.entities.bonfire.tooltips.mode=Changes the bonfire between lit, unlit, or smoking.
@@ -900,7 +899,7 @@ meta_window.meta.tooltips.TitleBaseColor=Base colour of the title banner in leve
 meta_window.meta.tooltips.TitleAccentColor=Colour of the additional text of the title banner and its accent in level selection.
 meta_window.meta.tooltips.TitleTextColor=Colour of the main text of the title banner in level selection.
 meta_window.meta.tooltips.Dreaming=Whether Madeline starts the map dreaming. Enables starfield background.
-meta_window.meta.tooltips.ColorGrade=The global tinting of the map.
+meta_window.meta.tooltips.ColorGrade=The global tinting of the map. Custom colour grades are relative to modRoot/Graphics/ColorGrading/.
 meta_window.meta.tooltips.DarknessAlpha=Alpha value used for darkness.
 meta_window.meta.tooltips.BloomBase=The base bloom level.
 meta_window.meta.tooltips.BloomStrength=The strength of the bloom.

@@ -75,7 +75,7 @@ struct TextEntryOption <: Option
 
     as::Type
 
-    function TextEntryOption(name::String; dataName::String=name, tooltip::String="", value::String="", as::Type=String)
+    function TextEntryOption(name::String; dataName::String=name, tooltip::String="", value::String="", as::Type=typeof(value))
         label = Label(name, xalign=0.0, margin_start=8, tooltip_text=tooltip)
         entry = Entry(text=string(value))
 
@@ -112,7 +112,7 @@ struct TextViewOption <: Option
         )
 
         Ahorn.setTextViewText!(textView, value)
-        
+
         scrollable = ScrolledWindow(vexpand=vexpand, hexpand=hexpand)
         push!(scrollable, textView)
 
@@ -144,20 +144,25 @@ mutable struct TextChoiceOption <: Option
 
     as::Type
 
-    function TextChoiceOption(name::String, options::Array{T, 1}; dataName::String=name, tooltip::String="", value::H="", editable::Bool=false) where {T, H}
+    function TextChoiceOption(name::String, options::Array{T, 1}; dataName::String=name, tooltip::String="", value::H="", editable::Bool=false, sortChoices::Bool=false) where {T, H}
         label = Label(name, xalign=0.0, margin_start=8, tooltip_text=tooltip)
         combobox = ComboBoxText(editable)
 
-        append!(combobox, string.(options))
+        choices = string.(options)
 
+        if sortChoices
+            sort!(choices)
+        end
+
+        append!(combobox, choices)
         Ahorn.setComboIndex!(combobox, options, value)
 
-        return new(name, dataName, label, combobox, string(value), string.(options), typeof(value))
+        return new(name, dataName, label, combobox, string(value), choices, typeof(value))
     end
 end
 
 Base.size(option::TextChoiceOption) = (2, 1)
-getValue(option::TextChoiceOption) = Ahorn.convertString(option.value, option.as)
+getValue(option::TextChoiceOption) = typeof(option.value) === String ? Ahorn.convertString(option.as, option.value) : option.value
 setValue!(option::TextChoiceOption, value::Any) = Ahorn.setComboIndex!(option.combobox, option.choices, string(value))
 getGroup(option::TextChoiceOption) = 1
 setGtkProperty!(option::TextChoiceOption, field::Symbol, value::Any) = set_gtk_property!(option.combobox, field, value)
@@ -183,23 +188,31 @@ mutable struct DictionaryChoiceOption <: Option
     combobox::Gtk.GtkComboBoxText
 
     value::Any
+    as::Type
 
-    function DictionaryChoiceOption(name::String, options::Dict{String, T}; dataName::String=name, tooltip::String="", value::H=nothing, editable::Bool=false) where {T, H}
+    function DictionaryChoiceOption(name::String, options::Dict{String, T}; dataName::String=name, tooltip::String="", value::H=nothing, editable::Bool=false, sortChoices::Bool=false) where {T, H}
         label = Label(name, xalign=0.0, margin_start=8, tooltip_text=tooltip)
         combobox = ComboBoxText(editable)
 
-        choices = collect(keys(options))
+        choices = collect(options)
 
-        append!(combobox, choices)
+        if sortChoices
+            sort!(choices, by=p -> p[1])
+        end
 
-        index = Ahorn.setComboIndex!(combobox, collect(values(options)), value)
+        keys = getindex.(choices, 1)
+        values = getindex.(choices, 2)
 
-        return new(name, dataName, options, label, combobox, value)
+        append!(combobox, keys)
+
+        index = Ahorn.setComboIndex!(combobox, values, value)
+
+        return new(name, dataName, options, label, combobox, value, typeof(value))
     end
 end
 
 Base.size(option::DictionaryChoiceOption) = (2, 1)
-getValue(option::DictionaryChoiceOption) = option.value
+getValue(option::DictionaryChoiceOption) = typeof(option.value) === String ? Ahorn.convertString(option.as, option.value) : option.value
 setValue!(option::DictionaryChoiceOption, value::Any) = Ahorn.setComboIndex!(option.combobox, collect(values(option.options)), value, allowCustom=false)
 getGroup(option::DictionaryChoiceOption) = 1
 setGtkProperty!(option::DictionaryChoiceOption, field::Symbol, value::Any) = set_gtk_property!(option.combobox, field, value)
@@ -559,12 +572,12 @@ function createFormWindow(title::String, options::Array{Option, 1}; columns::Int
     return createFormWindow(title, Section("section", options), columns=columns, fieldOrder=fieldOrder, separateGroups=separateGroups, gridIfSingleSection=gridIfSingleSection, buttonText=buttonText, callback=callback, parent=parent)
 end
 
-function suggestOption(displayName::String, value::Any; tooltip::String="", dataName::String=displayName, choices::Union{Array, Dict, Nothing}=nothing, editable::Bool=false)
+function suggestOption(displayName::String, value::Any; tooltip::String="", dataName::String=displayName, choices::Union{Array, Dict, Nothing}=nothing, editable::Bool=false, sortChoices::Bool=false)
     if isa(choices, Array)
-        return TextChoiceOption(displayName, choices, dataName=dataName, tooltip=tooltip, value=value, editable=editable)
-    
+        return TextChoiceOption(displayName, choices, dataName=dataName, tooltip=tooltip, value=value, editable=editable, sortChoices=sortChoices)
+
     elseif isa(choices, Dict)
-        return DictionaryChoiceOption(displayName, choices, dataName=dataName, tooltip=tooltip, value=value, editable=editable)
+        return DictionaryChoiceOption(displayName, choices, dataName=dataName, tooltip=tooltip, value=value, editable=editable, sortChoices=sortChoices)
 
     elseif isa(value, Bool)
         return CheckBoxOption(displayName, value=value, dataName=dataName, tooltip=tooltip)

@@ -206,19 +206,19 @@ function displayCustomXMLWarning(title::String, exception::Exception)
     displayCustomXMLWarning(title, message)
 end
 
-function getCustomTilesXMLPath(side::Union{Side, Nothing}, filename::String, key::String)
-    if side !== nothing
-        meta = get(Dict{String, Any}, side.data, "meta")
-        metaPath = get(meta, key, "")
+function getCustomTilesXMLPath(side::Side, filename::String, key::String)
+    meta = get(Dict{String, Any}, side.data, "meta")
+    metaPath = get(meta, key, "")
 
-        hasRoot, modRoot = getModRoot(filename)
-        xmlPath = joinpath(modRoot, metaPath)
+    hasRoot, modRoot = getModRoot(filename)
+    xmlPath = joinpath(modRoot, metaPath)
 
-        if !isempty(metaPath) && hasRoot
-            return xmlPath
-        end
+    if !isempty(metaPath) && hasRoot
+        return xmlPath
     end
 end
+
+getCustomTilesXMLPath(side::Nothing, filename::String, key::String) = nothing
 
 function loadCustomXML(loader::Union{Function, Type}, filename::String, errorTitle::String, force::Bool=false, quiet::Bool=false)
     if !force
@@ -265,7 +265,7 @@ function loadTilesMeta(side::Union{Side, Nothing}, filename::String, fg::Bool=fa
     customPath = getCustomTilesXMLPath(side, filename, fg ? "ForegroundTiles" : "BackgroundTiles")
 
     if customPath !== nothing
-        xmlType = fg ? "Forground Tiles" : "Bakground Tiles"
+        xmlType = fg ? "Foreground Tiles" : "Background Tiles"
         errorTitle = "Failed to load custom $xmlType XML"
         customMeta = loadCustomXML(TilerMeta, customPath, errorTitle, force)
 
@@ -370,8 +370,8 @@ function getMaskQuads(x::Int, y::Int, tiles::Tiles, meta::TilerMeta)
     height, width = size(data)
     value = @inbounds tiles.data[y, x]
 
-    masks = get(meta.masks, value, maskDataDefault)
-    ignores = get(meta.ignores, value, ignoresDefault)
+    masks = get(meta.masks, value, maskDataDefault)::Array{MaskData, 1}
+    ignores = get(meta.ignores, value, ignoresDefault)::Ignore
 
     adjacent = getAdjacencyMask(data, y, x, height, width, value, ignores)
 

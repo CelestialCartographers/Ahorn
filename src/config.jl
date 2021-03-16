@@ -17,7 +17,7 @@ function saveConfig(c::Config, force::Bool=true)
         path = dirname(c.fn)
 
         if !isdir(path)
-            mkdir(path)
+            mkpath(path)
         end
 
         # Save to $fn.saving first, then delete fn and move the temp file

@@ -672,7 +672,7 @@ function layersChanged(layers::Array{Ahorn.Layer, 1})
     global targetLayer = Ahorn.selectLayer!(layers, wantedLayer, "entities")
 end
 
-function applyTileSelecitonBrush!(target::Ahorn.TileSelection, clear::Bool=false)
+function applyTileSelectionBrush!(target::Ahorn.TileSelection, clear::Bool=false)
     Maple.updateTileSize!(relevantRoom, '0', '0')
 
     roomTiles = target.fg ? relevantRoom.fgTiles : relevantRoom.bgTiles
@@ -704,7 +704,7 @@ function finalizeSelections!(targets::Set{Ahorn.SelectedObject})
         layer = selection.layerName
 
         if layer == "fgTiles" || layer == "bgTiles"
-            applyTileSelecitonBrush!(selection.target, false)
+            applyTileSelectionBrush!(selection.target, false)
             shouldRedraw = true
         end
     end
@@ -721,7 +721,7 @@ function initSelections!(targets::Set{Ahorn.SelectedObject})
         layer = selection.layerName
 
         if layer == "fgTiles" || layer == "bgTiles"
-            applyTileSelecitonBrush!(selection.target, true)
+            applyTileSelectionBrush!(selection.target, true)
             shouldRedraw = true
         end
     end

@@ -1,5 +1,6 @@
 mutable struct Layer
     name::String
+    drawFunction::Function
     surface::Cairo.CairoSurface
     redraw::Bool
     visible::Bool
@@ -7,8 +8,8 @@ mutable struct Layer
     dummy::Bool
     clearOnReset::Bool
 
-    function Layer(name::String, surface::Union{Cairo.CairoSurface, Nothing}=nothing; redraw::Bool=true, visible::Bool=true, selectable::Bool=true, dummy::Bool=false, clearOnReset::Bool=true)
-        return new(name, surface === nothing ? CairoARGBSurface(0, 0) : surface, redraw, visible, selectable, dummy, clearOnReset) 
+    function Layer(name::String, drawFunction::Function=defaultRedrawingFunction, surface::Union{Cairo.CairoSurface, Nothing}=nothing; redraw::Bool=true, visible::Bool=true, selectable::Bool=true, dummy::Bool=false, clearOnReset::Bool=true)
+        return new(name, drawFunction, surface === nothing ? CairoARGBSurface(0, 0) : surface, redraw, visible, selectable, dummy, clearOnReset) 
     end
 end
 
@@ -92,21 +93,25 @@ function setGlobalLayerVisiblity(name::String, widget::Gtk.GtkCheckMenuItem)
     setGlobalLayerVisiblity(canvas, name, get_gtk_property(widget, :active, Bool))
 end
 
+function drawLayer(layer::Layer, room::DrawableRoom)
+    if !layer.dummy && (layerSurfaceInvalid(layer) || layer.redraw)
+        resetLayer!(layer, room)
+
+        @catchall begin
+            layer.drawFunction(layer, room, camera)
+
+            layer.redraw = false
+        end
+    end
+end
+
 function combineLayers!(ctx::Cairo.CairoContext, layers::Array{Layer, 1}, camera::Camera, room::DrawableRoom; alpha=nothing)
     for layer in layers
-        if !layer.dummy && (layerSurfaceInvalid(layer) || layer.redraw)
-            resetLayer!(layer, room)
+        drawLayer(layer, room)
 
-            redrawFunc = get(redrawingFuncs, layer.name, (layer, room, camera) -> true)
+        layerVisible = layer.visible && get!(globalLayerVisibility, layer.name, true)
 
-            @catchall begin
-                redrawFunc(layer, room, camera)
-
-                layer.redraw = false
-            end
-        end
-
-        if layer.visible && !layer.dummy && get!(globalLayerVisibility, layer.name, true)
+        if layerVisible && !layer.dummy
             applyLayer!(ctx, layer, alpha=alpha)
         end
     end

@@ -62,7 +62,7 @@ end
 outerColor = (30, 14, 25) ./ 255
 innerColor = (10, 0, 6) ./ 255
 
-function renderConnection(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, nx::Number, ny::Number, width::Number)
+function renderConnection(ctx::Ahorn.Cairo.CairoContext, x::Int, y::Int, nx::Int, ny::Int, width::Int)
     cx, cy = x + floor(Int, width / 2), y + 4
     cnx, cny = nx + floor(Int, width / 2), ny + 4
 
@@ -95,7 +95,7 @@ function renderConnection(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, n
     Ahorn.Cairo.restore(ctx)
 end
 
-function renderPlatform(ctx::Ahorn.Cairo.CairoContext, texture::String, x::Number, y::Number, width::Number)
+function renderPlatform(ctx::Ahorn.Cairo.CairoContext, texture::String, x::Int, y::Int, width::Int)
     tilesWidth = div(width, 8)
 
     for i in 2:tilesWidth - 1
@@ -113,7 +113,6 @@ function Ahorn.renderAbs(ctx::Ahorn.Cairo.CairoContext, entity::Maple.MovingPlat
     x, y = Int(entity.data["x"]), Int(entity.data["y"])
     nx, ny = Int.(entity.data["nodes"][1])
 
-    
     texture = get(entity.data, "texture", "default")
 
     renderConnection(ctx, x, y, nx, ny, width)

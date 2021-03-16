@@ -4,7 +4,11 @@ using ..Ahorn, Maple
 
 const placements = Ahorn.PlacementDict()
 
-const textures = String["default", "mirror"]
+const textures = Dict{String, String}(
+    "Temple A" => "default",
+    "Temple B" => "mirror"
+)
+
 const directions = Dict{String, Tuple{Type, String, Bool}}(
     "up" => (Maple.DashSwitchVertical, "ceiling", false),
     "down" => (Maple.DashSwitchVertical, "ceiling", true),
@@ -14,9 +18,9 @@ const directions = Dict{String, Tuple{Type, String, Bool}}(
 
 const clockwiseDirections = String["up", "right", "down", "left"]
 
-for texture in textures
+for (name, texture) in textures
     for (dir, data) in directions
-        key = "Dash Switch ($(uppercasefirst(dir)), $(uppercasefirst(texture)))"
+        key = "Dash Switch ($(uppercasefirst(dir)), $(name))"
         func, datakey, val = data
         placements[key] = Ahorn.EntityPlacement(
             func,
@@ -28,6 +32,14 @@ for texture in textures
         )
     end
 end
+
+Ahorn.editingOptions(entity::Maple.DashSwitchHorizontal) = Dict{String, Any}(
+    "sprite" => textures
+)
+
+Ahorn.editingOptions(entity::Maple.DashSwitchVertical) = Dict{String, Any}(
+    "sprite" => textures
+)
 
 function Ahorn.selection(entity::Maple.DashSwitchHorizontal)
     x, y = Ahorn.position(entity)
@@ -104,7 +116,10 @@ function Ahorn.rotated(entity::Maple.DashSwitchHorizontal, steps::Int)
         side = clockwiseDirections[targetIndex]
         func, attr, value = directions[side]
 
-        return func(entity.x, entity.y, value)
+        persistent = get(entity, "persistent", false)
+        sprite = get(entity, "sprite", "default")
+
+        return func(entity.x, entity.y, value, persistent, sprite)
     end
 end
 
@@ -117,7 +132,10 @@ function Ahorn.rotated(entity::Maple.DashSwitchVertical, steps::Int)
         side = clockwiseDirections[targetIndex]
         func, attr, value = directions[side]
 
-        return func(entity.x, entity.y, value)
+        persistent = get(entity, "persistent", false)
+        sprite = get(entity, "sprite", "default")
+
+        return func(entity.x, entity.y, value, persistent, sprite)
     end
 end
 

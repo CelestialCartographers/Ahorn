@@ -256,6 +256,8 @@ drawingLayers = nothing
 
 const drawableRooms = Dict{String, Dict{String, DrawableRoom}}()
 
+const defaultRedrawingFunction(layer::Layer, room::DrawableRoom, camera::Camera) = true
+
 redrawingFuncs["fgDecals"] = (layer, room, camera) -> drawDecals(layer, room, true)
 redrawingFuncs["bgDecals"] = (layer, room, camera) -> drawDecals(layer, room, false)
 
@@ -295,11 +297,22 @@ end
 
 function deleteDrawableRoomCache(map::Map)
     rooms = getDrawableRooms(map)
+
     for room in rooms
         destroy(room)
     end
 
     delete!(drawableRooms, map.package)
+end
+
+function deleteDrawableRoomCache(map::Map, room::Room)
+    room = getDrawableRoom(map, room)
+
+    if room !== nothing
+        destroy(room)
+
+        delete!(drawableRooms[map.package], room.room.name)
+    end
 end
 
 function updateDrawingLayers!(map::Map, room::Room)

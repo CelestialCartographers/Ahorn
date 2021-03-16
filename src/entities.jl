@@ -20,7 +20,7 @@ const entityNameLookup = Dict{String, String}()
 # The point the entity will be drawn relative too
 # Make sure it returns in Int32/64
 function position(entity::Maple.Entity)::Tuple{Int, Int}
-    return floor(Int, entity.x), floor(Int, entity.y)
+    return floor(Int, get(entity, "x", 0)), floor(Int, get(entity, "y", 0))
 end
 
 function attemptEntityRender(ctx::Cairo.CairoContext, layer::Layer, entity::Maple.Entity, room::Maple.Room)

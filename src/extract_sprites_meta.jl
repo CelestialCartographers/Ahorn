@@ -38,33 +38,33 @@ function loadSprites(metaFn::String, spritesFn::String)
     splitAtlas = get(config, "split_atlas_into_smaller_surfaces", true)
 
     surface = open(Cairo.read_from_png, spritesFn)
-    fh = open(metaFn)
+    buffer = IOBuffer(open(read, metaFn))
 
     res = Dict{String, SpriteHolder}()
 
     # Mostly useless information
-    read(fh, Int32)
-    Maple.readString(fh)
-    read(fh, Int32)
+    read(buffer, Int32)
+    Maple.readString(buffer)
+    read(buffer, Int32)
 
-    count = read(fh, Int16)
+    count = read(buffer, Int16)
     for i in 1:count
-        dataFile = Maple.readString(fh)
-        sprites = read(fh, Int16)
+        dataFile = Maple.readString(buffer)
+        sprites = read(buffer, Int16)
 
         for j in 1:sprites
-            path = replace(Maple.readString(fh), "\\" => "/")
+            path = replace(Maple.readString(buffer), "\\" => "/")
 
-            x = read(fh, Int16)
-            y = read(fh, Int16)
+            x = read(buffer, Int16)
+            y = read(buffer, Int16)
 
-            width = read(fh, Int16)
-            height = read(fh, Int16)
+            width = read(buffer, Int16)
+            height = read(buffer, Int16)
 
-            offsetX = read(fh, Int16)
-            offsetY = read(fh, Int16)
-            realWidth = read(fh, Int16)
-            realHeight = read(fh, Int16)
+            offsetX = read(buffer, Int16)
+            offsetY = read(buffer, Int16)
+            realWidth = read(buffer, Int16)
+            realHeight = read(buffer, Int16)
 
             quadSurface = splitAtlas ? prepareSurfaceForQuad(surface, x, y, width, height, offsetX, offsetY, realWidth, realHeight) : surface
 
@@ -97,8 +97,6 @@ function loadSprites(metaFn::String, spritesFn::String)
     if splitAtlas
         deleteSurface(surface)
     end
-
-    close(fh)
 
     return res
 end

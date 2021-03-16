@@ -57,6 +57,15 @@ function getCelesteModDirs()
     return targetFolders
 end
 
+function samePath(path1::String, path2::String, ignoreCase::Bool=Sys.iswindows())
+    if ignoreCase
+        return lowercase(path1) == lowercase(path2)
+
+    else
+        return path1 == path2
+    end
+end
+
 function getModRoot(fn::String)
     celesteDir = get(config, "celeste_dir", "")
     modsPath = normpath(joinpath(celesteDir, "Mods"))
@@ -66,7 +75,7 @@ function getModRoot(fn::String)
     while true
         parent = dirname(path)
 
-        if parent == modsPath
+        if samePath(parent, modsPath)
             if isdir(path)
                 return true, path
 
@@ -75,7 +84,7 @@ function getModRoot(fn::String)
             end
         end
 
-        if path == parent
+        if samePath(path, parent)
             return false, ""
         end
 

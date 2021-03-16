@@ -1,5 +1,5 @@
 function position(trigger::Maple.Trigger)::Tuple{Int, Int}
-    return floor(Int, trigger.x), floor(Int, trigger.y)
+    return floor(Int, get(trigger, "x", 0)), floor(Int, get(trigger, "y", 0))
 end
 
 function renderTrigger(ctx::Cairo.CairoContext, layer::Layer, trigger::Maple.Trigger, room::Maple.Room; alpha=nothing)

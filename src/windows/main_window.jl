@@ -8,27 +8,6 @@ scrollableWindowRoomList = nothing
 
 lastCanvasDraw = time()
 
-@guarded draw(canvas) do widget
-    if loadedState.map !== nothing && isa(loadedState.map, Map)
-        startTime = time()
-        
-        lastDrawDeltaTime = startTime - lastCanvasDraw
-        global lastCanvasDraw = time()
-
-        debug.log("Canvas was last drawn: $lastDrawDeltaTime seconds ago", "DRAWING_CANVAS_DRAW_DURATION")
-
-        drawMap(canvas, camera, loadedState.map)
-
-        stopTime = time()
-        deltaTime = stopTime - startTime
-        debug.log("Drawing canvas took $deltaTime seconds, approx $(1 / deltaTime) fps", "DRAWING_CANVAS_DRAW_DURATION")
-
-        persistence["camera_position_x"] = camera.x
-        persistence["camera_position_y"] = camera.y
-        persistence["camera_scale"] = camera.scale
-    end
-end
-
 function generateMainGrid()
     grid = Grid()
 

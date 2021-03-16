@@ -37,18 +37,22 @@ end
 
 updateTileStates!(room::Room, package::String, states::TileStates, width::Int, height::Int, fg::Bool=false) = updateTileStates!(room.name, package, states, width, height, fg)
 
+function getRedrawFunction(name::String)
+    return get(redrawingFuncs, name, (layer, room, camera) -> true)
+end
+
 function getDrawingLayers()
     return Layer[
-        Layer("bgParallax", dummy=true), # Not currently used, kept to keep order intact
-        Layer("bgTiles", clearOnReset=false),
-        Layer("bgDecals"),
-        Layer("entities"),
-        Layer("fgTiles", clearOnReset=false),
-        Layer("fgParallax", dummy=true), # Not currently used, kept to keep order intact
-        Layer("fgDecals"),
-        Layer("triggers"),
+        Layer("bgParallax", getRedrawFunction("bgParallax"), dummy=true), # Not currently used, kept to keep order intact
+        Layer("bgTiles", getRedrawFunction("bgTiles"), clearOnReset=false),
+        Layer("bgDecals", getRedrawFunction("bgDecals")),
+        Layer("entities", getRedrawFunction("entities")),
+        Layer("fgTiles", getRedrawFunction("fgTiles"), clearOnReset=false),
+        Layer("fgParallax", getRedrawFunction("fgParallax"), dummy=true), # Not currently used, kept to keep order intact
+        Layer("fgDecals", getRedrawFunction("fgDecals")),
+        Layer("triggers", getRedrawFunction("triggers")),
 
-        Layer("tools", selectable=false),
+        Layer("tools", toolsRedrawFunction, selectable=false),
         Layer("all", dummy=true),
         Layer("objtiles", dummy=true)
     ]

@@ -184,39 +184,26 @@ function setEntryText!(entry::Gtk.GtkEntryLeaf, value::Any; updatePlaceholder::B
     end
 end
 
-function convertString(str::String, as::Type=String)
-    if as == String
-        return str
+convertString(as::Type{String}, string::String) = string
+convertString(as::Type{Nothing}, string::String) = nothing
+convertString(as::Type{Bool}, string::String) = parse(as, string)
+convertString(as::Type{T}, string::String) where T <: Integer = parse(as, string)
+convertString(as::Type{T}, string::String) where T <: AbstractFloat = parse(as, string)
+convertString(as::Type, string::String) = error("Unsupported return type $as")
 
-    elseif as == Nothing
-        return nothing
-
-    elseif as == Char
-        if length(str) == 1
-            return str[1]
-
-        else
-            error("Expected string with length 1, got $(length(str))")
-        end
-
-    elseif as == Bool
-        return parse(as, str)
-
-    elseif as <: Integer
-        return parse(Int, str)
-
-    elseif as <: AbstractFloat
-        return parse(Float64, str)
+function convertString(as::Type{Char}, string::String)
+    if length(string) == 1
+        return string[1]
 
     else
-        error("Unsupported return type")
+        error("Expected string with length 1, got $(length(str))")
     end
 end
 
 function getEntryText(entry::Gtk.GtkEntryLeaf, as::Type=String)
-    str = Gtk.GLib.@sigatom Gtk.bytestring(GAccessor.text(entry))
-    
-    return convertString(str, as)
+    string = Gtk.GLib.@sigatom Gtk.bytestring(GAccessor.text(entry))
+
+    return convertString(as, string)
 end
 
 function setTextViewText!(textView::Gtk.GtkTextViewLeaf, value::String="")

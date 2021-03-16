@@ -79,7 +79,7 @@ end
 
 iconResource = "objects/switchgate/icon00"
 
-function renderGateSwitch(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number, sprite::String)
+function renderGateSwitch(ctx::Ahorn.Cairo.CairoContext, x::Int, y::Int, width::Int, height::Int, sprite::String)
     iconSprite = Ahorn.getSprite(iconResource, "Gameplay")
     
     tilesWidth = div(width, 8)

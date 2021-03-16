@@ -18,7 +18,7 @@ frameResource = "objects/BumpBlockNew/fire00"
 crystalResource = "objects/BumpBlockNew/fire_center00"
 
 # Not the prettiest code, but it works
-function renderBounceBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number)
+function renderBounceBlock(ctx::Ahorn.Cairo.CairoContext, x::Int, y::Int, width::Int, height::Int)
     crystalSprite = Ahorn.getSprite(crystalResource, "Gameplay")
     
     tilesWidth = div(width, 8)

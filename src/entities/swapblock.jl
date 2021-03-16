@@ -51,7 +51,7 @@ function getTextures(entity::Maple.SwapBlock)
     return "objects/swapblock/blockRed", "objects/swapblock/target", "objects/swapblock/midBlockRed00"
 end
 
-function renderTrail(ctx, x::Number, y::Number, width::Number, height::Number, trail::String)
+function renderTrail(ctx, x::Int, y::Int, width::Int, height::Int, trail::String)
     tilesWidth = div(width, 8)
     tilesHeight = div(height, 8)
 
@@ -75,7 +75,7 @@ function renderTrail(ctx, x::Number, y::Number, width::Number, height::Number, t
     Ahorn.drawImage(ctx, trail, x + 2, y + height - 8, 0, 14, 6, 6)
 end
 
-function renderSwapBlock(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number, midResource::String, frame::String)
+function renderSwapBlock(ctx::Ahorn.Cairo.CairoContext, x::Int, y::Int, width::Int, height::Int, midResource::String, frame::String)
     midSprite = Ahorn.getSprite(midResource, "Gameplay")
     
     tilesWidth = div(width, 8)

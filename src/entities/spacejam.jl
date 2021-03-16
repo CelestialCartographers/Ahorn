@@ -31,7 +31,7 @@ function Ahorn.selection(entity::Maple.DreamBlock)
     end
 end
 
-function renderSpaceJam(ctx::Ahorn.Cairo.CairoContext, x::Number, y::Number, width::Number, height::Number)
+function renderSpaceJam(ctx::Ahorn.Cairo.CairoContext, x::Int, y::Int, width::Int, height::Int)
     Ahorn.Cairo.save(ctx)
 
     Ahorn.set_antialias(ctx, 1)

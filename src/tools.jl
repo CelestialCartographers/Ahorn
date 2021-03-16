@@ -60,6 +60,19 @@ connectDoubleClick(materialList) do list::ListContainer, selected::String, displ
     end
 end
 
+# Tools must always use the up to date function
+function toolsRedrawFunction(layer::Layer, room::DrawableRoom, camera::Camera)
+    # Only redraw if it is the currently selected room
+    if loadedState.room !== nothing && loadedState.room.name == room.room.name
+        func = get(redrawingFuncs, "tools", defaultRedrawingFunction)
+
+        return func(layer, room, camera)
+
+    else
+        return true
+    end
+end
+
 function updateMaterialFilter!(layer::String)
     if get(config, "keep_search_text_per_layer", true)
         # Force event to trigger by first changing the text to blank
@@ -347,11 +360,12 @@ end
 
 function deleteRoomCallback(widget=nothing)
     index = findfirst(isequal(loadedState.room), loadedState.map.rooms)
-    
+
     if index !== nothing && ask_dialog("Are you sure you want to delete this room? '$(loadedState.room.name)'", window)
         History.addSnapshot!(History.MapSnapshot("Room Deletion", loadedState.map))
 
         deleteat!(loadedState.map.rooms, index)
+        deleteDrawableRoomCache(loadedState.map, loadedState.room)
         updateTreeView!(roomList, getTreeData(loadedState.map))
         draw(canvas)
 
