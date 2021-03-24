@@ -12,6 +12,10 @@ This project is an unofficial map maker and level editor, it is merely a fan pro
 
 ## Installation
 
+### Olympus
+
+If you're already using [Olympus](https://everestapi.github.io/#installing-everest) to play modded Celeste, you can also use it to install Ahorn for you. Simply click on the button that says "Ahorn" in the main menu and follow the guide there.
+
 ### Windows installation
 
 This installation method only works on Windows and may be slightly easier than the cross-platform one. Download [the installer and runner batch file `ahorn.bat`](https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/ahorn.bat) (Right-click the link and press "Save as...") and run it in any folder. The file will install Julia, set up Ahorn (if needed) and then launch it. Any downloaded files will temporarily be put in the folder the file was run in. Just follow its instructions.

@@ -85,7 +85,7 @@ end
 
 Base.size(option::TextEntryOption) = (2, 1)
 getValue(option::TextEntryOption) = Ahorn.getEntryText(option.entry, option.as)
-setValue!(option::TextEntryOption, value::Any) = Ahorn.setEntryText!(option.entry, string(value))
+setValue!(option::TextEntryOption, value::Any) = Ahorn.setEntryText!(option.entry, string(convert(option.as, value)))
 getGroup(option::TextEntryOption) = 0
 setGtkProperty!(option::TextEntryOption, field::Symbol, value::Any) = set_gtk_property!(option.entry, field, value)
 getGtkProperty(option::TextEntryOption, field::Symbol, typ::DataType) = get_gtk_property(option.entry, field, typ)
@@ -572,7 +572,7 @@ function createFormWindow(title::String, options::Array{Option, 1}; columns::Int
     return createFormWindow(title, Section("section", options), columns=columns, fieldOrder=fieldOrder, separateGroups=separateGroups, gridIfSingleSection=gridIfSingleSection, buttonText=buttonText, callback=callback, parent=parent)
 end
 
-function suggestOption(displayName::String, value::Any; tooltip::String="", dataName::String=displayName, choices::Union{Array, Dict, Nothing}=nothing, editable::Bool=false, sortChoices::Bool=false)
+function suggestOption(displayName::String, value::Any; tooltip::String="", dataName::String=displayName, choices::Union{Array, Dict, Nothing}=nothing, editable::Bool=false, sortChoices::Bool=false, preferredType::Union{Type, Nothing}=nothing)
     if isa(choices, Array)
         return TextChoiceOption(displayName, choices, dataName=dataName, tooltip=tooltip, value=value, editable=editable, sortChoices=sortChoices)
 
@@ -583,7 +583,18 @@ function suggestOption(displayName::String, value::Any; tooltip::String="", data
         return CheckBoxOption(displayName, value=value, dataName=dataName, tooltip=tooltip)
 
     elseif isa(value, Char) || isa(value, String) || isa(value, Number)
-        return TextEntryOption(displayName, value=string(value), dataName=dataName, as=typeof(value), tooltip=tooltip)
+        fieldType = something(preferredType, typeof(value))
+
+        # Default to Int and Float32 for abstract number types
+        # Celeste doesn't use any floats besides Float32
+        if fieldType == Integer
+            fieldType = Int
+
+        elseif fieldType == Number || fieldType == AbstractFloat
+            fieldType = Float32
+        end
+
+        return TextEntryOption(displayName, value=string(convert(fieldType, value)), dataName=dataName, as=fieldType, tooltip=tooltip)
 
     elseif isa(value, Array) && !isempty(displayName)
         return ListOption(displayName, value, dataName=dataName, tooltip=tooltip, editable=editable)

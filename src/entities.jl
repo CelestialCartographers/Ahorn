@@ -292,8 +292,9 @@ function propertyOptions(entity::Union{Maple.Entity, Maple.Trigger}, ignores::Ar
         displayName = isempty(name) ? humanizeVariableName(attr) : name
         tooltip = expandTooltipText(get(tooltips, Symbol(attr), ""))
         attrOptions = get(options, attr, nothing)
+        preferredType = Maple.getPreferredType(entity, attr)
 
-        push!(res, Form.suggestOption(displayName, value, dataName=attr, tooltip=tooltip, choices=attrOptions, editable=true))
+        push!(res, Form.suggestOption(displayName, value, dataName=attr, tooltip=tooltip, choices=attrOptions, editable=true, preferredType=preferredType))
     end
 
     if nodeRange[2] != 0 && !("nodes" in ignores)

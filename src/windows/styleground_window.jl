@@ -249,8 +249,9 @@ function getParallaxOptions(fields::Dict{String, Any}, langdata::Ahorn.LangData)
         keyOptions = get(dropdownOptions, dataName, nothing)
         displayName = haskey(names, symbolDataName) ? names[symbolDataName] : Ahorn.humanizeVariableName(dataName)
         tooltip = Ahorn.expandTooltipText(get(tooltips, symbolDataName, ""))
+        preferredType = typeof(get(parallaxFields, dataName, value))
 
-        push!(options, Ahorn.Form.suggestOption(displayName, value, tooltip=tooltip, dataName=dataName, choices=keyOptions, editable=true))
+        push!(options, Ahorn.Form.suggestOption(displayName, value, tooltip=tooltip, dataName=dataName, choices=keyOptions, editable=true, preferredType=preferredType))
     end
 
     return options
@@ -291,8 +292,9 @@ function getEffectOptions(effect::Maple.Effect, langdata::Ahorn.LangData, fg::Bo
         keyOptions = get(dropdownOptions, dataName, nothing)
         displayName = haskey(names, symbolDataName) ? names[symbolDataName] : Ahorn.humanizeVariableName(dataName)
         tooltip = Ahorn.expandTooltipText(get(tooltips, symbolDataName, ""))
+        preferredType = Maple.getPreferredType(effect, dataName)
 
-        push!(options, Ahorn.Form.suggestOption(displayName, value, tooltip=tooltip, dataName=dataName, choices=keyOptions, editable=true))
+        push!(options, Ahorn.Form.suggestOption(displayName, value, tooltip=tooltip, dataName=dataName, choices=keyOptions, editable=true, preferredType=preferredType))
     end
 
     return options

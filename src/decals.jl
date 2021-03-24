@@ -107,6 +107,16 @@ function decalTextures(animationFrames::Bool=false)
     return textures
 end
 
+const preferredDecalTypes = Dict{String, Type}(
+    "texture" => String,
+
+    "x" => Number,
+    "y" => Number,
+
+    "scaleX" => Integer,
+    "scaleY" => Integer
+)
+
 function propertyOptions(decal::Maple.Decal, ignores::Array{String, 1}=String[])
     res = Form.Option[]
 
@@ -125,8 +135,9 @@ function propertyOptions(decal::Maple.Decal, ignores::Array{String, 1}=String[])
         displayName = isempty(name) ? humanizeVariableName(attr) : name
         tooltip = expandTooltipText(get(tooltips, Symbol(attr), ""))
         textures = attr == "texture" ? decalTextures() : nothing
+        preferredType = get(preferredDecalTypes, attr, typeof(value))
 
-        push!(res, Form.suggestOption(displayName, value, dataName=attr, tooltip=tooltip, choices=textures, editable=true))
+        push!(res, Form.suggestOption(displayName, value, dataName=attr, tooltip=tooltip, choices=textures, editable=true, preferredType=preferredType))
     end
 
     return res

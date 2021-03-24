@@ -155,7 +155,7 @@ function dropdownString(value::Any)
     return value === nothing ? "nothing" : string(value)
 end
 
-function setComboIndex!(widget::Gtk.GtkComboBoxText, choices::Array{T, 1}, item::H; allowCustom::Bool=true) where {T, H}
+function setComboIndex!(widget::Gtk.GtkComboBoxText, choices::AbstractArray{T, 1}, item::H; allowCustom::Bool=true) where {T, H}
     if !allowCustom && !(item in choices)
         throw(ArgumentError("The selected value does not exist for the given choices"))
     end

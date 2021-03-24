@@ -39,7 +39,7 @@ const metaFieldOrder = String[
 const modeFieldOrder = String[]
 const audiostateFieldOrder = String[]
 
-function getOptions(data::Dict{String, Any}, dropdownOptions::Dict{String, Any}, langdata::Ahorn.LangData)
+function getOptions(data::Dict{String, Any}, dropdownOptions::Dict{String, Any}, langdata::Ahorn.LangData, defaults::Dict{String, Any})
     res = Ahorn.Form.Option[]
 
     names = get(langdata, :names)
@@ -55,8 +55,9 @@ function getOptions(data::Dict{String, Any}, dropdownOptions::Dict{String, Any},
         keyOptions = get(dropdownOptions, attr, nothing)
         displayName = haskey(names, sattr) ? names[sattr] : Ahorn.humanizeVariableName(attr)
         tooltip = Ahorn.expandTooltipText(get(tooltips, sattr, ""))
+        preferredType = typeof(get(defaults, attr, value))
 
-        push!(res, Ahorn.Form.suggestOption(displayName, value, tooltip=tooltip, dataName=attr, choices=keyOptions, editable=true))
+        push!(res, Ahorn.Form.suggestOption(displayName, value, tooltip=tooltip, dataName=attr, choices=keyOptions, editable=true, preferredType=preferredType))
     end
 
     return res
@@ -109,14 +110,14 @@ function createWindow()
         filter!(p -> haskey(Maple.default_audiostate, p.first), audiostateData)
     end
 
-    modeOptions = getOptions(modeData, modeDropdownOptions, modeLangdata)
+    modeOptions = getOptions(modeData, modeDropdownOptions, modeLangdata, Maple.default_mode)
     modeSection = Ahorn.Form.Section("Mode", modeOptions, dataName="mode", fieldOrder=modeFieldOrder)
 
-    metaOptions = getOptions(metaData, metaDropdownOptions, metaLangdata)
+    metaOptions = getOptions(metaData, metaDropdownOptions, metaLangdata, Maple.default_meta)
     metaSection = Ahorn.Form.Section("Meta", metaOptions, dataName="meta", fieldOrder=metaFieldOrder)
 
-    audiostateOptions = getOptions(audiostateData, audiostateDropdownOptions, audiostateLangdata)
-    audiostateSection = Ahorn.Form.Section("Audio", audiostateOptions, dataName="audiostate", fieldOrder=metaFieldOrder)
+    audiostateOptions = getOptions(audiostateData, audiostateDropdownOptions, audiostateLangdata, Maple.default_audiostate)
+    audiostateSection = Ahorn.Form.Section("Audio", audiostateOptions, dataName="audiostate", fieldOrder=audiostateFieldOrder)
 
     sections = Ahorn.Form.Section[
         metaSection, modeSection, audiostateSection

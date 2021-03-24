@@ -86,8 +86,10 @@ function getOptions(room::Maple.Room, dropdownOptions::Dict{String, Any}, langda
         displayName = haskey(names, symbolDataName) ? names[symbolDataName] : Ahorn.humanizeVariableName(dataName)
         tooltip = Ahorn.expandTooltipText(get(tooltips, symbolDataName, ""))
         value = getValue(room, symbol, simple)
+        defaultValue = getValue(templateRoom, symbol, simple)
+        preferredType = typeof(defaultValue)
 
-        push!(res, Ahorn.Form.suggestOption(displayName, value, tooltip=tooltip, dataName=dataName, choices=keyOptions, editable=true))
+        push!(res, Ahorn.Form.suggestOption(displayName, value, tooltip=tooltip, dataName=dataName, choices=keyOptions, editable=true, preferredType=preferredType))
     end
 
     return res
