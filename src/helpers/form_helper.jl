@@ -588,10 +588,10 @@ function suggestOption(displayName::String, value::Any; tooltip::String="", data
         # Default to Int and Float32 for abstract number types
         # Celeste doesn't use any floats besides Float32
         # Never any Float besides Float32, causes visual "decimal rounding" issues
-        if fieldType == Integer
+        if fieldType <: Integer
             fieldType = Int
 
-        elseif fieldType == Number || fieldType <: AbstractFloat
+        elseif fieldType <: Number
             fieldType = Float32
         end
 
