@@ -5,7 +5,7 @@ end
 function findSteamInstallDir()
     if Sys.iswindows()
         try
-            # 64bit 
+            # 64bit
             return querykey(WinReg.HKEY_LOCAL_MACHINE, "SOFTWARE\\WOW6432Node\\Valve\\Steam", "InstallPath")
 
         catch e
@@ -27,29 +27,13 @@ function findSteamInstallDir()
             joinpath(homedir(), ".local", "share", "Steam"),
             joinpath(homedir(), ".steam", "steam")
         ]
+
         for path in linuxSteamDirs
             if isdir(path)
                 return path
             end
         end
     end
-end
-
-function findCelesteDir()
-    steam = findSteamInstallDir()
-
-    if steam !== nothing
-        celesteDir = joinpath(steam, "steamapps", "common", "Celeste")
-        if Sys.isapple()
-            celesteDir = joinpath(celesteDir, "Celeste.app", "Contents", "MacOS")
-        end
-
-        if isdir(celesteDir)
-            return true, celesteDir
-        end
-    end
-
-    return false, ""
 end
 
 function cleanupPath(path)
@@ -60,10 +44,37 @@ function cleanupPath(path)
     end
 
     if Sys.isapple() && lowercase(filename) == "celeste.app"
-        return joinpath(path, "Contents", "MacOS")
+        celesteContentDirs = [
+            joinpath(path, "Contents", "Resources"), # Celeste 1.3.3.0 and newer
+            joinpath(path, "Contents", "MacOS") # Before Celeste 1.3.3.0
+        ]
+
+        for path in celesteContentDirs
+            if isdir(path)
+                return path
+            end
+        end
     end
 
     return path
+end
+
+function findCelesteDir()
+    steam = findSteamInstallDir()
+
+    if steam !== nothing
+        celesteDir = joinpath(steam, "steamapps", "common", "Celeste")
+
+        if Sys.isapple()
+            celesteDir = cleanupPath(joinpath(celesteDir, "Celeste.app"))
+        end
+
+        if isdir(celesteDir)
+            return true, celesteDir
+        end
+    end
+
+    return false, ""
 end
 
 function configureCelesteDir()

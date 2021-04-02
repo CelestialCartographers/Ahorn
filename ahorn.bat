@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set minimum_version="v\"1.3.0\""
-set julia_url_64bit=https://julialang-s3.julialang.org/bin/winnt/x64/1.5/julia-1.5.2-win64.exe
-set julia_url_32bit=https://julialang-s3.julialang.org/bin/winnt/x86/1.5/julia-1.5.2-win32.exe
-set julia_filename=julia-1.5.2-installed.exe
+set minimum_version="v\"1.6.0\""
+set julia_url_64bit=https://julialang-s3.julialang.org/bin/winnt/x64/1.6/julia-1.6.0-win64.exe
+set julia_url_32bit=https://julialang-s3.julialang.org/bin/winnt/x86/1.6/julia-1.6.0-win32.exe
+set julia_filename=julia-1.6.0-installer.exe
 set install_url=https://raw.githubusercontent.com/CelestialCartographers/Ahorn/master/install_ahorn.jl
 set install_filename=install_ahorn.jl
 
@@ -152,8 +152,8 @@ if %ERRORLEVEL% neq 0 (
     set /p "confirmJuliaInstall=Do you want to install a compatible version of Julia? [y/N]: "
     IF /I "!confirmJuliaInstall!" equ "y" (
         echo Downloading compatible Julia version and starting the installer.
-        echo Install it into the default directory unless you want to manually add julia to the PATH environment variable.
-        echo Make sure to restart the script after adding julia to the PATH if you are using a custom location.
+        echo By default this adds Julia to the PATH environment variable, allowing installation to any directory.
+        echo If you wish to manually add Julia to PATH you can uncheck the option in the installer.
 
         echo Downloading installer
 
@@ -173,7 +173,7 @@ if %ERRORLEVEL% neq 0 (
         )
 
         echo Running installer
-        start /wait "" "%~dp0%julia_filename%"
+        start /wait "" "%~dp0%julia_filename%" /TASKS="addtopath"
 
         del "%~dp0%julia_filename%"
 
