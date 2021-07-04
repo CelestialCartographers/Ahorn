@@ -31,7 +31,7 @@ function getFilesRecursively(path::String)
 end
 
 function attemptToWatchFolder(path::String, timeout::Number=0.0)
-    if !(path in watchedFolders)
+    if isdir(path) && !(path in watchedFolders)
         try
             watch_folder(path, timeout)
             push!(watchedFolders, path)
@@ -114,14 +114,14 @@ end
 function watchAllFoldersRecursively(basePath::String, timeout::Number=0.0)
     files, folders = getFilesRecursively(basePath)
 
-    for folder in folders 
+    for folder in folders
         watch_folder(folder, timeout)
         push!(watchedFolders, folder)
     end
 end
 
-function initFileWatcher(celesteDir::String)
-    global basePath = celesteDir
+function initFileWatcher(basePath::String)
+    global basePath = basePath
 
     # Call once to start watching
     watchAllFoldersRecursively(basePath)

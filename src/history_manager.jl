@@ -67,6 +67,7 @@ function restoreSnapshot!(map::Maple.Map, snapshot::RoomSnapshot)
     end
 
     Ahorn.draw(Ahorn.canvas)
+    Ahorn.updateTreeView!(Ahorn.roomList, Ahorn.getTreeData(map), row -> row[1] == Ahorn.loadedState.roomName, updateByReplacement=true)
 end
 
 function restoreSnapshot!(map::Maple.Map, snapshot::MultiSnapshot)

@@ -2,6 +2,7 @@ module AboutWindow
 
 using Gtk, Gtk.ShortNames, Gtk.GConstants, Pkg
 using ..Ahorn
+using Ahorn.PackageHelper
 
 window = nothing
 
@@ -10,8 +11,7 @@ function spawnWindowIfAbsent!()
         icon = Pixbuf(filename = Ahorn.logoFile, width = 256, height = 256, preserve_aspect_ratio = true)
         version = ""
         try
-            local ctx = Pkg.Types.Context()
-            version *= "Hash " * string(ctx.env.manifest[ctx.env.project.deps["Ahorn"]].tree_hash)[1:7]
+            version *= "Hash " * pkghash_short()
         catch e
             version *= "Don't expect a version number"
         end
@@ -22,11 +22,11 @@ function spawnWindowIfAbsent!()
         version = version,
         website = "https://github.com/CelestialCartographers/Ahorn",
         website_label = "GitHub  Repository")
-        
+
         # Hide window instead of destroying it
         signal_connect(hideAboutWindow, window, "delete_event")
         signal_connect(hideAboutWindow, window, "response")
-        
+
         GAccessor.transient_for(window, Ahorn.window)
         GAccessor.authors(window, ["Cruor", "Vexatos"])
         GAccessor.artists(window, ["Vexatos"])

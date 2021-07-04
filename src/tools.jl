@@ -364,8 +364,9 @@ function deleteRoomCallback(widget=nothing)
     if index !== nothing && ask_dialog("Are you sure you want to delete this room? '$(loadedState.room.name)'", window)
         History.addSnapshot!(History.MapSnapshot("Room Deletion", loadedState.map))
 
-        deleteat!(loadedState.map.rooms, index)
         deleteDrawableRoomCache(loadedState.map, loadedState.room)
+        deleteat!(loadedState.map.rooms, index)
+        loadedState.room = get(loadedState.map.rooms, 1, nothing)
         updateTreeView!(roomList, getTreeData(loadedState.map))
         draw(canvas)
 

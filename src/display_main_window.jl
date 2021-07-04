@@ -33,7 +33,6 @@ function displayMainWindow()
 
     @progress initSprites() "Getting sprites ready..." progressDialog
     @progress initTilerMetas() "Getting tiles ready..." progressDialog
-    @progress initCamera() "Getting camera ready..." progressDialog
 
     @progress Backup.initBackup(persistence) "Starting backup handler..." progressDialog
     @progress FileWatcher.initFileWatcher(normpath(joinpath(config["celeste_dir"], "Mods"))) "Starting file watcher..." progressDialog
@@ -56,6 +55,8 @@ function displayMainWindow()
     roomListVisiblityFunctions[get(persistence, "room_list_column_visibility", "all")]()
 
     selectLoadedRoom!(roomList)
+
+    @progress initCamera() "Getting camera ready..." progressDialog
 
     global box = Box(:v)
     global grid = generateMainGrid()
