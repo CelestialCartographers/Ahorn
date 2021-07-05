@@ -120,8 +120,8 @@ function watchAllFoldersRecursively(basePath::String, timeout::Number=0.0)
     end
 end
 
-function initFileWatcher(basePath::String)
-    global basePath = basePath
+function initFileWatcher(targetPath::String)
+    global basePath = targetPath
 
     # Call once to start watching
     watchAllFoldersRecursively(basePath)
