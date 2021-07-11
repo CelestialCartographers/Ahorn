@@ -20,13 +20,15 @@ roomList = generateTreeView(
                     info_dialog("The selected room name is already in use.", window)
 
                 else
+                    deleteDrawableRoomCache(loadedState.map, room)
+
                     store[row, col] = v
 
                     room.name = v
 
                     loadedState.room = room
                     loadedState.roomName = v
-                    
+
                     persistence["files_lastroom"] = v
                 end
             end

@@ -23,11 +23,12 @@ function saveConfig(c::Config, force::Bool=true)
         # Save to $fn.saving first, then delete fn and move the temp file
         # Prevents corruption of data if program is terminated while writing
         open(c.fn * ".saving", "w") do fh
-            c.mtime = time()
             JSON.print(fh, c.data, 4)
         end
 
         mv(c.fn * ".saving", c.fn, force=true)
+
+        c.mtime = time()
     end
 end
 

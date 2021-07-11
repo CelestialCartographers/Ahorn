@@ -244,6 +244,10 @@ function createRoomWindow(creating::Bool=true, simple::Bool=get(Ahorn.config, "u
                 return false
             end
 
+            if !creating
+                Ahorn.deleteDrawableRoomCache(currentMap, currentRoom)
+            end
+
             snapshotDesc = (creating ? "Created room" : "Updated room ") * data["name"]
             Ahorn.History.addSnapshot!(Ahorn.History.MapSnapshot(snapshotDesc, currentMap))
 
