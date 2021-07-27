@@ -126,6 +126,8 @@ function propertyOptions(decal::Maple.Decal, ignores::Array{String, 1}=String[])
     ignores = vcat("__name", ignores)
     data = Dict(decal)
 
+    showEditingChoices = get(config, "show_decal_texture_dropdown", false)
+
     for (attr, value) in data
         if attr in ignores
             continue
@@ -134,7 +136,7 @@ function propertyOptions(decal::Maple.Decal, ignores::Array{String, 1}=String[])
         name = expandTooltipText(get(names, Symbol(attr), ""))
         displayName = isempty(name) ? humanizeVariableName(attr) : name
         tooltip = expandTooltipText(get(tooltips, Symbol(attr), ""))
-        textures = attr == "texture" ? decalTextures() : nothing
+        textures = showEditingChoices && attr == "texture" ? decalTextures() : nothing
         preferredType = get(preferredDecalTypes, attr, typeof(value))
 
         push!(res, Form.suggestOption(displayName, value, dataName=attr, tooltip=tooltip, choices=textures, editable=true, preferredType=preferredType))

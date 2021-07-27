@@ -36,18 +36,52 @@ function getAhornModZips()
     return targetFolders
 end
 
-function getCelesteModDirs()
+function getEverestBlacklist()
+    entries = Set()
+
+    celesteDir = get(config, "celeste_dir", "")
+    blacklistPath = joinpath(celesteDir, "Mods", "blacklist.txt")
+
+    if isfile(blacklistPath)
+        for line in readlines(blacklistPath)
+            # Lines starting by # are comments
+            if !startswith(line, "#")
+                push!(entries, strip(line))
+            end
+        end
+    end
+
+    return entries
+end
+
+# Good enough for now, can be expanded later
+function getModLoadingFilter()
+    useEverestBlacklist = get(config, "use_everest_blacklist", true)
+
+    if useEverestBlacklist
+        return getEverestBlacklist()
+    end
+
+    return Set()
+end
+
+function getCelesteModDirs(ignoreFilters::Bool=false)
     if !get(config, "load_plugins_celeste", true)
         return String[]
     end
 
     celesteDir = get(config, "celeste_dir", "")
     modsPath = joinpath(celesteDir, "Mods")
+    modFilters = getModLoadingFilter()
 
     targetFolders = String[]
 
     if isdir(modsPath)
         for fn in readdir(modsPath)
+            if !ignoreFilters && fn in modFilters
+                continue
+            end
+
             if isdir(joinpath(modsPath, fn))
                 push!(targetFolders, joinpath(modsPath, fn))
             end
@@ -92,18 +126,23 @@ function getModRoot(fn::String)
     end
 end
 
-function getCelesteModZips()
+function getCelesteModZips(ignoreFilters::Bool=false)
     if !get(config, "load_plugins_celeste_zip", true)
         return String[]
     end
 
     celesteDir = get(config, "celeste_dir", "")
     modsPath = joinpath(celesteDir, "Mods")
+    modFilters = getModLoadingFilter()
 
     targetZips = String[]
 
     if isdir(modsPath)
         for fn in readdir(modsPath)
+            if !ignoreFilters && fn in modFilters
+                continue
+            end
+
             if isfile(joinpath(modsPath, fn)) && hasExt(fn, ".zip")
                 push!(targetZips, joinpath(modsPath, fn))
             end

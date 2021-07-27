@@ -662,6 +662,9 @@ settings.config.names.load_image_meta_yaml=Load Image Meta YAML
 settings.config.names.split_atlas_into_smaller_surfaces=Split up Celeste atlases
 settings.config.names.hide_styleground_parallax_preview=Hide styleground parallax preview
 settings.config.names.tools_brushes_smoother_brushes=Smoother brushing
+settings.config.names.use_everest_blacklist=Use Everest blacklist
+settings.config.names.show_decal_texture_dropdown=Show decal texture dropdown
+settings.config.names.show_parallax_texture_dropdown=Show parallax texture dropdown
 
 settings.config.tooltips.language=The language file being used.
 settings.config.tooltips.camera_maximum_zoom=The greatest allowed camera zoom level.
@@ -700,6 +703,9 @@ settings.config.tooltips.load_image_meta_yaml=Loads the .meta.yaml image metadat
 settings.config.tooltips.split_atlas_into_smaller_surfaces=Splits the atlases from Celeste into smaller images for better performance. (Requires restart)
 settings.config.tooltips.hide_styleground_parallax_preview=Whether the parallax preview should be hidden. Useful for larger previews.\nCan be toggled by double clicking the preview in styleground window.
 settings.config.tooltips.tools_brushes_smoother_brushes=Whether the brush tool should attempt to smoothen movement by approximating lost movement information with lines.
+settings.config.tooltips.use_everest_blacklist=Whether Ahorn should respect the Everest blacklist.txt and not load the mods in it.
+settings.config.tooltips.show_decal_texture_dropdown=Whether the property menu for decals should have a dropdown for textures. Huge amounts of textures can make the window slow to open.
+settings.config.tooltips.show_parallax_texture_dropdown=Whether the stylegrounds window should have a dropdown for parallax textures. Huge amounts of textures can make the window slow to open.
 
 
 settings.debug.names.DEBUG_MENU_DROPDOWN=Debug menu dropdown

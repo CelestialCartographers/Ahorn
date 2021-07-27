@@ -231,15 +231,20 @@ function moveBackdrop!(target::Array{Maple.Backdrop, 1}, indices::Array{Int, 1},
 end
 
 function getParallaxOptions(fields::Dict{String, Any}, langdata::Ahorn.LangData)
-    options = Ahorn.Form.Option[]
+    showTextureChoices = get(Ahorn.config, "show_parallax_texture_dropdown", true)
 
-    # Make sure we get a new list of valid textures
+    options = Ahorn.Form.Option[]
     dropdownOptions = Dict{String, Any}(
-        "texture" => sort(spritesToBackgroundTextures(Ahorn.getAtlas("Gameplay"))),
         "blendmode" => String[
             "additive", "alphablend"
         ]
     )
+
+    if showTextureChoices
+        # Make sure we get a new list of valid textures
+        texturesSorted = sort(spritesToBackgroundTextures(Ahorn.getAtlas("Gameplay")))
+        dropdownOptions["texture"] = texturesSorted
+    end
 
     names = get(langdata, :names)
     tooltips = get(langdata, :tooltips)
@@ -552,7 +557,10 @@ function getParallaxGrid(map::Maple.Map)
 
     Ahorn.connectChanged(parallaxRowHandler, parallaxList)
 
-    signal_connect(widget -> draw(preview), textureOption.combobox, "changed")
+    if get(Ahorn.config, "show_parallax_texture_dropdown", true)
+        signal_connect(widget -> draw(preview), textureOption.combobox, "changed")
+    end
+
     signal_connect(widget -> draw(preview), colorOption.entry, "changed")
 
     add_events(preview,
