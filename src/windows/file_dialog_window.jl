@@ -8,7 +8,7 @@ function lastMapDir()
     return targetDir
 end
 
-function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::String=lastMapDir())
+function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::String=lastMapDir(), overrideFilename::Union{String, Nothing}=nothing)
     @Ahorn.catchall begin
         filename = openDialog("Select map binary", window, ["*.bin"], folder=folder)
 
@@ -23,7 +23,8 @@ function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::Strin
                     deleteDrawableRoomCache(loadedState.map)
                 end
 
-                loadedState.filename = filename
+                # Allow backups to "fake" where a file is actually stored
+                loadedState.filename = something(overrideFilename, filename)
                 loadedState.side = loadSide(filename)
                 loadedState.map = loadedState.side.map
                 loadedState.lastSavedHash = hash(loadedState.side)
@@ -32,7 +33,7 @@ function showFileOpenDialog(leaf::Ahorn.MenuItemsTypes=MenuItem(), folder::Strin
 
                 persistence["files_lastroom"] = loadedState.roomName
                 persistence["files_lastfile"] = loadedState.filename
-                
+
                 packageName = loadedState.map.package
 
                 EntityIds.updateValidIds(loadedState.map)

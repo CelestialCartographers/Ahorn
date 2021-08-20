@@ -89,9 +89,7 @@ function openBackupDialog()
         latestBackupFilename = getBackupFilename(side)
 
         # The latest filename may also be in another folder, make sure we get the right folder
-        Ahorn.showFileOpenDialog(MenuItem(), dirname(joinpath(backupFolder, latestBackupFilename)))
-        Ahorn.loadedState.filename = latestFilename
-        Ahorn.persistence["files_lastfile"] = latestFilename
+        Ahorn.showFileOpenDialog(MenuItem(), dirname(joinpath(backupFolder, latestBackupFilename)), latestFilename)
     end
 end
 

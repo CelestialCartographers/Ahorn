@@ -562,6 +562,15 @@ placements.triggers.everest/activateDreamBlocksTrigger.tooltips.fastAnimation=Wh
 placements.triggers.everest/customBirdTutorialTrigger.tooltips.birdId=Which bird the trigger should affect.
 placements.triggers.everest/customBirdTutorialTrigger.tooltips.showTutorial=If ticked, the targeted bird will show its speech bubble. If unchecked, the bird will fly away.
 
+# Custom Height Display (Everest)
+placements.triggers.everest/CustomHeightDisplayTrigger.tooltips.vanilla=Whether this trigger should use the vanilla height display. The vanilla one only uses the target attribute.
+placements.triggers.everest/CustomHeightDisplayTrigger.tooltips.target=The new meter count.
+placements.triggers.everest/CustomHeightDisplayTrigger.tooltips.from=The previous meter count.
+placements.triggers.everest/CustomHeightDisplayTrigger.tooltips.progressAudio=Whether the trigger should increment audio progress.
+placements.triggers.everest/CustomHeightDisplayTrigger.tooltips.displayOnTransition=Whether the trigger should wait for a room transition to occur before displaying the counter.
+placements.triggers.everest/CustomHeightDisplayTrigger.tooltips.text=The text of the counter. The meter count specified in target is substituted in for {x}.\nExample: "Currently at {x} meters".
+
+
 # -- Effects --
 
 placements.effects.tentacles.names.sides=Sides

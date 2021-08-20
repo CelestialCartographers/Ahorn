@@ -212,7 +212,7 @@ mutable struct DictionaryChoiceOption <: Option
 end
 
 Base.size(option::DictionaryChoiceOption) = (2, 1)
-getValue(option::DictionaryChoiceOption) = typeof(option.value) === String ? Ahorn.convertString(option.as, option.value) : option.value
+getValue(option::DictionaryChoiceOption) = option.value
 setValue!(option::DictionaryChoiceOption, value::Any) = Ahorn.setComboIndex!(option.combobox, collect(values(option.options)), value, allowCustom=false)
 getGroup(option::DictionaryChoiceOption) = 1
 setGtkProperty!(option::DictionaryChoiceOption, field::Symbol, value::Any) = set_gtk_property!(option.combobox, field, value)
@@ -224,7 +224,18 @@ function addToGrid!(grid::Gtk.GtkGrid, option::DictionaryChoiceOption, col::Inte
 
     @guarded signal_connect(option.combobox, "changed") do args...
         text = Gtk.bytestring(GAccessor.active_text(option.combobox))
-        option.value = get(option.options, text, text)
+
+        if haskey(option.options, text)
+            option.value = get(option.options, text, text)
+
+        else
+            try
+                option.value = Ahorn.convertString(option.as, text)
+
+            catch
+                option.value = first(option.options)[2]
+            end
+        end
     end
 end
 
