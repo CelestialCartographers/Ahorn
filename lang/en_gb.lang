@@ -800,7 +800,7 @@ room_window.tooltips.delayAltMusicFade=Delay the alternative music fade.
 room_window.tooltips.music=What song should be playing in the room, uses previous if left empty.
 room_window.tooltips.altMusic=What alternative song should be playing. It is unsure what this means, as it seems to not be hooked up in the game anymore.
 room_window.tooltips.windPattern=The type of wind in the room.
-room_window.tooltips.color=The colour of the room in the debug map viewer.
+room_window.tooltips.color=The colour of the room in the debug map viewer.\n0 - White\n1 - Red\n2 - Green\n3 - Light Blue\n4 - Dark Blue\n5 - Purple\n6 - Pink
 room_window.tooltips.cameraOffsetX=Global horizontal offset of camera in room.
 room_window.tooltips.cameraOffsetY=Global vertical offset of camera in room.
 

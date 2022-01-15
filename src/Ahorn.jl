@@ -7,6 +7,8 @@ if Sys.iswindows()
     ENV["GTK_CSD"] = get(ENV, "GTK_CSD", "0")
 end
 
+ENV["GTK_AUTO_IDLE"] = get(ENV, "GTK_AUTO_IDLE", "false")
+
 using Gtk, Gtk.ShortNames, Gtk.GConstants
 using Cairo
 using Maple

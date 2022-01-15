@@ -122,7 +122,7 @@ function layersChanged(layers::Array{Ahorn.Layer, 1})
 end
 
 function leftClick(x::Number, y::Number)
-    if cirlce !== nothing
+    if circle !== nothing
         applyCircle!(circle, material)
 
         global circle = nothing
