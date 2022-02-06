@@ -87,7 +87,7 @@ end
 end
 
 function handleFilterKeyPressed(widget::Gtk.GObject, event::Gtk.GdkEventKey)
-    if widget == materialFilterEntry && 
+    if widget == materialFilterEntry
         if event.keyval == Gtk.GdkKeySyms.Escape
             unfocusFilterEntry!()
 

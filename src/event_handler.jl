@@ -55,7 +55,7 @@ function shouldConsumeKeys()
         return !isa(focused, Gtk.GtkEntryLeaf), focused
 
     catch
-        return true
+        return true, nothing
     end
 end
 
@@ -193,7 +193,7 @@ end
 
 function key_release_event(widget::Gtk.GtkWindowLeaf, event::Gtk.GdkEventKey)
     keyPressed[event.keyval] = (event, false)
-    consume = shouldConsumeKeys()
+    consume, focused = shouldConsumeKeys()
     if consume
         handleKeyReleased(event)
     end

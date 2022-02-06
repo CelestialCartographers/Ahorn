@@ -99,7 +99,7 @@ struct Ignore
 end
 
 getTilesetId(id::String) = getTilesetId(id[1])
-getTilesetId(id::Char) = codepoint(id) <= 0xff ? id : nothing
+getTilesetId(id::Char) = id
 
 function loadTilesetXML(fn::String)
     if !isfile(fn)
