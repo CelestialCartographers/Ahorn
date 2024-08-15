@@ -1,4 +1,4 @@
-Copyright (c) 2018-2019 Vexatos and Cruor
+Copyright (c) 2018-2022 Vexatos and Cruor
 
 All rights reserved.
 

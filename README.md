@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> This project has been replaced and is no longer being worked on.
+> [Its direct successor is Lönn](https://github.com/CelestialCartographers/Loenn).
+> If you are considering installing Ahorn, please use Lönn instead.
+
 # Ahorn
 
 [**Join us on Discord!**](https://discord.gg/Wtjf4Pb) (we're in `#map_making` on the "Mt. Celeste Climbing Association" Discord server)
